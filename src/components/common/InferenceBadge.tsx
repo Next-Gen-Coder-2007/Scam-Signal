@@ -18,19 +18,19 @@ export const InferenceBadge: React.FC<InferenceBadgeProps> = ({
 }) => {
   const config = {
     'on-device': {
-      bg: 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300',
+      bg: 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300',
       dot: 'bg-emerald-400',
       icon: Cpu,
-      defaultLabel: 'On-Device (Private)',
+      defaultLabel: 'On-Device',
     },
-    'cloud': {
-      bg: 'bg-indigo-950/40 border-indigo-500/30 text-indigo-300',
-      dot: 'bg-indigo-400',
+    cloud: {
+      bg: 'bg-violet-950/40 border-violet-500/35 text-violet-300',
+      dot: 'bg-violet-400',
       icon: Cloud,
-      defaultLabel: 'Cloud Intelligence',
+      defaultLabel: 'Cloud AI',
     },
     'hybrid-fallback': {
-      bg: 'bg-cyan-950/40 border-cyan-500/30 text-cyan-300',
+      bg: 'bg-cyan-950/35 border-cyan-500/35 text-cyan-300',
       dot: 'bg-cyan-400',
       icon: GitFork,
       defaultLabel: 'Hybrid Fallback',
@@ -44,16 +44,16 @@ export const InferenceBadge: React.FC<InferenceBadgeProps> = ({
     <span
       title={`Inference Source: ${source}`}
       className={cn(
-        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono border backdrop-blur-sm transition-colors',
+        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono border transition-colors',
         config.bg,
         className
       )}
     >
-      <span className={cn('w-1.5 h-1.5 rounded-full animate-pulse', config.dot)} />
+      <span className={cn('w-1.5 h-1.5 rounded-full', config.dot)} />
       <Icon className="w-3.5 h-3.5" />
       <span>{label}</span>
       {typeof latencyMs === 'number' && (
-        <span className="text-[10px] opacity-75 ml-0.5">({latencyMs}ms)</span>
+        <span className="text-[11px] opacity-75 ml-0.5">({latencyMs}ms)</span>
       )}
     </span>
   );

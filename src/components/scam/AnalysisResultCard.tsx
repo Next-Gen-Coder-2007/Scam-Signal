@@ -24,17 +24,15 @@ export const AnalysisResultCard: React.FC<AnalysisResultCardProps> = ({
   onReset,
   onShareToCommunity,
 }) => {
-  const glowType =
-    result.threatLevel === 'CRITICAL'
-      ? 'rose'
-      : result.threatLevel === 'HIGH'
-      ? 'rose'
+  const cardVariant =
+    result.threatLevel === 'CRITICAL' || result.threatLevel === 'HIGH'
+      ? 'critical'
       : result.threatLevel === 'SUSPICIOUS'
-      ? 'amber'
-      : 'emerald';
+      ? 'warning'
+      : 'default';
 
   return (
-    <Card glow={glowType} className="space-y-6">
+    <Card variant={cardVariant} className="space-y-6">
       {/* Top Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800/80">
         <div className="flex flex-wrap items-center gap-2.5">

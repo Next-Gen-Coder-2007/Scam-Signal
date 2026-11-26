@@ -93,8 +93,8 @@ export const CommunityFeedView: React.FC = () => {
         {filteredThreats.map((threat) => (
           <Card
             key={threat.id}
-            glow={threat.threatLevel === 'CRITICAL' ? 'rose' : threat.threatLevel === 'HIGH' ? 'amber' : 'none'}
-            className="hover:border-slate-700 transition-all duration-150"
+            variant={threat.threatLevel === 'CRITICAL' ? 'critical' : threat.threatLevel === 'HIGH' ? 'warning' : 'default'}
+            className="hover:border-surface-subtle transition-colors duration-150"
           >
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
               <div className="flex flex-wrap items-center gap-2">

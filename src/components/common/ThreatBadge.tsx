@@ -18,27 +18,27 @@ export const ThreatBadge: React.FC<ThreatBadgeProps> = ({
 }) => {
   const config = {
     CRITICAL: {
-      bg: 'bg-rose-950/70 border-rose-500/40 text-rose-300',
+      bg: 'bg-rose-950/50 border-rose-500/35 text-rose-300',
       icon: ShieldAlert,
       label: 'Critical Threat',
     },
     HIGH: {
-      bg: 'bg-rose-900/50 border-rose-500/30 text-rose-300',
+      bg: 'bg-rose-950/30 border-rose-500/25 text-rose-300',
       icon: ShieldAlert,
       label: 'High Risk',
     },
     SUSPICIOUS: {
-      bg: 'bg-amber-950/70 border-amber-500/40 text-amber-300',
+      bg: 'bg-amber-950/40 border-amber-500/30 text-amber-300',
       icon: AlertTriangle,
       label: 'Suspicious',
     },
     SAFE: {
-      bg: 'bg-emerald-950/70 border-emerald-500/40 text-emerald-300',
+      bg: 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300',
       icon: ShieldCheck,
       label: 'Clean / Safe',
     },
     UNKNOWN: {
-      bg: 'bg-slate-900 border-slate-700 text-slate-400',
+      bg: 'bg-surface-elevated border-surface-border text-zinc-400',
       icon: AlertTriangle,
       label: 'Uncertain',
     },
@@ -50,8 +50,8 @@ export const ThreatBadge: React.FC<ThreatBadgeProps> = ({
   return (
     <span
       className={cn(
-        'inline-flex items-center font-medium border rounded-full transition-colors duration-150',
-        isSm ? 'px-2 py-0.5 text-xs gap-1' : 'px-2.5 py-1 text-xs gap-1.5',
+        'inline-flex items-center font-medium border rounded',
+        isSm ? 'px-2 py-0.5 text-[11px] gap-1' : 'px-2.5 py-1 text-xs gap-1.5',
         config.bg,
         className
       )}
