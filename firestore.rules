@@ -1,0 +1,47 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+
+    // Public community threat feed
+    match /public_threats/{threatId} {
+      allow read: if true;
+
+      // Users can submit verified-safe redacted reports
+      allow create: if isAuthenticated()
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.upvotes == 0
+        && request.resource.data.campaignId == null
+        && request.resource.data.redactedSummary is string
+        && request.resource.data.redactedSummary.size() <= 2000;
+
+      // Only admins or backend tasks can link campaigns or modify data
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Correlated Threat Campaigns
+    match /campaigns/{campaignId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // User Private Threat Logs (if synced)
+    match /user_scans/{scanId} {
+      allow read, delete: if isOwner(resource.data.userId);
+      allow create: if isOwner(request.resource.data.userId);
+      allow update: if false; // Immutable scans
+    }
+  }
+}
