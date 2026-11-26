@@ -29,3 +29,12 @@
 - **Minimal Dependencies**: Strictly avoid bloated libraries, redundant state management frameworks, unnecessary microservices, or complex external infrastructure.
 - **Feature Preservation**: When fixing issues or adding features, preserve existing working functionality and verified tests.
 - **Real Implementations Only**: Never replace real Firebase AI Logic calls with mocked responses or hardcoded timeouts in the final deliverable.
+
+## Git and Version Control
+- Every development task must produce 5–7 meaningful commits where feasible.
+- Follow Conventional Commits.
+- Test each logical implementation stage before committing.
+- Never commit secrets, credentials, or environment files.
+- Never overwrite or discard existing user changes.
+- Never claim a commit exists without verifying its Git hash.
+- Do not push without explicit user authorization.
