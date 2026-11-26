@@ -1,6 +1,7 @@
 import React from 'react';
 import { LucideIcon } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { Button } from '../ui/Button';
 
 interface EmptyStateProps {
   icon: LucideIcon;
@@ -23,24 +24,21 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center text-center p-8 sm:p-12 border border-dashed border-slate-800 rounded-xl bg-slate-900/30',
+        'flex flex-col items-center justify-center text-center p-8 sm:p-10 border border-dashed border-surface-border rounded-lg bg-surface/50',
         className
       )}
     >
-      <div className="p-3 bg-slate-800/60 rounded-xl border border-slate-700/50 mb-4 text-slate-400">
-        <Icon className="w-6 h-6 text-slate-300" />
+      <div className="p-2.5 bg-surface-elevated rounded-md border border-surface-border mb-3.5 text-zinc-400">
+        <Icon className="w-5 h-5 text-zinc-300" />
       </div>
-      <h3 className="text-base font-semibold text-slate-200 mb-1">{title}</h3>
-      <p className="text-sm text-slate-400 max-w-md mb-6 leading-relaxed">
+      <h3 className="text-sm font-semibold text-zinc-200 mb-1">{title}</h3>
+      <p className="text-xs text-zinc-400 max-w-md mb-5 leading-relaxed">
         {description}
       </p>
       {action && (
-        <button
-          onClick={action.onClick}
-          className="inline-flex items-center justify-center px-4 py-2 text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-        >
+        <Button variant="secondary" size="sm" onClick={action.onClick}>
           {action.label}
-        </button>
+        </Button>
       )}
     </div>
   );
