@@ -75,7 +75,7 @@ export function useCommunityFeed() {
         threatLevel: payload.threatLevel,
         threatCategories: [payload.threatCategory],
         tacticalIndicators: [`Channel: ${payload.channel.toUpperCase()}`],
-        inferenceSource: 'on-device',
+        inferenceSource: 'on_device',
         channel: payload.channel,
       });
 

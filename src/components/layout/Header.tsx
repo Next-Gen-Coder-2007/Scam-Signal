@@ -38,8 +38,8 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
         <div className="flex items-center gap-2.5">
           <div className="hidden md:flex items-center">
             <InferenceBadge
-              source="on-device"
-              modelIdentifier="Gemini Nano Ready"
+              source={isConfigured ? 'in_cloud' : 'unknown'}
+              modelIdentifier={isConfigured ? 'Firebase AI Logic' : 'AI Unconfigured'}
             />
           </div>
 

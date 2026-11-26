@@ -1,5 +1,5 @@
 import React from 'react';
-import { Cpu, Cloud, GitFork } from 'lucide-react';
+import { Cpu, Cloud, HelpCircle } from 'lucide-react';
 import { InferenceSource } from '../../types/threat';
 import { cn } from '../../utils/cn';
 
@@ -17,23 +17,23 @@ export const InferenceBadge: React.FC<InferenceBadgeProps> = ({
   className,
 }) => {
   const config = {
-    'on-device': {
+    on_device: {
       bg: 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300',
       dot: 'bg-emerald-400',
       icon: Cpu,
-      defaultLabel: 'On-Device',
+      defaultLabel: 'On-Device (SDK)',
     },
-    cloud: {
+    in_cloud: {
       bg: 'bg-violet-950/40 border-violet-500/35 text-violet-300',
       dot: 'bg-violet-400',
       icon: Cloud,
-      defaultLabel: 'Cloud AI',
+      defaultLabel: 'In-Cloud (SDK)',
     },
-    'hybrid-fallback': {
-      bg: 'bg-cyan-950/35 border-cyan-500/35 text-cyan-300',
-      dot: 'bg-cyan-400',
-      icon: GitFork,
-      defaultLabel: 'Hybrid Fallback',
+    unknown: {
+      bg: 'bg-surface-elevated border-surface-border text-zinc-400',
+      dot: 'bg-zinc-500',
+      icon: HelpCircle,
+      defaultLabel: 'Unknown Source',
     },
   }[source];
 
@@ -42,7 +42,7 @@ export const InferenceBadge: React.FC<InferenceBadgeProps> = ({
 
   return (
     <span
-      title={`Inference Source: ${source}`}
+      title={`SDK inferenceSource: ${source}`}
       className={cn(
         'inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono border transition-colors',
         config.bg,

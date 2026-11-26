@@ -72,13 +72,13 @@ Never include markdown code fences, backticks, or explanatory preamble. Output r
         'Strict on-device inference requested, but local AI model (Gemini Nano) is unavailable or not downloaded.'
       );
     }
-    executionSource = 'on-device';
+    executionSource = 'on_device';
     modelIdentifier = 'Gemini Nano (Local)';
     rawResponseText = await executeLocalAdapter(systemInstructions, options.prompt);
   } else if (options.preference === 'on-device-preferred') {
     if (isLocalAvailable) {
       try {
-        executionSource = 'on-device';
+        executionSource = 'on_device';
         modelIdentifier = 'Gemini Nano (Local)';
         rawResponseText = await executeLocalAdapter(systemInstructions, options.prompt);
       } catch (localErr) {
@@ -89,7 +89,7 @@ Never include markdown code fences, backticks, or explanatory preamble. Output r
             }`
           );
         }
-        executionSource = 'hybrid-fallback';
+        executionSource = 'in_cloud';
         modelIdentifier = 'Gemini 1.5 Flash (Cloud Fallback)';
         rawResponseText = await executeCloudAdapter(systemInstructions, options.prompt);
       }
@@ -99,13 +99,13 @@ Never include markdown code fences, backticks, or explanatory preamble. Output r
           'On-device AI is not available in this browser and user declined cloud transmission.'
         );
       }
-      executionSource = 'cloud';
+      executionSource = 'in_cloud';
       modelIdentifier = 'Gemini 1.5 Flash (Cloud)';
       rawResponseText = await executeCloudAdapter(systemInstructions, options.prompt);
     }
   } else {
     // cloud-only
-    executionSource = 'cloud';
+    executionSource = 'in_cloud';
     modelIdentifier = 'Gemini 1.5 Pro (Cloud Intelligence)';
     rawResponseText = await executeCloudAdapter(systemInstructions, options.prompt);
   }

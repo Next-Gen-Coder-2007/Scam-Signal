@@ -17,7 +17,7 @@ describe('Firestore Threat Service (Unconfigured Safety)', () => {
         threatLevel: 'HIGH',
         threatCategories: ['IMPERSONATION'],
         tacticalIndicators: ['Urgent link'],
-        inferenceSource: 'on-device',
+        inferenceSource: 'on_device',
         channel: 'sms',
       })
     ).rejects.toThrow(FirebaseNotConfiguredError);

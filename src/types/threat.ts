@@ -1,6 +1,12 @@
 export type ThreatLevel = 'CRITICAL' | 'HIGH' | 'SUSPICIOUS' | 'SAFE' | 'UNKNOWN';
 
-export type InferenceSource = 'on-device' | 'cloud' | 'hybrid-fallback';
+/**
+ * Matches the actual runtime inferenceSource returned by Firebase AI Logic SDK:
+ * - 'on_device': Executed locally via Chrome Prompt API / Gemini Nano
+ * - 'in_cloud': Executed in the cloud via Firebase AI Logic backend
+ * - 'unknown': Runtime source could not be determined from SDK response
+ */
+export type InferenceSource = 'on_device' | 'in_cloud' | 'unknown';
 
 export interface ThreatTelemetry {
   source: InferenceSource;

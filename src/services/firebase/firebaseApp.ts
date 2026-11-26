@@ -11,6 +11,7 @@ import {
   ReCaptchaV3Provider,
   AppCheck,
 } from 'firebase/app-check';
+import { getAI, GoogleAIBackend, AI } from 'firebase/ai';
 
 export interface FirebaseEnvConfig {
   apiKey?: string;
@@ -69,6 +70,7 @@ let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
 let db: Firestore | null = null;
 let appCheck: AppCheck | null = null;
+let ai: AI | null = null;
 
 const envConfig = readFirebaseEnv();
 const validation = validateFirebaseConfig(envConfig);
@@ -124,10 +126,16 @@ if (!validation.isValid) {
           acError instanceof Error ? acError.message : 'App Check initialization failed.';
       }
     }
+
+    ai = getAI(app, {
+      backend: new GoogleAIBackend(),
+      useLimitedUseAppCheckTokens: Boolean(appCheck),
+    });
   } catch (initError: unknown) {
     app = null;
     auth = null;
     db = null;
+    ai = null;
     firebaseStatus.isConfigured = false;
     firebaseStatus.error =
       initError instanceof Error
@@ -136,4 +144,4 @@ if (!validation.isValid) {
   }
 }
 
-export { app, auth, db, appCheck, firebaseStatus };
+export { app, auth, db, appCheck, ai, firebaseStatus };

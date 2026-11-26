@@ -76,7 +76,7 @@ export const publicThreatConverter: FirestoreDataConverter<PublicThreatDocument>
       redactedSummary: data.redactedSummary || '',
       normalizedPatternHash: data.normalizedPatternHash || '',
       tacticalIndicators: data.tacticalIndicators || [],
-      inferenceSource: data.inferenceSource || 'on-device',
+      inferenceSource: data.inferenceSource || 'unknown',
       channel: data.channel || 'sms',
       upvotes: typeof data.upvotes === 'number' ? data.upvotes : 0,
       campaignId: data.campaignId || null,
