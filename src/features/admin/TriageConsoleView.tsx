@@ -1,43 +1,52 @@
 import React from 'react';
 import { CheckCircle2, Lock } from 'lucide-react';
 import { Card } from '../../components/common/Card';
+import { Button } from '../../components/ui/Button';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '../../components/ui/Table';
 
 export const TriageConsoleView: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-800/60">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-surface-border">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-100">
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-100">
               Analyst Triage & Verification Desk
             </h1>
-            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-amber-500/10 text-amber-400 border border-amber-500/30">
+            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-amber-300 border border-surface-border">
               Role: Security Analyst
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
             Audit unverified community signals, confirm campaign IOCs, and enforce verification integrity.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-mono text-emerald-400">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-surface border border-surface-border text-xs font-mono text-emerald-400">
           <CheckCircle2 className="w-4 h-4" />
           <span>App Check Authenticated</span>
         </div>
       </div>
 
       {/* Security Rule Guard Card */}
-      <Card className="bg-slate-900/60 border-slate-800">
+      <Card>
         <div className="flex items-start gap-3">
-          <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30">
-            <Lock className="w-5 h-5" />
+          <div className="p-2 rounded-md bg-surface-elevated text-amber-400 border border-surface-border">
+            <Lock className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-slate-200">
+            <h3 className="text-sm font-semibold text-zinc-200">
               Role-Based Verification Protection
             </h3>
-            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+            <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
               Standard users cannot elevate threat verification flags or link campaigns. Changes to threat severity or campaign links are gated behind verified Firebase Auth custom claims (<code className="text-cyan-400 font-mono">admin: true</code>) and validated Cloud Functions.
             </p>
           </div>
@@ -46,61 +55,59 @@ export const TriageConsoleView: React.FC = () => {
 
       {/* Triage Queue Table */}
       <Card className="space-y-3">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-300">
+        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
           Pending Signal Verification Queue
         </h3>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="border-b border-slate-800 text-slate-400 uppercase font-mono text-[10px]">
-              <tr>
-                <th className="py-2.5 px-3">Report ID</th>
-                <th className="py-2.5 px-3">Channel</th>
-                <th className="py-2.5 px-3">Reported Vector</th>
-                <th className="py-2.5 px-3">Model Source</th>
-                <th className="py-2.5 px-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60 font-mono">
-              <tr className="hover:bg-slate-800/40 transition-colors">
-                <td className="py-3 px-3 text-slate-300">#SIG-4019</td>
-                <td className="py-3 px-3 uppercase text-slate-400">SMS</td>
-                <td className="py-3 px-3 text-slate-200 font-sans">
-                  Impersonation bank message with typo-squatted domain link
-                </td>
-                <td className="py-3 px-3 text-emerald-400">Gemini Nano</td>
-                <td className="py-3 px-3">
-                  <div className="flex items-center gap-2">
-                    <button className="px-2.5 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 font-sans text-[11px] transition-colors">
-                      Verify
-                    </button>
-                    <button className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-sans text-[11px] transition-colors">
-                      Reject
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              <tr className="hover:bg-slate-800/40 transition-colors">
-                <td className="py-3 px-3 text-slate-300">#SIG-4018</td>
-                <td className="py-3 px-3 uppercase text-slate-400">WhatsApp</td>
-                <td className="py-3 px-3 text-slate-200 font-sans">
-                  Fake task deposit scheme with suspicious UPI ID
-                </td>
-                <td className="py-3 px-3 text-cyan-400">Hybrid Fallback</td>
-                <td className="py-3 px-3">
-                  <div className="flex items-center gap-2">
-                    <button className="px-2.5 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 font-sans text-[11px] transition-colors">
-                      Verify
-                    </button>
-                    <button className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-sans text-[11px] transition-colors">
-                      Reject
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead>Report ID</TableHead>
+              <TableHead>Channel</TableHead>
+              <TableHead>Reported Vector</TableHead>
+              <TableHead>Model Source</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell className="font-mono text-zinc-200">#SIG-4019</TableCell>
+              <TableCell className="font-mono uppercase text-zinc-400">SMS</TableCell>
+              <TableCell className="text-zinc-200">
+                Impersonation bank message with typo-squatted domain link
+              </TableCell>
+              <TableCell className="font-mono text-emerald-400">Gemini Nano</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <Button variant="cyan" size="sm">
+                    Verify
+                  </Button>
+                  <Button variant="secondary" size="sm">
+                    Reject
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="font-mono text-zinc-200">#SIG-4018</TableCell>
+              <TableCell className="font-mono uppercase text-zinc-400">WhatsApp</TableCell>
+              <TableCell className="text-zinc-200">
+                Fake task deposit scheme with suspicious UPI ID
+              </TableCell>
+              <TableCell className="font-mono text-cyan-400">Hybrid Fallback</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <Button variant="cyan" size="sm">
+                    Verify
+                  </Button>
+                  <Button variant="secondary" size="sm">
+                    Reject
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       </Card>
     </div>
   );
