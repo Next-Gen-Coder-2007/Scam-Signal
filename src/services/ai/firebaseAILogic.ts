@@ -1,7 +1,21 @@
+import {
+  getGenerativeModel,
+  InferenceMode,
+  InferenceSource as SDKInferenceSource,
+  Schema,
+  AIError,
+  AIErrorCode,
+  HybridParams,
+  LanguageModelDownloadMonitor,
+} from 'firebase/ai';
 import { z } from 'zod';
+import { ai, firebaseStatus } from '../firebase/firebaseApp';
 import { InferenceSource } from '../../types/threat';
 
-// Strict runtime validation schema for AI output
+export { InferenceMode };
+
+export const CLOUD_MODEL_ID = 'gemini-2.5-flash';
+
 export const ThreatResponseSchema = z.object({
   threatLevel: z.enum(['CRITICAL', 'HIGH', 'SUSPICIOUS', 'SAFE']),
   confidenceScore: z.number().min(0).max(100),
@@ -13,13 +27,35 @@ export const ThreatResponseSchema = z.object({
 
 export type ThreatResponseData = z.infer<typeof ThreatResponseSchema>;
 
-export type InferencePreference = 'strict-on-device' | 'on-device-preferred' | 'cloud-only';
+export type HybridAIErrorCode =
+  | 'FIREBASE_NOT_CONFIGURED'
+  | 'UNSUPPORTED_BROWSER'
+  | 'LOCAL_MODEL_UNAVAILABLE'
+  | 'MODEL_DOWNLOADING'
+  | 'NETWORK_ERROR'
+  | 'API_NOT_ENABLED'
+  | 'INVALID_RESPONSE'
+  | 'ABORTED'
+  | 'UNKNOWN';
 
-export interface RunAILogicOptions {
+export class HybridAIError extends Error {
+  readonly code: HybridAIErrorCode;
+  readonly causeError?: unknown;
+
+  constructor(code: HybridAIErrorCode, message: string, causeError?: unknown) {
+    super(message);
+    this.name = 'HybridAIError';
+    this.code = code;
+    this.causeError = causeError;
+  }
+}
+
+export interface HybridInferenceOptions {
   prompt: string;
   channel: string;
-  preference: InferencePreference;
-  allowCloudFallback: boolean;
+  mode: InferenceMode;
+  onDownloadProgress?: (loadedRatio: number) => void;
+  signal?: AbortSignal;
 }
 
 export interface AILogicExecutionResult extends ThreatResponseData {
@@ -28,26 +64,7 @@ export interface AILogicExecutionResult extends ThreatResponseData {
   latencyMs: number;
 }
 
-/**
- * Checks whether on-device Gemini Nano / Chrome Built-in AI is accessible in the environment.
- */
-export function hasOnDeviceAICapability(): boolean {
-  if (typeof window === 'undefined') return false;
-  // @ts-expect-error window.ai probe for Chrome Built-in AI / Gemini Nano
-  return Boolean(window.ai && (window.ai.languageModel || window.ai.createTextSession));
-}
-
-/**
- * Executes scam analysis through Firebase AI Logic with truthful inference telemetry.
- * Strictly guarantees that no local execution is ever faked or simulated.
- */
-export async function runFirebaseAILogic(
-  options: RunAILogicOptions
-): Promise<AILogicExecutionResult> {
-  const startTime = performance.now();
-
-  const systemInstructions = `
-You are ScamSignal, a cybersecurity scam intelligence triage engine.
+const SYSTEM_INSTRUCTION = `You are ScamSignal, a cybersecurity scam intelligence triage engine.
 Analyze the provided sanitized excerpt for scam vectors, imposter fraud, and suspicious triggers.
 Respond strictly in valid, parseable JSON matching this schema:
 {
@@ -58,113 +75,229 @@ Respond strictly in valid, parseable JSON matching this schema:
   "summary": string,
   "recommendedActions": string[]
 }
-Never include markdown code fences, backticks, or explanatory preamble. Output raw JSON only.
-`;
+Never include markdown code fences, backticks, or explanatory preamble. Output raw JSON only.`;
 
-  const isLocalAvailable = hasOnDeviceAICapability();
-  let executionSource: InferenceSource;
-  let modelIdentifier: string;
-  let rawResponseText = '';
+const RESPONSE_SCHEMA = Schema.object({
+  properties: {
+    threatLevel: Schema.enumString({ enum: ['CRITICAL', 'HIGH', 'SUSPICIOUS', 'SAFE'] }),
+    confidenceScore: Schema.integer(),
+    threatCategories: Schema.array({ items: Schema.string() }),
+    tacticalIndicators: Schema.array({ items: Schema.string() }),
+    summary: Schema.string(),
+    recommendedActions: Schema.array({ items: Schema.string() }),
+  },
+});
 
-  if (options.preference === 'strict-on-device') {
-    if (!isLocalAvailable) {
-      throw new Error(
-        'Strict on-device inference requested, but local AI model (Gemini Nano) is unavailable or not downloaded.'
-      );
-    }
-    executionSource = 'on_device';
-    modelIdentifier = 'Gemini Nano (Local)';
-    rawResponseText = await executeLocalAdapter(systemInstructions, options.prompt);
-  } else if (options.preference === 'on-device-preferred') {
-    if (isLocalAvailable) {
-      try {
-        executionSource = 'on_device';
-        modelIdentifier = 'Gemini Nano (Local)';
-        rawResponseText = await executeLocalAdapter(systemInstructions, options.prompt);
-      } catch (localErr) {
-        if (!options.allowCloudFallback) {
-          throw new Error(
-            `On-device inference failed and cloud fallback was not authorized: ${
-              localErr instanceof Error ? localErr.message : String(localErr)
-            }`
-          );
-        }
-        executionSource = 'in_cloud';
-        modelIdentifier = 'Gemini 1.5 Flash (Cloud Fallback)';
-        rawResponseText = await executeCloudAdapter(systemInstructions, options.prompt);
-      }
-    } else {
-      if (!options.allowCloudFallback) {
-        throw new Error(
-          'On-device AI is not available in this browser and user declined cloud transmission.'
-        );
-      }
-      executionSource = 'in_cloud';
-      modelIdentifier = 'Gemini 1.5 Flash (Cloud)';
-      rawResponseText = await executeCloudAdapter(systemInstructions, options.prompt);
-    }
-  } else {
-    // cloud-only
-    executionSource = 'in_cloud';
-    modelIdentifier = 'Gemini 1.5 Pro (Cloud Intelligence)';
-    rawResponseText = await executeCloudAdapter(systemInstructions, options.prompt);
-  }
-
-  // Parse and validate strictly with Zod schema
-  const cleaned = rawResponseText.replace(/```json\n?|```/g, '').trim();
-  const parsed = JSON.parse(cleaned);
-  const validated = ThreatResponseSchema.parse(parsed);
-
-  const latencyMs = Math.round(performance.now() - startTime);
-
-  return {
-    ...validated,
-    source: executionSource,
-    modelIdentifier,
-    latencyMs,
+function buildDownloadMonitor(
+  onDownloadProgress?: (loadedRatio: number) => void
+): ((monitor: LanguageModelDownloadMonitor) => void) | undefined {
+  if (!onDownloadProgress) return undefined;
+  return (monitor: LanguageModelDownloadMonitor) => {
+    monitor.addEventListener('downloadprogress', (event) => {
+      onDownloadProgress(event.loaded);
+    });
   };
 }
 
-async function executeLocalAdapter(instruction: string, prompt: string): Promise<string> {
-  // @ts-expect-error Chrome window.ai API
-  const ai = window.ai;
-  if (ai?.languageModel?.create) {
-    const session = await ai.languageModel.create({ systemPrompt: instruction });
-    return await session.prompt(prompt);
-  }
-  throw new Error('On-device languageModel session could not be established.');
+/**
+ * Configuration 1: PREFER_ON_DEVICE
+ * Attempts local on-device execution first, with permitted cloud fallback to gemini-2.5-flash.
+ */
+export function createPreferOnDeviceParams(
+  onDownloadProgress?: (loadedRatio: number) => void,
+  signal?: AbortSignal
+): HybridParams {
+  return {
+    mode: InferenceMode.PREFER_ON_DEVICE,
+    onDeviceParams: {
+      createOptions: {
+        signal,
+        monitor: buildDownloadMonitor(onDownloadProgress),
+      },
+    },
+    inCloudParams: {
+      model: CLOUD_MODEL_ID,
+      systemInstruction: SYSTEM_INSTRUCTION,
+      generationConfig: {
+        responseMimeType: 'application/json',
+        responseSchema: RESPONSE_SCHEMA,
+        temperature: 0.2,
+      },
+    },
+  };
 }
 
-async function executeCloudAdapter(instruction: string, prompt: string): Promise<string> {
-  // Dispatches to Firebase AI Logic Cloud Vertex / Cloud Function endpoint
-  // In development/test mode without live cloud function, deterministic rule evaluation is supported
-  const res = await fetch('/api/ai/analyze', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ instruction, prompt }),
-  }).catch(() => null);
+/**
+ * Configuration 2: ONLY_ON_DEVICE
+ * Strictly local-only execution for sensitive content that must never leave the device.
+ */
+export function createOnlyOnDeviceParams(
+  onDownloadProgress?: (loadedRatio: number) => void,
+  signal?: AbortSignal
+): HybridParams {
+  return {
+    mode: InferenceMode.ONLY_ON_DEVICE,
+    onDeviceParams: {
+      createOptions: {
+        signal,
+        monitor: buildDownloadMonitor(onDownloadProgress),
+      },
+    },
+  };
+}
 
-  if (res && res.ok) {
-    const data = await res.json();
-    return data.output;
+/**
+ * Configuration 3: ONLY_IN_CLOUD
+ * Cloud-only execution for approved collective/sanitized analysis.
+ */
+export function createOnlyInCloudParams(): HybridParams {
+  return {
+    mode: InferenceMode.ONLY_IN_CLOUD,
+    inCloudParams: {
+      model: CLOUD_MODEL_ID,
+      systemInstruction: SYSTEM_INSTRUCTION,
+      generationConfig: {
+        responseMimeType: 'application/json',
+        responseSchema: RESPONSE_SCHEMA,
+        temperature: 0.2,
+      },
+    },
+  };
+}
+
+function mapSDKInferenceSource(sdkSource?: SDKInferenceSource): InferenceSource {
+  if (sdkSource === SDKInferenceSource.ON_DEVICE) return 'on_device';
+  if (sdkSource === SDKInferenceSource.IN_CLOUD) return 'in_cloud';
+  return 'unknown';
+}
+
+function mapHybridError(err: unknown, mode: InferenceMode): HybridAIError {
+  if (err instanceof HybridAIError) return err;
+
+  if (err instanceof DOMException && err.name === 'AbortError') {
+    return new HybridAIError('ABORTED', 'Analysis was cancelled.', err);
   }
 
-  // Fallback offline deterministic evaluator when backend endpoint is not yet mounted
-  return JSON.stringify({
-    threatLevel: prompt.toLowerCase().includes('urgent') || prompt.toLowerCase().includes('blocked')
-      ? 'CRITICAL'
-      : 'SUSPICIOUS',
-    confidenceScore: 92,
-    threatCategories: ['IMPERSONATION_FRAUD', 'URGENCY_TRIGGER'],
-    tacticalIndicators: [
-      'Fabricated urgency and threat of account disruption',
-      'Suspicious link requesting sensitive credentials or payment',
-    ],
-    summary: 'Detected high-confidence impersonation phishing attack demanding immediate action.',
-    recommendedActions: [
-      'Do not click any embedded links or provide banking credentials',
-      'Contact your financial institution directly through their verified hotline',
-      'Report and block the sender number immediately',
-    ],
-  });
+  if (err instanceof z.ZodError || err instanceof SyntaxError) {
+    return new HybridAIError(
+      'INVALID_RESPONSE',
+      'AI response did not match the required structured threat schema.',
+      err
+    );
+  }
+
+  if (err instanceof AIError) {
+    if (err.code === AIErrorCode.FETCH_ERROR) {
+      return new HybridAIError(
+        'NETWORK_ERROR',
+        'Network error while contacting Firebase AI Logic cloud backend.',
+        err
+      );
+    }
+    if (err.code === AIErrorCode.API_NOT_ENABLED) {
+      return new HybridAIError(
+        'API_NOT_ENABLED',
+        'Firebase AI Logic API is not enabled in the Firebase Console.',
+        err
+      );
+    }
+  }
+
+  const msg = err instanceof Error ? err.message : String(err);
+  const lower = msg.toLowerCase();
+
+  if (lower.includes('download') || lower.includes('downloading')) {
+    return new HybridAIError(
+      'MODEL_DOWNLOADING',
+      'On-device Gemini Nano model is still downloading. Please wait and retry.',
+      err
+    );
+  }
+
+  if (
+    mode === InferenceMode.ONLY_ON_DEVICE &&
+    (lower.includes('unavailable') ||
+      lower.includes('not available') ||
+      lower.includes('unsupported') ||
+      lower.includes('not supported') ||
+      lower.includes('languagemodel'))
+  ) {
+    const isUnsupported = lower.includes('unsupported') || lower.includes('not supported');
+    return new HybridAIError(
+      isUnsupported ? 'UNSUPPORTED_BROWSER' : 'LOCAL_MODEL_UNAVAILABLE',
+      isUnsupported
+        ? 'This browser does not support on-device Gemini Nano inference.'
+        : 'On-device Gemini Nano model is unavailable or not yet downloaded.',
+      err
+    );
+  }
+
+  return new HybridAIError('UNKNOWN', msg || 'Firebase AI Logic inference failed.', err);
+}
+
+function selectHybridParams(options: HybridInferenceOptions): HybridParams {
+  switch (options.mode) {
+    case InferenceMode.ONLY_ON_DEVICE:
+      return createOnlyOnDeviceParams(options.onDownloadProgress, options.signal);
+    case InferenceMode.ONLY_IN_CLOUD:
+      return createOnlyInCloudParams();
+    case InferenceMode.PREFER_ON_DEVICE:
+    default:
+      return createPreferOnDeviceParams(options.onDownloadProgress, options.signal);
+  }
+}
+
+/**
+ * Executes scam analysis using the official Firebase AI Logic Web SDK.
+ * Captures and exposes the actual inferenceSource returned by the SDK.
+ */
+export async function executeHybridInference(
+  options: HybridInferenceOptions
+): Promise<AILogicExecutionResult> {
+  if (!ai || !firebaseStatus.isConfigured) {
+    throw new HybridAIError(
+      'FIREBASE_NOT_CONFIGURED',
+      `Firebase AI Logic cannot run: missing environment variables (${firebaseStatus.missingKeys.join(', ')}).`
+    );
+  }
+
+  const startTime = performance.now();
+  const hybridParams = selectHybridParams(options);
+
+  try {
+    const model = getGenerativeModel(ai, hybridParams);
+    const userPrompt =
+      options.mode === InferenceMode.ONLY_ON_DEVICE
+        ? `${SYSTEM_INSTRUCTION}\n\nChannel: ${options.channel}\nMessage:\n${options.prompt}`
+        : `Channel: ${options.channel}\nMessage:\n${options.prompt}`;
+
+    const result = await model.generateContent(userPrompt, {
+      signal: options.signal,
+    });
+
+    const sdkSource = result.response.inferenceSource;
+    const mappedSource = mapSDKInferenceSource(sdkSource);
+
+    const rawText = result.response.text();
+    const cleaned = rawText.replace(/```json\n?|```/g, '').trim();
+    const parsed = JSON.parse(cleaned);
+    const validated = ThreatResponseSchema.parse(parsed);
+
+    const latencyMs = Math.round(performance.now() - startTime);
+    const modelIdentifier =
+      mappedSource === 'on_device'
+        ? 'Gemini Nano (On-Device)'
+        : mappedSource === 'in_cloud'
+        ? `${CLOUD_MODEL_ID} (Cloud)`
+        : 'Firebase AI Logic';
+
+    return {
+      ...validated,
+      source: mappedSource,
+      modelIdentifier,
+      latencyMs,
+    };
+  } catch (err: unknown) {
+    throw mapHybridError(err, options.mode);
+  }
 }

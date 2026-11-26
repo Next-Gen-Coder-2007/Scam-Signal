@@ -1,6 +1,9 @@
 import { ThreatLevel, InferenceSource } from '../../types/threat';
 import { redactPII, computePatternHash } from '../../utils/redactor';
-import { runFirebaseAILogic, InferencePreference } from './firebaseAILogic';
+import {
+  executeHybridInference,
+  InferenceMode,
+} from './firebaseAILogic';
 
 export interface ThreatAnalysisResult {
   id: string;
@@ -20,29 +23,38 @@ export interface ThreatAnalysisResult {
 export interface AnalyzeScamOptions {
   rawContent: string;
   channel: 'sms' | 'email' | 'whatsapp' | 'call' | 'web';
-  preference?: InferencePreference;
+  mode?: InferenceMode;
+  /** @deprecated Use `mode` directly */
+  preference?: 'strict-on-device' | 'on-device-preferred' | 'cloud-only';
+  /** @deprecated Controlled by InferenceMode */
   allowCloudFallback?: boolean;
+  onDownloadProgress?: (loadedRatio: number) => void;
+  signal?: AbortSignal;
+}
+
+function resolveMode(options: AnalyzeScamOptions): InferenceMode {
+  if (options.mode) return options.mode;
+  if (options.preference === 'strict-on-device') return InferenceMode.ONLY_ON_DEVICE;
+  if (options.preference === 'cloud-only') return InferenceMode.ONLY_IN_CLOUD;
+  return InferenceMode.PREFER_ON_DEVICE;
 }
 
 /**
  * High-level scam analysis service.
- * Automatically runs client-side PII scrubbing before any inference dispatch.
+ * Scrubs PII client-side before invoking Firebase AI Logic hybrid inference.
  */
 export async function analyzeScamMessage(
   options: AnalyzeScamOptions
 ): Promise<ThreatAnalysisResult> {
-  // 1. Mandatory client-side PII scrubbing
   const scrubbedText = redactPII(options.rawContent);
-
-  // 2. Deterministic pattern hash computation for safe campaign correlation
   const patternHash = await computePatternHash(scrubbedText);
 
-  // 3. Delegate to Firebase AI Logic
-  const aiResult = await runFirebaseAILogic({
+  const aiResult = await executeHybridInference({
     prompt: scrubbedText,
     channel: options.channel,
-    preference: options.preference || 'on-device-preferred',
-    allowCloudFallback: options.allowCloudFallback ?? true,
+    mode: resolveMode(options),
+    onDownloadProgress: options.onDownloadProgress,
+    signal: options.signal,
   });
 
   return {

@@ -1,16 +1,16 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
-  runFirebaseAILogic,
+  executeHybridInference,
   ThreatResponseSchema,
-  hasOnDeviceAICapability,
+  HybridAIError,
+  InferenceMode,
+  createPreferOnDeviceParams,
+  createOnlyOnDeviceParams,
+  createOnlyInCloudParams,
 } from '../../src/services/ai/firebaseAILogic';
 
 describe('Firebase AI Logic Hybrid Inference', () => {
-  beforeEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it('correctly validates compliant structured AI responses via ThreatResponseSchema', () => {
+  it('validates compliant structured AI responses via ThreatResponseSchema', () => {
     const validJson = {
       threatLevel: 'CRITICAL',
       confidenceScore: 94,
@@ -28,40 +28,41 @@ describe('Firebase AI Logic Hybrid Inference', () => {
   it('rejects malformed threat responses missing required fields or invalid ranges', () => {
     const invalidJson = {
       threatLevel: 'INVALID_LEVEL',
-      confidenceScore: 150, // Out of range
-      threatCategories: [], // Must have at least 1
+      confidenceScore: 150,
+      threatCategories: [],
       summary: 'Too short',
     };
 
     expect(() => ThreatResponseSchema.parse(invalidJson)).toThrow();
   });
 
-  it('throws error when strict-on-device is requested without on-device AI capability', async () => {
-    // Ensure window.ai is not available
-    vi.stubGlobal('window', {});
+  it('builds three distinct InferenceMode configurations', () => {
+    const prefer = createPreferOnDeviceParams();
+    expect(prefer.mode).toBe(InferenceMode.PREFER_ON_DEVICE);
+    expect(prefer.inCloudParams).toBeDefined();
+    expect(prefer.onDeviceParams).toBeDefined();
 
-    expect(hasOnDeviceAICapability()).toBe(false);
+    const onlyDevice = createOnlyOnDeviceParams();
+    expect(onlyDevice.mode).toBe(InferenceMode.ONLY_ON_DEVICE);
+    expect(onlyDevice.onDeviceParams).toBeDefined();
+    expect(onlyDevice.inCloudParams).toBeUndefined();
 
-    await expect(
-      runFirebaseAILogic({
-        prompt: 'Your card is blocked. Click here.',
-        channel: 'sms',
-        preference: 'strict-on-device',
-        allowCloudFallback: false,
-      })
-    ).rejects.toThrow(/Strict on-device inference requested, but local AI model/);
+    const onlyCloud = createOnlyInCloudParams();
+    expect(onlyCloud.mode).toBe(InferenceMode.ONLY_IN_CLOUD);
+    expect(onlyCloud.inCloudParams).toBeDefined();
+    expect(onlyCloud.onDeviceParams).toBeUndefined();
   });
 
-  it('refuses execution when local AI is unavailable and cloud fallback is declined by user', async () => {
-    vi.stubGlobal('window', {});
-
+  it('throws HybridAIError(FIREBASE_NOT_CONFIGURED) when Firebase is unconfigured', async () => {
     await expect(
-      runFirebaseAILogic({
-        prompt: 'Claim your lottery prize.',
-        channel: 'email',
-        preference: 'on-device-preferred',
-        allowCloudFallback: false,
+      executeHybridInference({
+        prompt: 'Your card is blocked. Click here.',
+        channel: 'sms',
+        mode: InferenceMode.PREFER_ON_DEVICE,
       })
-    ).rejects.toThrow(/On-device AI is not available in this browser and user declined/);
+    ).rejects.toMatchObject({
+      name: 'HybridAIError',
+      code: 'FIREBASE_NOT_CONFIGURED',
+    } satisfies Partial<HybridAIError>);
   });
 });
