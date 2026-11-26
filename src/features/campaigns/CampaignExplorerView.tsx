@@ -1,48 +1,40 @@
-import React from 'react';
-import { Fingerprint } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { Fingerprint, Hash } from 'lucide-react';
 import { Card } from '../../components/common/Card';
-
-interface CampaignCluster {
-  id: string;
-  name: string;
-  threatType: string;
-  totalSignals: number;
-  corroboratedHashes: number;
-  status: 'ACTIVE_WAVE' | 'MONITORING' | 'CONTAINED';
-  indicators: string[];
-}
-
-const DEMO_CAMPAIGNS: CampaignCluster[] = [
-  {
-    id: 'camp-axis-sms-wave-4',
-    name: 'Axis Bank Impersonation Wave IV',
-    threatType: 'Smishing & Credential Phishing',
-    totalSignals: 148,
-    corroboratedHashes: 12,
-    status: 'ACTIVE_WAVE',
-    indicators: ['axis-secure-verify.xyz', 'axis-login-kyc.top', 'Regex: +91-98[0-9]{8}'],
-  },
-  {
-    id: 'camp-wa-task-phish',
-    name: 'Social Media Video Like Job Trap',
-    threatType: 'Advance Fee & Wire Fraud',
-    totalSignals: 86,
-    corroboratedHashes: 7,
-    status: 'ACTIVE_WAVE',
-    indicators: ['recruitment@okaxis', 'UPI deposit request $50', 'WhatsApp business accounts'],
-  },
-  {
-    id: 'camp-utility-bill-fake',
-    name: 'Electricity Disconnection Imposter',
-    threatType: 'Urgency Toll Fraud',
-    totalSignals: 41,
-    corroboratedHashes: 4,
-    status: 'MONITORING',
-    indicators: ['Call officer 9821xxxxxx', 'Disconnection at 9:30 PM warning'],
-  },
-];
+import { useCommunityFeed } from '../../hooks/useCommunityFeed';
+import { clusterThreatReports } from '../../services/campaigns/clusteringService';
+import { PublicThreatDocument } from '../../services/firestore/threatConverter';
+import { Timestamp } from 'firebase/firestore';
 
 export const CampaignExplorerView: React.FC = () => {
+  const { threats } = useCommunityFeed();
+
+  // Convert community feed items into PublicThreatDocuments for deterministic clustering
+  const threatDocs = useMemo<PublicThreatDocument[]>(() => {
+    return threats.map((t) => ({
+      id: t.id,
+      reporterUid: 'community-member',
+      threatLevel: t.threatLevel,
+      threatCategories: [t.threatCategory],
+      redactedSummary: t.redactedExcerpt,
+      normalizedPatternHash: t.campaignId ? t.campaignId.replace('camp-', '') : 'unhashed',
+      tacticalIndicators: [
+        `Observed vector: ${t.channel.toUpperCase()}`,
+        `Threat Category: ${t.threatCategory}`,
+      ],
+      inferenceSource: t.inferenceSource,
+      channel: t.channel,
+      upvotes: t.upvotes || 0,
+      campaignId: t.campaignId || null,
+      createdAt: Timestamp.now(),
+    }));
+  }, [threats]);
+
+  // Execute deterministic clustering
+  const liveCampaigns = useMemo(() => {
+    return clusterThreatReports(threatDocs);
+  }, [threatDocs]);
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -80,57 +72,64 @@ export const CampaignExplorerView: React.FC = () => {
 
         <div className="flex items-center gap-3 text-xs font-mono text-slate-400">
           <div className="px-3 py-1.5 rounded bg-slate-950 border border-slate-800">
-            <span className="text-emerald-400">3</span> Active Clusters
+            <span className="text-emerald-400">{liveCampaigns.length}</span> Active Clusters
           </div>
           <div className="px-3 py-1.5 rounded bg-slate-950 border border-slate-800">
-            <span className="text-cyan-400">275</span> Total Reports
+            <span className="text-cyan-400">{threats.length}</span> Total Ingested Signals
           </div>
         </div>
       </div>
 
       {/* Campaign Cards */}
       <div className="grid grid-cols-1 gap-4">
-        {DEMO_CAMPAIGNS.map((camp) => (
-          <Card key={camp.id} className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-base font-semibold text-slate-100">{camp.name}</h3>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-rose-950/60 text-rose-300 border border-rose-600/40">
-                    {camp.status}
+        {liveCampaigns.length > 0 ? (
+          liveCampaigns.map((camp) => (
+            <Card key={camp.id} className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-slate-100">{camp.name}</h3>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-rose-950/60 text-rose-300 border border-rose-600/40">
+                      {camp.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">{camp.threatType}</p>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs font-mono">
+                  <span className="px-2.5 py-1 rounded bg-slate-950 border border-slate-800 text-slate-300">
+                    {camp.totalSignals} Signals
+                  </span>
+                  <span className="px-2.5 py-1 rounded bg-slate-950 border border-slate-800 text-cyan-300 flex items-center gap-1">
+                    <Hash className="w-3 h-3" />
+                    <span>{camp.primaryHash.slice(0, 10)}</span>
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 mt-0.5">{camp.threatType}</p>
               </div>
 
-              <div className="flex items-center gap-2 text-xs font-mono">
-                <span className="px-2.5 py-1 rounded bg-slate-950 border border-slate-800 text-slate-300">
-                  {camp.totalSignals} Signals
+              {/* Tactical IOCs */}
+              <div>
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">
+                  Observed Tactical Indicators (IOCs)
                 </span>
-                <span className="px-2.5 py-1 rounded bg-slate-950 border border-slate-800 text-cyan-300">
-                  {camp.corroboratedHashes} Matching Hashes
-                </span>
+                <div className="flex flex-wrap gap-2">
+                  {camp.indicators.map((ioc, idx) => (
+                    <span
+                      key={idx}
+                      className="px-2.5 py-1 rounded bg-slate-950/80 border border-slate-800 text-xs font-mono text-slate-300"
+                    >
+                      {ioc}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-
-            {/* Tactical IOCs */}
-            <div>
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">
-                Observed Tactical Indicators (IOCs)
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {camp.indicators.map((ioc, idx) => (
-                  <span
-                    key={idx}
-                    className="px-2.5 py-1 rounded bg-slate-950/80 border border-slate-800 text-xs font-mono text-slate-300"
-                  >
-                    {ioc}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          ))
+        ) : (
+          <div className="p-8 text-center border border-dashed border-slate-800 rounded-xl text-slate-500 text-xs">
+            No active campaign clusters detected. Reports with matching normalized hashes will cluster automatically.
+          </div>
+        )}
       </div>
     </div>
   );
