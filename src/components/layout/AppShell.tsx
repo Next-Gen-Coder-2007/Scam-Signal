@@ -7,11 +7,9 @@ export const AppShell: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-canvas text-slate-100 flex flex-col lg:flex-row">
-      {/* Sidebar navigation */}
+    <div className="min-h-screen bg-canvas text-zinc-100 flex flex-col lg:flex-row">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      {/* Main container area with responsive left offset for desktop sidebar */}
       <div className="flex-1 flex flex-col min-w-0 lg:pl-64">
         <Header onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
 
@@ -19,8 +17,7 @@ export const AppShell: React.FC = () => {
           <Outlet />
         </main>
 
-        {/* Global advisory footer */}
-        <footer className="border-t border-slate-800/60 py-4 px-4 sm:px-8 text-center text-xs text-slate-500">
+        <footer className="border-t border-surface-border py-4 px-4 sm:px-8 text-center text-xs text-zinc-500">
           <p>
             ScamSignal is an AI-assisted threat triage platform for the #BuildHybridAI hackathon.
             Evaluations are advisory pattern recognitions, not certified legal or financial findings.
