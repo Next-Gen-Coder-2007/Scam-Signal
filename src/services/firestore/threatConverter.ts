@@ -84,3 +84,40 @@ export const publicThreatConverter: FirestoreDataConverter<PublicThreatDocument>
     };
   },
 };
+
+export const campaignConverter: FirestoreDataConverter<CampaignDocument> = {
+  toFirestore(campaign: CampaignDocument) {
+    return {
+      name: campaign.name,
+      threatType: campaign.threatType,
+      totalSignals: Math.max(0, campaign.totalSignals || 0),
+      corroboratedHashes: Array.isArray(campaign.corroboratedHashes)
+        ? campaign.corroboratedHashes
+        : [],
+      status: campaign.status || 'MONITORING',
+      indicators: Array.isArray(campaign.indicators) ? campaign.indicators : [],
+      createdAt: campaign.createdAt || serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    };
+  },
+
+  fromFirestore(
+    snapshot: QueryDocumentSnapshot,
+    options: SnapshotOptions
+  ): CampaignDocument {
+    const data = snapshot.data(options);
+    return {
+      id: snapshot.id,
+      name: data.name || 'Unnamed Campaign',
+      threatType: data.threatType || 'UNKNOWN',
+      totalSignals: typeof data.totalSignals === 'number' ? data.totalSignals : 0,
+      corroboratedHashes: Array.isArray(data.corroboratedHashes)
+        ? data.corroboratedHashes
+        : [],
+      status: data.status || 'MONITORING',
+      indicators: Array.isArray(data.indicators) ? data.indicators : [],
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+    };
+  },
+};
