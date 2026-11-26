@@ -1,19 +1,37 @@
 import React, { useState } from 'react';
-import { ThumbsUp, Hash, Plus, ShieldCheck, Lock } from 'lucide-react';
+import {
+  Hash,
+  Plus,
+  ShieldCheck,
+  Lock,
+  AlertTriangle,
+  Database,
+  RefreshCw,
+  Radio,
+} from 'lucide-react';
 import { Card } from '../../components/common/Card';
 import { ThreatBadge } from '../../components/common/ThreatBadge';
 import { InferenceBadge } from '../../components/common/InferenceBadge';
+import { EmptyState } from '../../components/common/EmptyState';
 import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
 import { Select, Textarea } from '../../components/ui/Input';
+import { AuthModal } from '../../components/auth/AuthModal';
 import { useCommunityFeed } from '../../hooks/useCommunityFeed';
+import { useAuth } from '../../context/AuthContext';
 import { ThreatLevel } from '../../types/threat';
 import { redactPII } from '../../utils/redactor';
 
 export const CommunityFeedView: React.FC = () => {
-  const { threats, upvoteThreat, submitThreat } = useCommunityFeed();
+  const { threats, loading, error, isFirebaseReady, refresh, submitThreat } =
+    useCommunityFeed();
+  const { user } = useAuth();
+
   const [filter, setFilter] = useState<'all' | 'critical' | 'sms' | 'whatsapp'>('all');
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const [newContent, setNewContent] = useState('');
   const [newChannel, setNewChannel] = useState<'sms' | 'email' | 'whatsapp' | 'call' | 'web'>('sms');
@@ -27,19 +45,37 @@ export const CommunityFeedView: React.FC = () => {
     return true;
   });
 
+  const handleOpenSubmit = () => {
+    setSubmitError(null);
+    if (!isFirebaseReady || !user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    setIsSubmitModalOpen(true);
+  };
+
   const handleSubmitNewReport = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newContent.trim()) return;
 
-    await submitThreat({
-      rawContent: newContent,
-      channel: newChannel,
-      threatLevel: newThreatLevel,
-      threatCategory: newCategory,
-    });
-
-    setNewContent('');
-    setIsSubmitModalOpen(false);
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      await submitThreat({
+        rawContent: newContent,
+        channel: newChannel,
+        threatLevel: newThreatLevel,
+        threatCategory: newCategory,
+      });
+      setNewContent('');
+      setIsSubmitModalOpen(false);
+    } catch (err: unknown) {
+      setSubmitError(
+        err instanceof Error ? err.message : 'Failed to publish threat signal.'
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -51,9 +87,13 @@ export const CommunityFeedView: React.FC = () => {
             <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-100">
               Community Threat Intelligence
             </h1>
-            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-rose-300 border border-surface-border">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
-              Live Signals ({threats.length})
+            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-zinc-300 border border-surface-border">
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  isFirebaseReady ? 'bg-emerald-400' : 'bg-amber-400'
+                }`}
+              />
+              {isFirebaseReady ? `Firestore (${threats.length})` : 'Local Mode'}
             </span>
           </div>
           <p className="text-xs sm:text-sm text-zinc-400 mt-1">
@@ -61,7 +101,7 @@ export const CommunityFeedView: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <div className="flex items-center gap-1 p-1 bg-surface rounded-md border border-surface-border">
             {(['all', 'critical', 'sms', 'whatsapp'] as const).map((tab) => (
               <button
@@ -79,71 +119,117 @@ export const CommunityFeedView: React.FC = () => {
             ))}
           </div>
 
-          <Button variant="primary" onClick={() => setIsSubmitModalOpen(true)}>
+          {isFirebaseReady && (
+            <Button variant="secondary" size="sm" onClick={refresh} disabled={loading}>
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
+            </Button>
+          )}
+
+          <Button variant="primary" onClick={handleOpenSubmit}>
             <Plus className="w-3.5 h-3.5" />
             <span>Submit Signal</span>
           </Button>
         </div>
       </div>
 
-      {/* Threat List */}
-      <div className="space-y-3">
-        {filteredThreats.map((threat) => (
-          <Card
-            key={threat.id}
-            variant={threat.threatLevel === 'CRITICAL' ? 'critical' : threat.threatLevel === 'HIGH' ? 'warning' : 'default'}
-            className="hover:border-surface-subtle transition-colors duration-150"
-          >
-            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <ThreatBadge level={threat.threatLevel} score={threat.confidenceScore} />
-                <InferenceBadge source={threat.inferenceSource} />
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-surface-elevated text-zinc-400 border border-surface-border">
-                  {threat.channel}
-                </span>
-                <span className="text-xs text-zinc-500 font-mono">{threat.timestamp}</span>
-              </div>
-
-              {threat.campaignId && (
-                <div className="flex items-center gap-1 text-[11px] font-mono text-cyan-300 bg-canvas border border-surface-border px-2 py-0.5 rounded">
-                  <Hash className="w-3 h-3 text-cyan-400" />
-                  <span>{threat.campaignId}</span>
+      {/* Unconfigured State */}
+      {!isFirebaseReady ? (
+        <EmptyState
+          icon={Database}
+          title="Cloud Firestore Not Configured"
+          description="Community threat feed synchronization requires Firebase configuration. Add your Firebase project keys to .env (see .env.example) to read and publish scrubbed community signals."
+          action={{
+            label: 'View Setup Instructions',
+            onClick: () => setIsAuthModalOpen(true),
+          }}
+        />
+      ) : error ? (
+        <div className="p-4 rounded-lg bg-rose-950/30 border border-rose-500/35 text-rose-200 text-xs flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+            <span>{error}</span>
+          </div>
+          <Button variant="danger" size="sm" onClick={refresh}>
+            Retry
+          </Button>
+        </div>
+      ) : loading ? (
+        <Card className="p-8 text-center text-xs text-zinc-400">
+          Loading scrubbed threat signals from Cloud Firestore...
+        </Card>
+      ) : filteredThreats.length === 0 ? (
+        <EmptyState
+          icon={Radio}
+          title="No Threat Signals Found"
+          description="No scrubbed threat reports match the selected filter in Cloud Firestore yet. Sign in and submit the first signal to help protect the community."
+          action={{
+            label: 'Submit Signal',
+            onClick: handleOpenSubmit,
+          }}
+        />
+      ) : (
+        <div className="space-y-3">
+          {filteredThreats.map((threat) => (
+            <Card
+              key={threat.id}
+              variant={
+                threat.threatLevel === 'CRITICAL'
+                  ? 'critical'
+                  : threat.threatLevel === 'HIGH'
+                  ? 'warning'
+                  : 'default'
+              }
+              className="hover:border-surface-subtle transition-colors duration-150"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <ThreatBadge level={threat.threatLevel} score={threat.confidenceScore} />
+                  <InferenceBadge source={threat.inferenceSource} />
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-surface-elevated text-zinc-400 border border-surface-border">
+                    {threat.channel}
+                  </span>
+                  <span className="text-xs text-zinc-500 font-mono">{threat.timestamp}</span>
                 </div>
-              )}
-            </div>
 
-            <div className="mt-3 p-3 rounded-md bg-canvas border border-surface-border font-mono text-xs text-zinc-300 leading-relaxed">
-              {threat.redactedExcerpt}
-            </div>
-
-            <div className="mt-3 flex items-center justify-between text-xs text-zinc-400 pt-2.5 border-t border-surface-border">
-              <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => upvoteThreat(threat.id)}
-                  className="flex items-center gap-1.5 hover:text-cyan-300 transition-colors cursor-pointer"
-                >
-                  <ThumbsUp className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>{threat.upvotes || 0} Corroborations</span>
-                </button>
-                <span className="text-surface-subtle">|</span>
-                <span className="text-[11px] text-zinc-500">Category: {threat.threatCategory}</span>
+                {threat.campaignId && (
+                  <div className="flex items-center gap-1 text-[11px] font-mono text-cyan-300 bg-canvas border border-surface-border px-2 py-0.5 rounded">
+                    <Hash className="w-3 h-3 text-cyan-400" />
+                    <span>{threat.campaignId}</span>
+                  </div>
+                )}
               </div>
 
-              <span className="text-[10px] font-mono text-zinc-500">
-                Hash: {threat.id.toUpperCase()}
-              </span>
-            </div>
-          </Card>
-        ))}
-      </div>
+              <div className="mt-3 p-3 rounded-md bg-canvas border border-surface-border font-mono text-xs text-zinc-300 leading-relaxed">
+                {threat.redactedExcerpt}
+              </div>
+
+              <div className="mt-3 flex items-center justify-between text-xs text-zinc-400 pt-2.5 border-t border-surface-border">
+                <div className="flex items-center gap-4">
+                  <span className="text-[11px] text-zinc-400 font-mono">
+                    {threat.upvotes || 0} Corroborations
+                  </span>
+                  <span className="text-surface-subtle">|</span>
+                  <span className="text-[11px] text-zinc-500">
+                    Category: {threat.threatCategory}
+                  </span>
+                </div>
+
+                <span className="text-[10px] font-mono text-zinc-500">
+                  ID: {threat.id}
+                </span>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Submit Threat Dialog */}
       <Dialog
         isOpen={isSubmitModalOpen}
         onClose={() => setIsSubmitModalOpen(false)}
         title="Submit Anonymized Scam Signal"
-        description="PII is automatically scrubbed on-device before publishing."
+        description="PII is automatically scrubbed on-device before publishing to Firestore."
         icon={<ShieldCheck className="w-4 h-4 text-emerald-400" />}
         footer={
           <>
@@ -155,6 +241,7 @@ export const CommunityFeedView: React.FC = () => {
               form="submit-threat-form"
               variant="primary"
               disabled={!newContent.trim()}
+              isLoading={submitting}
             >
               Publish Scrubbed Signal
             </Button>
@@ -162,11 +249,22 @@ export const CommunityFeedView: React.FC = () => {
         }
       >
         <form id="submit-threat-form" onSubmit={handleSubmitNewReport} className="space-y-4">
+          {submitError && (
+            <div className="p-3 rounded-md bg-rose-950/35 border border-rose-500/35 text-rose-200 text-xs flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+              <span>{submitError}</span>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Select
               label="Threat Channel"
               value={newChannel}
-              onChange={(e) => setNewChannel(e.target.value as 'sms' | 'email' | 'whatsapp' | 'call' | 'web')}
+              onChange={(e) =>
+                setNewChannel(
+                  e.target.value as 'sms' | 'email' | 'whatsapp' | 'call' | 'web'
+                )
+              }
             >
               <option value="sms">SMS</option>
               <option value="whatsapp">WhatsApp</option>
@@ -217,6 +315,8 @@ export const CommunityFeedView: React.FC = () => {
           )}
         </form>
       </Dialog>
+
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </div>
   );
 };

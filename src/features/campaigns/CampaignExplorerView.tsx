@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Fingerprint, Hash, Network } from 'lucide-react';
+import { Fingerprint, Hash, Network, Database } from 'lucide-react';
 import { Card } from '../../components/common/Card';
 import { EmptyState } from '../../components/common/EmptyState';
 import { useCommunityFeed } from '../../hooks/useCommunityFeed';
@@ -8,7 +8,7 @@ import { PublicThreatDocument } from '../../services/firestore/threatConverter';
 import { Timestamp } from 'firebase/firestore';
 
 export const CampaignExplorerView: React.FC = () => {
-  const { threats } = useCommunityFeed();
+  const { threats, isFirebaseReady } = useCommunityFeed();
 
   const threatDocs = useMemo<PublicThreatDocument[]>(() => {
     return threats.map((t) => ({
@@ -81,7 +81,13 @@ export const CampaignExplorerView: React.FC = () => {
 
       {/* Campaign Cards */}
       <div className="grid grid-cols-1 gap-4">
-        {liveCampaigns.length > 0 ? (
+        {!isFirebaseReady ? (
+          <EmptyState
+            icon={Database}
+            title="Cloud Firestore Not Configured"
+            description="Campaign clustering aggregates scrubbed community reports from Cloud Firestore. Configure your Firebase environment variables in .env to view live campaign clusters."
+          />
+        ) : liveCampaigns.length > 0 ? (
           liveCampaigns.map((camp) => (
             <Card key={camp.id} className="space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

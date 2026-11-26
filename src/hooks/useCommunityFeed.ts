@@ -1,45 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
 import { ThreatSummaryItem, ThreatLevel } from '../types/threat';
-import { redactPII, computePatternHash } from '../utils/redactor';
-
-const INITIAL_THREATS: ThreatSummaryItem[] = [
-  {
-    id: 'th-891',
-    threatLevel: 'CRITICAL',
-    confidenceScore: 96,
-    threatCategory: 'BANK_IMPERSONATION',
-    redactedExcerpt: 'URGENT: [REDACTED_BANK] alert. Your card [REDACTED_CARD] has been suspended. Confirm identity: http://secure-[REDACTED].xyz',
-    channel: 'sms',
-    inferenceSource: 'on-device',
-    timestamp: '12m ago',
-    upvotes: 42,
-    campaignId: 'camp-axis-sms-wave-4',
-  },
-  {
-    id: 'th-890',
-    threatLevel: 'HIGH',
-    confidenceScore: 89,
-    threatCategory: 'JOB_TASK_FRAUD',
-    redactedExcerpt: 'Part-time opportunity liking video reels. Daily payout $300. Send registration deposit to [REDACTED_UPI].',
-    channel: 'whatsapp',
-    inferenceSource: 'hybrid-fallback',
-    timestamp: '34m ago',
-    upvotes: 19,
-    campaignId: 'camp-wa-task-phish',
-  },
-  {
-    id: 'th-889',
-    threatLevel: 'SUSPICIOUS',
-    confidenceScore: 74,
-    threatCategory: 'PARCEL_CUSTOMS_FEE',
-    redactedExcerpt: 'Package tracking pending delivery fee of $1.85. Update shipping address at [REDACTED_URL]',
-    channel: 'sms',
-    inferenceSource: 'cloud',
-    timestamp: '1h ago',
-    upvotes: 11,
-    campaignId: null,
-  },
-];
+import { firebaseStatus } from '../services/firebase/firebaseApp';
+import { FirebaseNotConfiguredError } from '../services/firebase/authService';
+import {
+  fetchPublicThreats,
+  submitPublicThreat,
+} from '../services/firestore/threatService';
+import { useAuth } from '../context/AuthContext';
 
 export interface SubmitThreatPayload {
   rawContent: string;
@@ -49,55 +16,94 @@ export interface SubmitThreatPayload {
 }
 
 export function useCommunityFeed() {
-  const [threats, setThreats] = useState<ThreatSummaryItem[]>(() => {
-    const saved = localStorage.getItem('scamsignal_community_feed');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        // Fallback to default
-      }
+  const { user } = useAuth();
+  const [threats, setThreats] = useState<ThreatSummaryItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(firebaseStatus.isConfigured);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadThreats = useCallback(async () => {
+    if (!firebaseStatus.isConfigured) {
+      setThreats([]);
+      setLoading(false);
+      return;
     }
-    return INITIAL_THREATS;
-  });
+
+    setLoading(true);
+    setError(null);
+    try {
+      const docs = await fetchPublicThreats();
+      const mapped: ThreatSummaryItem[] = docs.map((d) => ({
+        id: d.id || 'unknown',
+        threatLevel: d.threatLevel,
+        confidenceScore: 90,
+        threatCategory: d.threatCategories[0] || 'SUSPICIOUS_SIGNAL',
+        redactedExcerpt: d.redactedSummary,
+        channel: d.channel,
+        inferenceSource: d.inferenceSource,
+        timestamp: 'Synced',
+        upvotes: d.upvotes,
+        campaignId: d.campaignId,
+      }));
+      setThreats(mapped);
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to load community threats from Firestore.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem('scamsignal_community_feed', JSON.stringify(threats));
-  }, [threats]);
-
-  const upvoteThreat = useCallback((threatId: string) => {
-    setThreats((prev) =>
-      prev.map((t) => (t.id === threatId ? { ...t, upvotes: (t.upvotes || 0) + 1 } : t))
-    );
-  }, []);
+    void loadThreats();
+  }, [loadThreats]);
 
   const submitThreat = useCallback(
     async (payload: SubmitThreatPayload): Promise<ThreatSummaryItem> => {
-      const scrubbed = redactPII(payload.rawContent);
-      const hash = await computePatternHash(scrubbed);
+      if (!firebaseStatus.isConfigured) {
+        throw new FirebaseNotConfiguredError('Cloud Firestore');
+      }
+      if (!user) {
+        throw new Error('You must sign in before submitting a community threat signal.');
+      }
+
+      const created = await submitPublicThreat({
+        reporterUid: user.uid,
+        rawContent: payload.rawContent,
+        threatLevel: payload.threatLevel,
+        threatCategories: [payload.threatCategory],
+        tacticalIndicators: [`Channel: ${payload.channel.toUpperCase()}`],
+        inferenceSource: 'on-device',
+        channel: payload.channel,
+      });
 
       const newItem: ThreatSummaryItem = {
-        id: `th-${Date.now().toString().slice(-4)}`,
-        threatLevel: payload.threatLevel,
+        id: created.id || `th-${Date.now()}`,
+        threatLevel: created.threatLevel,
         confidenceScore: 90,
         threatCategory: payload.threatCategory,
-        redactedExcerpt: scrubbed,
-        channel: payload.channel,
-        inferenceSource: 'on-device',
+        redactedExcerpt: created.redactedSummary,
+        channel: created.channel,
+        inferenceSource: created.inferenceSource,
         timestamp: 'Just now',
-        upvotes: 1,
-        campaignId: `camp-${hash.slice(0, 8)}`,
+        upvotes: 0,
+        campaignId: created.campaignId,
       };
 
       setThreats((prev) => [newItem, ...prev]);
       return newItem;
     },
-    []
+    [user]
   );
 
   return {
     threats,
-    upvoteThreat,
+    loading,
+    error,
+    isFirebaseReady: firebaseStatus.isConfigured,
+    refresh: loadThreats,
     submitThreat,
   };
 }
