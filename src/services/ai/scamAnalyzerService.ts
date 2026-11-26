@@ -23,20 +23,9 @@ export interface ThreatAnalysisResult {
 export interface AnalyzeScamOptions {
   rawContent: string;
   channel: 'sms' | 'email' | 'whatsapp' | 'call' | 'web';
-  mode?: InferenceMode;
-  /** @deprecated Use `mode` directly */
-  preference?: 'strict-on-device' | 'on-device-preferred' | 'cloud-only';
-  /** @deprecated Controlled by InferenceMode */
-  allowCloudFallback?: boolean;
+  mode: InferenceMode;
   onDownloadProgress?: (loadedRatio: number) => void;
   signal?: AbortSignal;
-}
-
-function resolveMode(options: AnalyzeScamOptions): InferenceMode {
-  if (options.mode) return options.mode;
-  if (options.preference === 'strict-on-device') return InferenceMode.ONLY_ON_DEVICE;
-  if (options.preference === 'cloud-only') return InferenceMode.ONLY_IN_CLOUD;
-  return InferenceMode.PREFER_ON_DEVICE;
 }
 
 /**
@@ -52,7 +41,7 @@ export async function analyzeScamMessage(
   const aiResult = await executeHybridInference({
     prompt: scrubbedText,
     channel: options.channel,
-    mode: resolveMode(options),
+    mode: options.mode,
     onDownloadProgress: options.onDownloadProgress,
     signal: options.signal,
   });

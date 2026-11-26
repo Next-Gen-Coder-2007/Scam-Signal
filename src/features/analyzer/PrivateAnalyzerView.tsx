@@ -8,6 +8,8 @@ import {
   AlertTriangle,
   Sparkles,
   CheckCircle2,
+  Download,
+  XCircle,
 } from 'lucide-react';
 import { Card } from '../../components/common/Card';
 import { EmptyState } from '../../components/common/EmptyState';
@@ -17,6 +19,8 @@ import { useScamAnalyzer } from '../../hooks/useScamAnalyzer';
 import { AnalysisResultCard } from '../../components/scam/AnalysisResultCard';
 import { RedactionPreviewModal } from '../../components/scam/RedactionPreviewModal';
 import { ThreatAnalysisResult } from '../../services/ai/scamAnalyzerService';
+import { InferenceMode, CLOUD_MODEL_ID } from '../../services/ai/firebaseAILogic';
+import { firebaseStatus } from '../../services/firebase/firebaseApp';
 
 const SAMPLE_SCAMS = [
   {
@@ -40,13 +44,26 @@ export const PrivateAnalyzerView: React.FC = () => {
   const [content, setContent] = useState('');
   const [channel, setChannel] = useState<'sms' | 'email' | 'whatsapp' | 'call' | 'web'>('sms');
   const [showRedactionModal, setShowRedactionModal] = useState(false);
-  const [inferenceMode, setInferenceMode] = useState<'strict-on-device' | 'on-device-preferred' | 'cloud-only'>('on-device-preferred');
-  const [allowCloudFallback, setAllowCloudFallback] = useState(true);
+  const [inferenceMode, setInferenceMode] = useState<InferenceMode>(
+    InferenceMode.PREFER_ON_DEVICE
+  );
   const [shareSuccessNotice, setShareSuccessNotice] = useState<string | null>(null);
 
-  const { status, result, error, analyze, reset } = useScamAnalyzer();
+  const {
+    status,
+    downloadProgress,
+    result,
+    error,
+    errorCode,
+    analyze,
+    cancel,
+    reset,
+  } = useScamAnalyzer();
 
-  const handleSelectSample = (sampleText: string, sampleChannel: 'sms' | 'email' | 'whatsapp' | 'call' | 'web') => {
+  const handleSelectSample = (
+    sampleText: string,
+    sampleChannel: 'sms' | 'email' | 'whatsapp' | 'call' | 'web'
+  ) => {
     setContent(sampleText);
     setChannel(sampleChannel);
   };
@@ -56,17 +73,18 @@ export const PrivateAnalyzerView: React.FC = () => {
     await analyze({
       rawContent: content,
       channel,
-      preference: inferenceMode,
-      allowCloudFallback,
+      mode: inferenceMode,
     });
   };
 
   const handleShareToFeed = (analyzed: ThreatAnalysisResult) => {
     setShareSuccessNotice(
-      `Scrubbed signal #${analyzed.id} shared safely with pattern hash ${analyzed.normalizedPatternHash.slice(0, 8)}.`
+      `Scrubbed signal #${analyzed.id} prepared with pattern hash ${analyzed.normalizedPatternHash.slice(0, 8)}. Use Threat Feed to publish to Cloud Firestore.`
     );
     setTimeout(() => setShareSuccessNotice(null), 5000);
   };
+
+  const isBusy = status === 'analyzing' || status === 'downloading';
 
   return (
     <div className="space-y-6">
@@ -78,24 +96,24 @@ export const PrivateAnalyzerView: React.FC = () => {
               Private Scam Analyzer
             </h1>
             <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-cyan-400 border border-surface-border">
-              Local-First AI
+              Firebase AI Logic
             </span>
           </div>
           <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-            Detect smishing, impersonation, and fraudulent URLs privately on your device.
+            Detect smishing, impersonation, and fraudulent URLs with explicit inference-mode routing.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5 px-3 py-2 rounded-md bg-surface border border-surface-border text-xs">
           <Lock className="w-4 h-4 text-emerald-400 shrink-0" />
           <div className="text-[11px]">
-            <span className="font-semibold text-zinc-200 block">Zero-Storage Default</span>
-            <span className="text-zinc-400">Raw text never leaves your device</span>
+            <span className="font-semibold text-zinc-200 block">Client-Side Scrubbing</span>
+            <span className="text-zinc-400">PII redacted before inference</span>
           </div>
         </div>
       </div>
 
-      {/* Share Success Toast */}
+      {/* Share Notice */}
       {shareSuccessNotice && (
         <div className="p-3 rounded-md bg-cyan-950/30 border border-cyan-500/35 text-cyan-200 text-xs flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" />
@@ -175,43 +193,70 @@ export const PrivateAnalyzerView: React.FC = () => {
 
             {/* Action Bar */}
             <div className="pt-3 border-t border-surface-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                <div className="w-full sm:w-64">
-                  <Select
-                    aria-label="Inference Engine Mode"
-                    value={inferenceMode}
-                    onChange={(e) => setInferenceMode(e.target.value as 'strict-on-device' | 'on-device-preferred' | 'cloud-only')}
-                  >
-                    <option value="on-device-preferred">On-Device Preferred (Nano)</option>
-                    <option value="strict-on-device">Strict On-Device Only</option>
-                    <option value="cloud-only">Cloud-Only (Gemini Pro)</option>
-                  </Select>
-                </div>
-
-                {inferenceMode === 'on-device-preferred' && (
-                  <label className="flex items-center gap-1.5 text-[11px] text-zinc-400 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={allowCloudFallback}
-                      onChange={(e) => setAllowCloudFallback(e.target.checked)}
-                      className="rounded border-surface-subtle bg-canvas text-accent-violet focus:ring-violet-500"
-                    />
-                    <span>Allow cloud fallback</span>
-                  </label>
-                )}
+              <div className="w-full sm:w-72">
+                <Select
+                  aria-label="Firebase AI Logic Inference Mode"
+                  value={inferenceMode}
+                  onChange={(e) => setInferenceMode(e.target.value as InferenceMode)}
+                >
+                  <option value={InferenceMode.PREFER_ON_DEVICE}>
+                    PREFER_ON_DEVICE (Local + Cloud Fallback)
+                  </option>
+                  <option value={InferenceMode.ONLY_ON_DEVICE}>
+                    ONLY_ON_DEVICE (Strict Local Only)
+                  </option>
+                  <option value={InferenceMode.ONLY_IN_CLOUD}>
+                    ONLY_IN_CLOUD (Collective Cloud Model)
+                  </option>
+                </Select>
               </div>
 
-              <Button
-                variant="primary"
-                onClick={handleRunTriage}
-                disabled={!content.trim()}
-                isLoading={status === 'analyzing'}
-              >
-                {status !== 'analyzing' && <Cpu className="w-3.5 h-3.5" />}
-                <span>{status === 'analyzing' ? 'Analyzing Privately...' : 'Run Private Triage'}</span>
-                {status !== 'analyzing' && <ArrowRight className="w-3.5 h-3.5" />}
-              </Button>
+              <div className="flex items-center gap-2">
+                {isBusy && (
+                  <Button variant="secondary" size="md" onClick={cancel}>
+                    <XCircle className="w-3.5 h-3.5" />
+                    <span>Cancel</span>
+                  </Button>
+                )}
+                <Button
+                  variant="primary"
+                  onClick={handleRunTriage}
+                  disabled={!content.trim() || isBusy}
+                  isLoading={isBusy}
+                >
+                  {!isBusy && <Cpu className="w-3.5 h-3.5" />}
+                  <span>
+                    {status === 'downloading'
+                      ? 'Downloading Model...'
+                      : status === 'analyzing'
+                      ? 'Analyzing...'
+                      : 'Run Private Triage'}
+                  </span>
+                  {!isBusy && <ArrowRight className="w-3.5 h-3.5" />}
+                </Button>
+              </div>
             </div>
+
+            {/* Model Download Progress */}
+            {status === 'downloading' && (
+              <div className="p-3 rounded-md bg-canvas border border-surface-border space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-zinc-300 flex items-center gap-1.5">
+                    <Download className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Downloading on-device Gemini Nano model...</span>
+                  </span>
+                  <span className="font-mono text-cyan-400">
+                    {downloadProgress ?? 0}%
+                  </span>
+                </div>
+                <div className="w-full h-1.5 bg-surface-elevated rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-cyan-400 transition-all duration-150"
+                    style={{ width: `${downloadProgress ?? 0}%` }}
+                  />
+                </div>
+              </div>
+            )}
           </Card>
         </div>
 
@@ -225,21 +270,35 @@ export const PrivateAnalyzerView: React.FC = () => {
 
             <div className="space-y-2 text-xs">
               <div className="flex items-center justify-between p-2 rounded bg-canvas border border-surface-border">
-                <span className="text-zinc-400">Target Model</span>
-                <span className="font-mono text-emerald-400">Gemini Nano</span>
+                <span className="text-zinc-400">Selected Mode</span>
+                <span className="font-mono text-cyan-300">{inferenceMode}</span>
               </div>
               <div className="flex items-center justify-between p-2 rounded bg-canvas border border-surface-border">
-                <span className="text-zinc-400">SDK Provider</span>
-                <span className="font-mono text-zinc-200">Firebase AI Logic</span>
+                <span className="text-zinc-400">Cloud Fallback</span>
+                <span className="font-mono text-zinc-200">{CLOUD_MODEL_ID}</span>
               </div>
               <div className="flex items-center justify-between p-2 rounded bg-canvas border border-surface-border">
-                <span className="text-zinc-400">Device Privacy</span>
-                <span className="font-mono text-cyan-400">ENFORCED</span>
+                <span className="text-zinc-400">SDK Status</span>
+                <span
+                  className={`font-mono ${
+                    firebaseStatus.isConfigured ? 'text-emerald-400' : 'text-amber-400'
+                  }`}
+                >
+                  {firebaseStatus.isConfigured ? 'CONFIGURED' : 'UNCONFIGURED'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded bg-canvas border border-surface-border">
+                <span className="text-zinc-400">Last Source</span>
+                <span className="font-mono text-zinc-200">
+                  {result ? result.inferenceSource : 'not_run'}
+                </span>
               </div>
             </div>
 
             <p className="pt-2 border-t border-surface-border text-[11px] text-zinc-400 leading-relaxed">
-              Firebase AI Logic prioritizes local execution on your browser sandbox. No raw private messages leave your device without explicit opt-in.
+              The runtime inference source is captured directly from{' '}
+              <code className="font-mono text-zinc-300">result.response.inferenceSource</code>{' '}
+              and is never simulated.
             </p>
           </Card>
 
@@ -257,12 +316,19 @@ export const PrivateAnalyzerView: React.FC = () => {
 
       {/* Error State */}
       {status === 'error' && (
-        <div className="p-4 rounded-lg bg-rose-950/30 border border-rose-500/35 text-rose-200 text-xs flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
-            <span>{error}</span>
+        <div className="p-4 rounded-lg bg-rose-950/30 border border-rose-500/35 text-rose-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-start gap-2.5">
+            <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              {errorCode && (
+                <span className="block font-mono text-[10px] text-rose-300 uppercase">
+                  Error Code: {errorCode}
+                </span>
+              )}
+              <span>{error}</span>
+            </div>
           </div>
-          <Button variant="danger" size="sm" onClick={handleRunTriage}>
+          <Button variant="danger" size="sm" onClick={handleRunTriage} className="shrink-0">
             Retry
           </Button>
         </div>
@@ -279,7 +345,7 @@ export const PrivateAnalyzerView: React.FC = () => {
         <EmptyState
           icon={ShieldAlert}
           title="Ready for Suspicious Message Triage"
-          description="Select a sample vector above or paste any SMS, email, or message. Analysis runs locally in your browser to inspect threat indicators and extract tactical warnings."
+          description="Select a sample vector above or paste any SMS, email, or message. Firebase AI Logic routes the request according to your selected InferenceMode."
         />
       )}
 
