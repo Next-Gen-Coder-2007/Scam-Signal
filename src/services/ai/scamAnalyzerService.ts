@@ -5,14 +5,23 @@ import {
   InferenceMode,
 } from './firebaseAILogic';
 
+export type AnalyzerChannel =
+  | 'sms'
+  | 'whatsapp'
+  | 'email'
+  | 'job_offer'
+  | 'payment_request'
+  | 'call'
+  | 'web';
+
 export interface ThreatAnalysisResult {
   id: string;
-  threatLevel: ThreatLevel;
-  confidenceScore: number;
-  threatCategories: string[];
-  redactedSummary: string;
-  tacticalIndicators: string[];
-  advisoryAdvice: string[];
+  riskLevel: ThreatLevel;
+  scamCategory: string;
+  suspiciousIndicators: string[];
+  supportingEvidence: string[];
+  explanation: string;
+  recommendedActions: string[];
   inferenceSource: InferenceSource;
   modelIdentifier: string;
   latencyMs: number;
@@ -22,7 +31,7 @@ export interface ThreatAnalysisResult {
 
 export interface AnalyzeScamOptions {
   rawContent: string;
-  channel: 'sms' | 'email' | 'whatsapp' | 'call' | 'web';
+  channel: AnalyzerChannel;
   mode: InferenceMode;
   onDownloadProgress?: (loadedRatio: number) => void;
   signal?: AbortSignal;
@@ -48,12 +57,12 @@ export async function analyzeScamMessage(
 
   return {
     id: `scan-${crypto.randomUUID().slice(0, 8)}`,
-    threatLevel: aiResult.threatLevel,
-    confidenceScore: aiResult.confidenceScore,
-    threatCategories: aiResult.threatCategories,
-    redactedSummary: aiResult.summary,
-    tacticalIndicators: aiResult.tacticalIndicators,
-    advisoryAdvice: aiResult.recommendedActions,
+    riskLevel: aiResult.riskLevel,
+    scamCategory: aiResult.scamCategory,
+    suspiciousIndicators: aiResult.suspiciousIndicators,
+    supportingEvidence: aiResult.supportingEvidence,
+    explanation: aiResult.explanation,
+    recommendedActions: aiResult.recommendedActions,
     inferenceSource: aiResult.source,
     modelIdentifier: aiResult.modelIdentifier,
     latencyMs: aiResult.latencyMs,

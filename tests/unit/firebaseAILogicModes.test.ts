@@ -29,11 +29,11 @@ vi.mock('firebase/ai', async (importOriginal) => {
 });
 
 const VALID_PAYLOAD = JSON.stringify({
-  threatLevel: 'CRITICAL',
-  confidenceScore: 95,
-  threatCategories: ['IMPERSONATION_FRAUD'],
-  tacticalIndicators: ['Urgent account block threat', 'Typo-squatted domain'],
-  summary: 'Bank impersonation SMS demanding immediate credential verification.',
+  riskLevel: 'CRITICAL',
+  scamCategory: 'Bank Impersonation',
+  suspiciousIndicators: ['Urgent account block threat', 'Typo-squatted domain'],
+  supportingEvidence: ['"account will be blocked"', '"axis-secure-verify.xyz"'],
+  explanation: 'This message pretends to be from a bank and pressures you to open a fake website.',
   recommendedActions: ['Do not click link', 'Contact official bank support'],
 });
 
@@ -62,7 +62,8 @@ describe('Firebase AI Logic Inference Modes & Error Mapping', () => {
     );
     expect(result.source).toBe('on_device');
     expect(result.modelIdentifier).toContain('Gemini Nano');
-    expect(result.threatLevel).toBe('CRITICAL');
+    expect(result.riskLevel).toBe('CRITICAL');
+    expect(result.scamCategory).toBe('Bank Impersonation');
   });
 
   it('captures IN_CLOUD inferenceSource when PREFER_ON_DEVICE falls back to cloud', async () => {

@@ -17,11 +17,11 @@ export { InferenceMode };
 export const CLOUD_MODEL_ID = 'gemini-2.5-flash';
 
 export const ThreatResponseSchema = z.object({
-  threatLevel: z.enum(['CRITICAL', 'HIGH', 'SUSPICIOUS', 'SAFE']),
-  confidenceScore: z.number().min(0).max(100),
-  threatCategories: z.array(z.string()).min(1),
-  tacticalIndicators: z.array(z.string()).min(1),
-  summary: z.string().min(5),
+  riskLevel: z.enum(['CRITICAL', 'HIGH', 'SUSPICIOUS', 'SAFE']),
+  scamCategory: z.string().min(2),
+  suspiciousIndicators: z.array(z.string()).min(1),
+  supportingEvidence: z.array(z.string()).min(1),
+  explanation: z.string().min(10),
   recommendedActions: z.array(z.string()).min(1),
 });
 
@@ -64,26 +64,30 @@ export interface AILogicExecutionResult extends ThreatResponseData {
   latencyMs: number;
 }
 
-const SYSTEM_INSTRUCTION = `You are ScamSignal, a cybersecurity scam intelligence triage engine.
-Analyze the provided sanitized excerpt for scam vectors, imposter fraud, and suspicious triggers.
-Respond strictly in valid, parseable JSON matching this schema:
+const SYSTEM_INSTRUCTION = `You are ScamSignal, an advisory scam detection assistant for everyday, non-technical users.
+Analyze the provided sanitized message for scam, phishing, or fraud signals.
+Rules:
+1. Never invent or output percentage confidence scores or claim absolute certainty.
+2. Use a qualitative riskLevel: "CRITICAL", "HIGH", "SUSPICIOUS", or "SAFE".
+3. Quote exact phrases or patterns from the message in supportingEvidence.
+4. Write explanation and recommendedActions in clear, calm, plain English understandable by non-technical users.
+5. Respond strictly in raw, valid JSON matching this schema (no markdown fences or preamble):
 {
-  "threatLevel": "CRITICAL" | "HIGH" | "SUSPICIOUS" | "SAFE",
-  "confidenceScore": number (0-100),
-  "threatCategories": string[],
-  "tacticalIndicators": string[],
-  "summary": string,
+  "riskLevel": "CRITICAL" | "HIGH" | "SUSPICIOUS" | "SAFE",
+  "scamCategory": string,
+  "suspiciousIndicators": string[],
+  "supportingEvidence": string[],
+  "explanation": string,
   "recommendedActions": string[]
-}
-Never include markdown code fences, backticks, or explanatory preamble. Output raw JSON only.`;
+}`;
 
 const RESPONSE_SCHEMA = Schema.object({
   properties: {
-    threatLevel: Schema.enumString({ enum: ['CRITICAL', 'HIGH', 'SUSPICIOUS', 'SAFE'] }),
-    confidenceScore: Schema.integer(),
-    threatCategories: Schema.array({ items: Schema.string() }),
-    tacticalIndicators: Schema.array({ items: Schema.string() }),
-    summary: Schema.string(),
+    riskLevel: Schema.enumString({ enum: ['CRITICAL', 'HIGH', 'SUSPICIOUS', 'SAFE'] }),
+    scamCategory: Schema.string(),
+    suspiciousIndicators: Schema.array({ items: Schema.string() }),
+    supportingEvidence: Schema.array({ items: Schema.string() }),
+    explanation: Schema.string(),
     recommendedActions: Schema.array({ items: Schema.string() }),
   },
 });

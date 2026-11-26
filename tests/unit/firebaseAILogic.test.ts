@@ -12,25 +12,27 @@ import {
 describe('Firebase AI Logic Hybrid Inference', () => {
   it('validates compliant structured AI responses via ThreatResponseSchema', () => {
     const validJson = {
-      threatLevel: 'CRITICAL',
-      confidenceScore: 94,
-      threatCategories: ['IMPERSONATION', 'URGENCY'],
-      tacticalIndicators: ['Unverified domain', 'Immediate threat of card suspension'],
-      summary: 'SMS impersonating a banking institution to capture debit credentials.',
-      recommendedActions: ['Block sender', 'Contact bank helpline'],
+      riskLevel: 'CRITICAL',
+      scamCategory: 'Bank Impersonation',
+      suspiciousIndicators: ['Unverified domain', 'Urgent threat of card suspension'],
+      supportingEvidence: ['"debit card has been temporarily suspended"', '"http://axis-secure-verify.xyz"'],
+      explanation: 'This message pretends to be your bank and pressures you to click a suspicious link.',
+      recommendedActions: ['Do not click the link', 'Call the official number on your card'],
     };
 
     const validated = ThreatResponseSchema.parse(validJson);
-    expect(validated.threatLevel).toBe('CRITICAL');
-    expect(validated.confidenceScore).toBe(94);
+    expect(validated.riskLevel).toBe('CRITICAL');
+    expect(validated.scamCategory).toBe('Bank Impersonation');
+    expect(validated.supportingEvidence.length).toBe(2);
   });
 
-  it('rejects malformed threat responses missing required fields or invalid ranges', () => {
+  it('rejects malformed threat responses missing required fields', () => {
     const invalidJson = {
-      threatLevel: 'INVALID_LEVEL',
-      confidenceScore: 150,
-      threatCategories: [],
-      summary: 'Too short',
+      riskLevel: 'INVALID_LEVEL',
+      scamCategory: '',
+      suspiciousIndicators: [],
+      supportingEvidence: [],
+      explanation: 'Short',
     };
 
     expect(() => ThreatResponseSchema.parse(invalidJson)).toThrow();
