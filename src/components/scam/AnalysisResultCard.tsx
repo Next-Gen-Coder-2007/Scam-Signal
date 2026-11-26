@@ -7,12 +7,16 @@ import {
   RotateCcw,
   ListCheck,
   Radio,
+  Cpu,
+  Cloud,
+  Quote,
 } from 'lucide-react';
 import { ThreatAnalysisResult } from '../../services/ai/scamAnalyzerService';
 import { ThreatBadge } from '../common/ThreatBadge';
 import { InferenceBadge } from '../common/InferenceBadge';
 import { Card } from '../common/Card';
 import { Button } from '../ui/Button';
+import { ThreatLevel } from '../../types/threat';
 
 interface AnalysisResultCardProps {
   result: ThreatAnalysisResult;
@@ -20,80 +24,132 @@ interface AnalysisResultCardProps {
   onShareToCommunity?: (result: ThreatAnalysisResult) => void;
 }
 
+const RISK_HEADLINES: Record<ThreatLevel, string> = {
+  CRITICAL: 'High Risk — Strong Scam Signals Detected',
+  HIGH: 'High Risk — Likely Scam or Phishing Attempt',
+  SUSPICIOUS: 'Proceed with Caution — Suspicious Elements Found',
+  SAFE: 'No Obvious Scam Signals Detected',
+  UNKNOWN: 'Uncertain — Review Carefully',
+};
+
 export const AnalysisResultCard: React.FC<AnalysisResultCardProps> = ({
   result,
   onReset,
   onShareToCommunity,
 }) => {
   const cardVariant =
-    result.threatLevel === 'CRITICAL' || result.threatLevel === 'HIGH'
+    result.riskLevel === 'CRITICAL' || result.riskLevel === 'HIGH'
       ? 'critical'
-      : result.threatLevel === 'SUSPICIOUS'
+      : result.riskLevel === 'SUSPICIOUS'
       ? 'warning'
       : 'default';
 
+  const isOnDevice = result.inferenceSource === 'on_device';
+
   return (
     <Card variant={cardVariant} className="space-y-6">
-      {/* Top Header Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-surface-border">
-        <div className="flex flex-wrap items-center gap-2">
-          <ThreatBadge level={result.threatLevel} score={result.confidenceScore} />
-          <InferenceBadge
-            source={result.inferenceSource}
-            modelIdentifier={result.modelIdentifier}
-            latencyMs={result.latencyMs}
-          />
+      {/* Prominent Inference Source Banner */}
+      <div
+        className={`p-3.5 rounded-md border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+          isOnDevice
+            ? 'bg-emerald-950/20 border-emerald-500/30'
+            : 'bg-violet-950/25 border-violet-500/30'
+        }`}
+      >
+        <div className="flex items-start sm:items-center gap-2.5">
+          {isOnDevice ? (
+            <Cpu className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 sm:mt-0" />
+          ) : (
+            <Cloud className="w-4 h-4 text-accent-violet-muted shrink-0 mt-0.5 sm:mt-0" />
+          )}
+          <div className="text-xs">
+            <span className="font-semibold text-zinc-100 block">
+              {isOnDevice
+                ? 'Processed On-Device (Private, Local AI)'
+                : result.inferenceSource === 'in_cloud'
+                ? 'Processed in Cloud (Firebase AI Logic)'
+                : 'Inference Source Unreported'}
+            </span>
+            <span className="text-[11px] text-zinc-400">
+              {isOnDevice
+                ? 'Your message was analyzed locally on your browser without leaving your device.'
+                : 'Your scrubbed message was analyzed by the cloud model via Firebase AI Logic.'}
+            </span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-1.5 text-[11px] font-mono text-cyan-300 bg-canvas border border-surface-border px-2.5 py-1 rounded">
+        <InferenceBadge
+          source={result.inferenceSource}
+          modelIdentifier={result.modelIdentifier}
+          latencyMs={result.latencyMs}
+        />
+      </div>
+
+      {/* Risk Level & Category Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-surface-border">
+        <div className="space-y-1.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <ThreatBadge level={result.riskLevel} />
+            <span className="px-2.5 py-1 rounded text-xs font-mono font-medium bg-surface-elevated text-zinc-200 border border-surface-border">
+              Category: {result.scamCategory}
+            </span>
+          </div>
+          <h2 className="text-base font-semibold text-zinc-100">
+            {RISK_HEADLINES[result.riskLevel]}
+          </h2>
+        </div>
+
+        <div className="flex items-center gap-1.5 text-[11px] font-mono text-cyan-300 bg-canvas border border-surface-border px-2.5 py-1 rounded self-start sm:self-center">
           <Hash className="w-3.5 h-3.5 text-cyan-400" />
           <span>Pattern: {result.normalizedPatternHash.slice(0, 12)}</span>
         </div>
       </div>
 
-      {/* Summary Narrative */}
+      {/* Plain-Language Explanation */}
       <div>
         <h3 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
-          Scam Intelligence Summary
+          Plain-Language Explanation
         </h3>
         <p className="text-sm text-zinc-200 leading-relaxed bg-canvas p-3.5 rounded-md border border-surface-border">
-          {result.redactedSummary}
+          {result.explanation}
         </p>
       </div>
 
-      {/* Detected Threat Categories */}
-      <div>
-        <h4 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 mb-2">
-          Observed Classifications
-        </h4>
-        <div className="flex flex-wrap gap-2">
-          {result.threatCategories.map((cat, idx) => (
-            <span
-              key={idx}
-              className="px-2.5 py-1 rounded text-xs font-mono font-medium bg-surface-elevated text-zinc-200 border border-surface-border"
-            >
-              {cat.replace(/_/g, ' ')}
-            </span>
-          ))}
+      {/* Suspicious Indicators & Supporting Evidence */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <h4 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 mb-2 flex items-center gap-1.5">
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+            Suspicious Indicators
+          </h4>
+          <div className="space-y-1.5">
+            {result.suspiciousIndicators.map((indicator, idx) => (
+              <div
+                key={idx}
+                className="flex items-start gap-2 p-2.5 rounded-md bg-canvas border border-surface-border text-xs text-zinc-300"
+              >
+                <span className="text-amber-400 font-bold shrink-0">•</span>
+                <span>{indicator}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Tactical Indicators */}
-      <div>
-        <h4 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 mb-2 flex items-center gap-1.5">
-          <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-          Tactical Indicators (IOCs)
-        </h4>
-        <div className="space-y-1.5">
-          {result.tacticalIndicators.map((ioc, idx) => (
-            <div
-              key={idx}
-              className="flex items-start gap-2.5 p-2.5 rounded-md bg-canvas border border-surface-border text-xs text-zinc-300 font-mono"
-            >
-              <span className="text-amber-400 font-bold shrink-0">•</span>
-              <span>{ioc}</span>
-            </div>
-          ))}
+        <div>
+          <h4 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 mb-2 flex items-center gap-1.5">
+            <Quote className="w-3.5 h-3.5 text-cyan-400" />
+            Supporting Evidence from Message
+          </h4>
+          <div className="space-y-1.5">
+            {result.supportingEvidence.map((evidence, idx) => (
+              <div
+                key={idx}
+                className="p-2.5 rounded-md bg-canvas border border-surface-border text-xs text-cyan-200/90 font-mono"
+              >
+                {evidence}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -101,10 +157,10 @@ export const AnalysisResultCard: React.FC<AnalysisResultCardProps> = ({
       <div>
         <h4 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 mb-2 flex items-center gap-1.5">
           <ListCheck className="w-3.5 h-3.5 text-emerald-400" />
-          Recommended Countermeasures
+          What You Should Do Next
         </h4>
         <div className="space-y-1.5">
-          {result.advisoryAdvice.map((action, idx) => (
+          {result.recommendedActions.map((action, idx) => (
             <div
               key={idx}
               className="flex items-start gap-2.5 p-2.5 rounded-md bg-emerald-950/15 border border-emerald-500/25 text-xs text-emerald-200"
@@ -120,9 +176,9 @@ export const AnalysisResultCard: React.FC<AnalysisResultCardProps> = ({
       <div className="p-3 rounded-md bg-amber-950/20 border border-amber-500/25 text-amber-200/90 text-xs leading-relaxed flex items-start gap-2">
         <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
         <span>
-          <strong>Advisory Disclaimer:</strong> ScamSignal evaluations are automated heuristic
-          risk classifications. Verify independently with official banking channels before taking
-          financial or legal actions.
+          <strong>Advisory Notice:</strong> ScamSignal provides AI-assisted pattern guidance, not
+          a guarantee. Always verify independently using official phone numbers or apps before
+          sending money or sharing personal details.
         </span>
       </div>
 
