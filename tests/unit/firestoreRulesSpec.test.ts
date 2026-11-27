@@ -26,4 +26,12 @@ describe('Firestore Security Rules Invariants', () => {
     expect(rules).toContain("resource.data.visibility == 'community_public'");
     expect(rules).toContain('isOwner(resource.data.reporterUid)');
   });
+
+  it('enforces single-per-user corroboration IDs and admin-only dispute moderation', () => {
+    expect(rules).toContain('match /campaign_confirmations/{confirmationId}');
+    expect(rules).toContain('match /campaign_disputes/{disputeId}');
+    expect(rules).toContain("confirmationId == (request.resource.data.campaignId + '_' + request.auth.uid)");
+    expect(rules).toContain("request.resource.data.moderationStatus == 'open'");
+    expect(rules).toContain('allow update: if false;');
+  });
 });
