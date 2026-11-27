@@ -14,34 +14,68 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.token.admin == true;
     }
 
-    // Public community threat feed
-    match /public_threats/{threatId} {
-      allow read: if true;
+    // Pending user-submitted scam observations (strictly separated from verified campaigns)
+    match /pending_reports/{reportId} {
+      // Publicly visible reports can be read; analysts-only reports are restricted to owner or admins
+      allow read: if resource.data.visibility == 'community_public'
+        || isOwner(resource.data.reporterUid)
+        || isAdmin();
 
-      // Users can submit verified-safe redacted reports
+      // Authenticated users can create a pending report with strict schema, ownership, and server timestamp
       allow create: if isAuthenticated()
         && request.resource.data.reporterUid == request.auth.uid
-        && request.resource.data.upvotes == 0
+        && request.resource.data.verificationStatus == 'pending'
         && request.resource.data.campaignId == null
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.visibility in ['community_public', 'analysts_only']
         && request.resource.data.redactedSummary is string
-        && request.resource.data.redactedSummary.size() <= 2000;
+        && request.resource.data.redactedSummary.size() > 0
+        && request.resource.data.redactedSummary.size() <= 2000
+        && request.resource.data.observedDate is string
+        && request.resource.data.observedDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.indicators is list
+        && request.resource.data.indicators.size() <= 10
+        && request.resource.data.evidence is list
+        && request.resource.data.evidence.size() <= 10
+        && request.resource.data.keys().hasOnly([
+          'reporterUid',
+          'redactedSummary',
+          'category',
+          'indicators',
+          'evidence',
+          'riskAssessment',
+          'observedDate',
+          'visibility',
+          'channel',
+          'inferenceSource',
+          'normalizedPatternHash',
+          'verificationStatus',
+          'campaignId',
+          'createdAt'
+        ]);
 
-      // Only admins or backend tasks can link campaigns or modify data
+      // Regular users cannot modify reports or assign verified status; only admins can triage
       allow update: if isAdmin();
-      allow delete: if isAdmin();
+      allow delete: if isOwner(resource.data.reporterUid) || isAdmin();
     }
 
-    // Correlated Threat Campaigns
+    // Verified / Correlated Threat Campaigns (separated from pending_reports)
     match /campaigns/{campaignId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // User Private Threat Logs (if synced)
+    // Legacy public_threats collection (locked to read-only for backward compatibility)
+    match /public_threats/{threatId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // User Private Threat Logs (if synced with explicit consent)
     match /user_scans/{scanId} {
       allow read, delete: if isOwner(resource.data.userId);
       allow create: if isOwner(request.resource.data.userId);
-      allow update: if false; // Immutable scans
+      allow update: if false;
     }
   }
 }
