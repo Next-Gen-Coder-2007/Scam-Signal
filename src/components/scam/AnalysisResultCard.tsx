@@ -10,8 +10,14 @@ import {
   Cpu,
   Cloud,
   Quote,
+  BrainCircuit,
+  ShieldCheck,
 } from 'lucide-react';
 import { ThreatAnalysisResult } from '../../services/ai/scamAnalyzerService';
+import {
+  SCAM_CATEGORY_LABELS,
+  MANIPULATION_PATTERN_LABELS,
+} from '../../services/ai/analysisSchema';
 import { ThreatBadge } from '../common/ThreatBadge';
 import { InferenceBadge } from '../common/InferenceBadge';
 import { Card } from '../common/Card';
@@ -29,7 +35,7 @@ const RISK_HEADLINES: Record<ThreatLevel, string> = {
   HIGH: 'High Risk — Likely Scam or Phishing Attempt',
   SUSPICIOUS: 'Proceed with Caution — Suspicious Elements Found',
   SAFE: 'No Obvious Scam Signals Detected',
-  UNKNOWN: 'Uncertain — Review Carefully',
+  UNKNOWN: 'Ambiguous — Insufficient Context to Classify as Scam',
 };
 
 export const AnalysisResultCard: React.FC<AnalysisResultCardProps> = ({
@@ -91,7 +97,7 @@ export const AnalysisResultCard: React.FC<AnalysisResultCardProps> = ({
           <div className="flex flex-wrap items-center gap-2">
             <ThreatBadge level={result.riskLevel} />
             <span className="px-2.5 py-1 rounded text-xs font-mono font-medium bg-surface-elevated text-zinc-200 border border-surface-border">
-              Category: {result.scamCategory}
+              Category: {SCAM_CATEGORY_LABELS[result.scamCategory]}
             </span>
           </div>
           <h2 className="text-base font-semibold text-zinc-100">
@@ -105,53 +111,99 @@ export const AnalysisResultCard: React.FC<AnalysisResultCardProps> = ({
         </div>
       </div>
 
-      {/* Plain-Language Explanation */}
-      <div>
-        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">
-          Plain-Language Explanation
-        </h3>
-        <p className="text-sm text-zinc-200 leading-relaxed bg-canvas p-3.5 rounded-md border border-surface-border">
-          {result.explanation}
-        </p>
-      </div>
+      {/* Manipulation Patterns */}
+      {result.manipulationPatterns.length > 0 && (
+        <div>
+          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 mb-2">
+            Detected Manipulation Patterns
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {result.manipulationPatterns.map((pattern) => (
+              <span
+                key={pattern}
+                className="px-2.5 py-1 rounded text-xs font-medium bg-amber-950/30 text-amber-300 border border-amber-500/30"
+              >
+                {MANIPULATION_PATTERN_LABELS[pattern]}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
-      {/* Suspicious Indicators & Supporting Evidence */}
+      {/* Separated Observed Evidence vs AI Interpretation */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <h4 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 mb-2 flex items-center gap-1.5">
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-            Suspicious Indicators
-          </h4>
-          <div className="space-y-1.5">
-            {result.suspiciousIndicators.map((indicator, idx) => (
-              <div
-                key={idx}
-                className="flex items-start gap-2 p-2.5 rounded-md bg-canvas border border-surface-border text-xs text-zinc-300"
-              >
-                <span className="text-amber-400 font-bold shrink-0">•</span>
-                <span>{indicator}</span>
-              </div>
-            ))}
-          </div>
+        {/* Observed Evidence (Factual quotes from message) */}
+        <div className="space-y-2">
+          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+            <Quote className="w-3.5 h-3.5 text-cyan-400" />
+            Observed Evidence (From Message)
+          </h3>
+          {result.observedEvidence.length > 0 ? (
+            <div className="space-y-1.5">
+              {result.observedEvidence.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="p-2.5 rounded-md bg-canvas border border-surface-border text-xs text-cyan-200/90 font-mono"
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-3 rounded-md bg-canvas border border-surface-border text-xs text-zinc-500">
+              No specific suspicious quotes were flagged in the message.
+            </div>
+          )}
         </div>
 
-        <div>
-          <h4 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 mb-2 flex items-center gap-1.5">
-            <Quote className="w-3.5 h-3.5 text-cyan-400" />
-            Supporting Evidence from Message
+        {/* AI Interpretation (Model reasoning) */}
+        <div className="space-y-2">
+          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+            <BrainCircuit className="w-3.5 h-3.5 text-accent-violet-muted" />
+            AI Interpretation
+          </h3>
+          <p className="text-xs sm:text-sm text-zinc-200 leading-relaxed bg-canvas p-3.5 rounded-md border border-surface-border">
+            {result.aiInterpretation}
+          </p>
+        </div>
+      </div>
+
+      {/* Detailed Indicator Breakdown with Explanations & Verification Steps */}
+      {result.indicators.length > 0 && (
+        <div className="space-y-2.5">
+          <h4 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+            Indicator Breakdown & Verification Steps
           </h4>
-          <div className="space-y-1.5">
-            {result.supportingEvidence.map((evidence, idx) => (
+          <div className="space-y-2.5">
+            {result.indicators.map((indicator, idx) => (
               <div
                 key={idx}
-                className="p-2.5 rounded-md bg-canvas border border-surface-border text-xs text-cyan-200/90 font-mono"
+                className="p-3.5 rounded-md bg-canvas border border-surface-border space-y-2"
               >
-                {evidence}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-xs font-semibold text-amber-300">
+                    {MANIPULATION_PATTERN_LABELS[indicator.pattern]}
+                  </span>
+                  <span className="text-[11px] font-mono text-cyan-300 bg-surface px-2 py-0.5 rounded border border-surface-border">
+                    &ldquo;{indicator.observedEvidence}&rdquo;
+                  </span>
+                </div>
+                <p className="text-xs text-zinc-300 leading-relaxed">
+                  {indicator.explanation}
+                </p>
+                <div className="pt-1.5 border-t border-surface-border flex items-start gap-2 text-xs text-emerald-300">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                  <span>
+                    <strong className="font-medium">How to verify:</strong>{' '}
+                    {indicator.verificationStep}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      )}
 
       {/* Recommended Actions */}
       <div>
