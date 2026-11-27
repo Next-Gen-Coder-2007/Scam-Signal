@@ -4,6 +4,7 @@ import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { useAuth } from '../../context/AuthContext';
+import { isGoogleAuthConfigured } from '../../services/firebase/authService';
 import { firebaseStatus } from '../../services/firebase/firebaseApp';
 
 interface AuthModalProps {
@@ -24,21 +25,39 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   } = useAuth();
 
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [localError, setLocalError] = useState<string | null>(null);
+  const googleEnabled = isGoogleAuthConfigured();
 
   const handleClose = () => {
+    setLocalError(null);
     clearError();
     onClose();
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLocalError(null);
     if (!email.trim() || !password) return;
+
+    if (mode === 'signup') {
+      if (password.length < 6) {
+        setLocalError('Password must be at least 6 characters.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setLocalError('Passwords do not match.');
+        return;
+      }
+    }
+
     const res =
       mode === 'signin'
-        ? await signInEmail(email, password)
-        : await signUpEmail(email, password);
+        ? await signInEmail(email.trim(), password)
+        : await signUpEmail(email.trim(), password, displayName.trim() || undefined);
     if (res) {
       handleClose();
     }
@@ -89,14 +108,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         </div>
       ) : (
         <div className="space-y-4">
-          {error && (
+          {(localError || error) && (
             <div className="p-3 rounded-md bg-rose-950/35 border border-rose-500/35 text-rose-200 text-xs flex items-start gap-2">
               <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-              <span>{error}</span>
+              <span>{localError || error}</span>
             </div>
           )}
 
           <form onSubmit={handleEmailSubmit} className="space-y-3">
+            {mode === 'signup' && (
+              <Input
+                label="Display Name (Optional)"
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="e.g. Threat Researcher"
+                maxLength={60}
+              />
+            )}
             <Input
               label="Email Address"
               type="email"
@@ -114,6 +143,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               minLength={6}
               required
             />
+            {mode === 'signup' && (
+              <Input
+                label="Confirm Password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Re-enter password"
+                minLength={6}
+                required
+              />
+            )}
             <Button
               type="submit"
               variant="primary"
@@ -134,15 +174,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2.5">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleGoogle}
-              disabled={loading}
-            >
-              <span>Google</span>
-            </Button>
+          <div className={`grid gap-2.5 ${googleEnabled ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            {googleEnabled && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleGoogle}
+                disabled={loading}
+              >
+                <span>Google</span>
+              </Button>
+            )}
             <Button
               type="button"
               variant="secondary"
@@ -159,6 +201,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 onClick={() => {
+                  setLocalError(null);
+                  setConfirmPassword('');
                   clearError();
                   setMode('signup');
                 }}
@@ -170,6 +214,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 onClick={() => {
+                  setLocalError(null);
+                  setConfirmPassword('');
                   clearError();
                   setMode('signin');
                 }}
