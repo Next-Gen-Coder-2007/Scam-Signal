@@ -64,7 +64,7 @@ export const CampaignExplorerView: React.FC = () => {
               Zero-Hallucination Campaign Rules
             </h3>
             <p className="text-xs text-zinc-400 mt-0.5">
-              Clusters are formed strictly through normalized SHA-256 pattern hashes, shared domains, and verified payment handles.
+              Clusters are formed strictly from SHA-256 pattern digests of already-redacted reports, shared indicators, and verified payment handles. Hashing is used for deterministic grouping, not as guaranteed anonymization.
             </p>
           </div>
         </div>

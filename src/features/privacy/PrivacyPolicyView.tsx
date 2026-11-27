@@ -51,9 +51,9 @@ export const PrivacyPolicyView: React.FC = () => {
           <div className="p-2 rounded-md bg-surface-elevated text-rose-400 border border-surface-border w-fit">
             <Shield className="w-4 h-4" />
           </div>
-          <h3 className="text-sm font-semibold text-zinc-200">Cryptographic Correlation</h3>
+          <h3 className="text-sm font-semibold text-zinc-200">Deterministic Pattern Grouping</h3>
           <p className="text-xs text-zinc-400 leading-relaxed">
-            Campaign grouping utilizes deterministic SHA-256 normalized text hashing, ensuring zero arbitrary or hallucinated campaign links.
+            Campaign grouping uses SHA-256 digests of already-redacted text templates to cluster matching scam waves. Hashing alone is not guaranteed anonymization—automated and user-reviewed PII redaction always happens first.
           </p>
         </Card>
       </div>
