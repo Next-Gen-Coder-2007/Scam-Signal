@@ -15,6 +15,7 @@ import { Card } from '../../components/common/Card';
 import { Button } from '../../components/ui/Button';
 import { CampaignStatusBadge } from '../../components/campaigns/CampaignStatusBadge';
 import { CampaignRelationshipGraph } from '../../components/campaigns/CampaignRelationshipGraph';
+import { CampaignCorroborationPanel } from '../../components/campaigns/CampaignCorroborationPanel';
 import { firebaseStatus } from '../../services/firebase/firebaseApp';
 import {
   fetchCampaignDetails,
@@ -287,6 +288,14 @@ export const CampaignDetailsView: React.FC = () => {
           </div>
         )}
       </Card>
+
+      {/* Community Corroboration & Admin Moderation */}
+      <CampaignCorroborationPanel
+        campaignId={campaign.id}
+        currentStatus={campaign.status}
+        selectedReportId={selectedReportId}
+        onCampaignUpdated={() => void loadDetails()}
+      />
 
       {/* Collective AI Explanation (ONLY_IN_CLOUD, separated from deterministic links) */}
       {analysis && (
