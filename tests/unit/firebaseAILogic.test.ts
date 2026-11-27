@@ -13,26 +13,36 @@ describe('Firebase AI Logic Hybrid Inference', () => {
   it('validates compliant structured AI responses via ThreatResponseSchema', () => {
     const validJson = {
       riskLevel: 'CRITICAL',
-      scamCategory: 'Bank Impersonation',
-      suspiciousIndicators: ['Unverified domain', 'Urgent threat of card suspension'],
-      supportingEvidence: ['"debit card has been temporarily suspended"', '"http://axis-secure-verify.xyz"'],
-      explanation: 'This message pretends to be your bank and pressures you to click a suspicious link.',
+      scamCategory: 'impersonation',
+      manipulationPatterns: ['urgency', 'impersonation'],
+      observedEvidence: ['"debit card has been temporarily suspended"', '"http://axis-secure-verify.xyz"'],
+      indicators: [
+        {
+          pattern: 'urgency',
+          observedEvidence: 'Verify identity immediately to prevent permanent block',
+          explanation: 'Scammers create artificial time pressure so you act before checking with your bank.',
+          verificationStep: 'Call the official customer care number printed on the back of your bank card.',
+        },
+      ],
+      aiInterpretation: 'This message pretends to be your bank and pressures you to click a suspicious link.',
       recommendedActions: ['Do not click the link', 'Call the official number on your card'],
     };
 
     const validated = ThreatResponseSchema.parse(validJson);
     expect(validated.riskLevel).toBe('CRITICAL');
-    expect(validated.scamCategory).toBe('Bank Impersonation');
-    expect(validated.supportingEvidence.length).toBe(2);
+    expect(validated.scamCategory).toBe('impersonation');
+    expect(validated.observedEvidence).toHaveLength(2);
+    expect(validated.indicators[0].verificationStep).toContain('bank card');
   });
 
   it('rejects malformed threat responses missing required fields', () => {
     const invalidJson = {
       riskLevel: 'INVALID_LEVEL',
-      scamCategory: '',
-      suspiciousIndicators: [],
-      supportingEvidence: [],
-      explanation: 'Short',
+      scamCategory: 'unknown_category',
+      manipulationPatterns: [],
+      observedEvidence: [],
+      indicators: [],
+      aiInterpretation: 'Short',
     };
 
     expect(() => ThreatResponseSchema.parse(invalidJson)).toThrow();

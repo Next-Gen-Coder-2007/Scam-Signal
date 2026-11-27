@@ -4,6 +4,11 @@ import {
   executeHybridInference,
   InferenceMode,
 } from './firebaseAILogic';
+import {
+  ScamCategory,
+  ManipulationPattern,
+  IndicatorDetail,
+} from './analysisSchema';
 
 export type AnalyzerChannel =
   | 'sms'
@@ -17,10 +22,11 @@ export type AnalyzerChannel =
 export interface ThreatAnalysisResult {
   id: string;
   riskLevel: ThreatLevel;
-  scamCategory: string;
-  suspiciousIndicators: string[];
-  supportingEvidence: string[];
-  explanation: string;
+  scamCategory: ScamCategory;
+  manipulationPatterns: ManipulationPattern[];
+  observedEvidence: string[];
+  indicators: IndicatorDetail[];
+  aiInterpretation: string;
   recommendedActions: string[];
   inferenceSource: InferenceSource;
   modelIdentifier: string;
@@ -59,9 +65,10 @@ export async function analyzeScamMessage(
     id: `scan-${crypto.randomUUID().slice(0, 8)}`,
     riskLevel: aiResult.riskLevel,
     scamCategory: aiResult.scamCategory,
-    suspiciousIndicators: aiResult.suspiciousIndicators,
-    supportingEvidence: aiResult.supportingEvidence,
-    explanation: aiResult.explanation,
+    manipulationPatterns: aiResult.manipulationPatterns,
+    observedEvidence: aiResult.observedEvidence,
+    indicators: aiResult.indicators,
+    aiInterpretation: aiResult.aiInterpretation,
     recommendedActions: aiResult.recommendedActions,
     inferenceSource: aiResult.source,
     modelIdentifier: aiResult.modelIdentifier,

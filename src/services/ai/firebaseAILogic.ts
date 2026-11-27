@@ -11,21 +11,18 @@ import {
 import { z } from 'zod';
 import { ai, firebaseStatus } from '../firebase/firebaseApp';
 import { InferenceSource } from '../../types/threat';
+import {
+  SCAM_CATEGORIES,
+  MANIPULATION_PATTERNS,
+  ThreatResponseSchema,
+  ThreatResponseData,
+  parseAndValidateModelResponse,
+} from './analysisSchema';
 
-export { InferenceMode };
+export { InferenceMode, ThreatResponseSchema };
+export type { ThreatResponseData };
 
 export const CLOUD_MODEL_ID = 'gemini-2.5-flash';
-
-export const ThreatResponseSchema = z.object({
-  riskLevel: z.enum(['CRITICAL', 'HIGH', 'SUSPICIOUS', 'SAFE']),
-  scamCategory: z.string().min(2),
-  suspiciousIndicators: z.array(z.string()).min(1),
-  supportingEvidence: z.array(z.string()).min(1),
-  explanation: z.string().min(10),
-  recommendedActions: z.array(z.string()).min(1),
-});
-
-export type ThreatResponseData = z.infer<typeof ThreatResponseSchema>;
 
 export type HybridAIErrorCode =
   | 'FIREBASE_NOT_CONFIGURED'
@@ -64,30 +61,59 @@ export interface AILogicExecutionResult extends ThreatResponseData {
   latencyMs: number;
 }
 
-const SYSTEM_INSTRUCTION = `You are ScamSignal, an advisory scam detection assistant for everyday, non-technical users.
-Analyze the provided sanitized message for scam, phishing, or fraud signals.
-Rules:
-1. Never invent or output percentage confidence scores or claim absolute certainty.
-2. Use a qualitative riskLevel: "CRITICAL", "HIGH", "SUSPICIOUS", or "SAFE".
-3. Quote exact phrases or patterns from the message in supportingEvidence.
-4. Write explanation and recommendedActions in clear, calm, plain English understandable by non-technical users.
-5. Respond strictly in raw, valid JSON matching this schema (no markdown fences or preamble):
+const SYSTEM_INSTRUCTION = `You are ScamSignal, a balanced, advisory scam analysis engine for non-technical users.
+Analyze the provided sanitized message objectively.
+
+Critical rules:
+1. Do NOT treat every unfamiliar or brief message as fraudulent. If the message lacks clear manipulation patterns or malicious intent, classify it as "SAFE" ("legitimate_or_benign") or "UNKNOWN" ("ambiguous_unclear").
+2. Never invent percentage confidence scores or claim absolute certainty.
+3. Strictly separate factual "observedEvidence" (exact quoted phrases or elements present in the message) from "aiInterpretation" (your plain-language assessment of what those facts mean).
+4. Use one of these scamCategory values: ${SCAM_CATEGORIES.join(', ')}.
+5. Identify any matching manipulationPatterns from: ${MANIPULATION_PATTERNS.join(', ')}.
+6. For EVERY identified indicator in "indicators", provide:
+   - pattern (from manipulationPatterns)
+   - observedEvidence (exact quote from the message)
+   - explanation (why this indicator matters in plain English)
+   - verificationStep (a practical, concrete step the user can take to verify safely)
+7. Respond strictly in raw, valid JSON (no markdown fences or preamble) matching:
 {
-  "riskLevel": "CRITICAL" | "HIGH" | "SUSPICIOUS" | "SAFE",
+  "riskLevel": "CRITICAL" | "HIGH" | "SUSPICIOUS" | "SAFE" | "UNKNOWN",
   "scamCategory": string,
-  "suspiciousIndicators": string[],
-  "supportingEvidence": string[],
-  "explanation": string,
+  "manipulationPatterns": string[],
+  "observedEvidence": string[],
+  "indicators": [
+    {
+      "pattern": string,
+      "observedEvidence": string,
+      "explanation": string,
+      "verificationStep": string
+    }
+  ],
+  "aiInterpretation": string,
   "recommendedActions": string[]
 }`;
 
 const RESPONSE_SCHEMA = Schema.object({
   properties: {
-    riskLevel: Schema.enumString({ enum: ['CRITICAL', 'HIGH', 'SUSPICIOUS', 'SAFE'] }),
-    scamCategory: Schema.string(),
-    suspiciousIndicators: Schema.array({ items: Schema.string() }),
-    supportingEvidence: Schema.array({ items: Schema.string() }),
-    explanation: Schema.string(),
+    riskLevel: Schema.enumString({
+      enum: ['CRITICAL', 'HIGH', 'SUSPICIOUS', 'SAFE', 'UNKNOWN'],
+    }),
+    scamCategory: Schema.enumString({ enum: [...SCAM_CATEGORIES] }),
+    manipulationPatterns: Schema.array({
+      items: Schema.enumString({ enum: [...MANIPULATION_PATTERNS] }),
+    }),
+    observedEvidence: Schema.array({ items: Schema.string() }),
+    indicators: Schema.array({
+      items: Schema.object({
+        properties: {
+          pattern: Schema.enumString({ enum: [...MANIPULATION_PATTERNS] }),
+          observedEvidence: Schema.string(),
+          explanation: Schema.string(),
+          verificationStep: Schema.string(),
+        },
+      }),
+    }),
+    aiInterpretation: Schema.string(),
     recommendedActions: Schema.array({ items: Schema.string() }),
   },
 });
@@ -185,7 +211,7 @@ function mapHybridError(err: unknown, mode: InferenceMode): HybridAIError {
   if (err instanceof z.ZodError || err instanceof SyntaxError) {
     return new HybridAIError(
       'INVALID_RESPONSE',
-      'AI response did not match the required structured threat schema.',
+      'AI response was incomplete or did not match the required structured threat schema.',
       err
     );
   }
@@ -283,9 +309,7 @@ export async function executeHybridInference(
     const mappedSource = mapSDKInferenceSource(sdkSource);
 
     const rawText = result.response.text();
-    const cleaned = rawText.replace(/```json\n?|```/g, '').trim();
-    const parsed = JSON.parse(cleaned);
-    const validated = ThreatResponseSchema.parse(parsed);
+    const validated = parseAndValidateModelResponse(rawText);
 
     const latencyMs = Math.round(performance.now() - startTime);
     const modelIdentifier =
