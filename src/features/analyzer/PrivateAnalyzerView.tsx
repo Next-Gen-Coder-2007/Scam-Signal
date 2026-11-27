@@ -473,9 +473,11 @@ export const PrivateAnalyzerView: React.FC = () => {
         initialChannel={mapChannelForReport(channel)}
         initialThreatLevel={reportTarget?.riskLevel ?? 'SUSPICIOUS'}
         initialCategory={reportTarget?.scamCategory ?? 'phishing'}
+        initialIndicators={reportTarget?.manipulationPatterns ?? []}
+        initialEvidence={reportTarget?.observedEvidence ?? []}
         onSubmitted={(item) => {
           setShareSuccessNotice(
-            `Redacted report #${item.id} published to the community feed with your consent.`
+            `Pending report #${item.id} submitted with your consent (awaiting analyst verification).`
           );
           setTimeout(() => setShareSuccessNotice(null), 5000);
         }}

@@ -9,14 +9,19 @@ import {
 } from 'lucide-react';
 import { Dialog } from '../ui/Dialog';
 import { Button } from '../ui/Button';
-import { Select, Textarea } from '../ui/Input';
+import { Input, Select, Textarea } from '../ui/Input';
 import { ThreatLevel, ThreatSummaryItem } from '../../types/threat';
 import {
   inspectAndRedactPII,
   containsPII,
+  redactPII,
   RedactionSummaryItem,
 } from '../../utils/redactor';
-import { submitPublicThreat } from '../../services/firestore/threatService';
+import {
+  submitPendingReport,
+  DuplicateReportError,
+} from '../../services/firestore/threatService';
+import { ReportVisibility } from '../../services/firestore/threatConverter';
 import { firebaseStatus } from '../../services/firebase/firebaseApp';
 import { useAuth } from '../../context/AuthContext';
 import { AuthModal } from '../auth/AuthModal';
@@ -28,7 +33,13 @@ interface CommunityReportModalProps {
   initialChannel?: 'sms' | 'email' | 'whatsapp' | 'call' | 'web';
   initialThreatLevel?: ThreatLevel;
   initialCategory?: string;
+  initialIndicators?: string[];
+  initialEvidence?: string[];
   onSubmitted?: (item: ThreatSummaryItem) => void;
+}
+
+function getTodayDateString(): string {
+  return new Date().toISOString().slice(0, 10);
 }
 
 export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
@@ -36,14 +47,18 @@ export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
   onClose,
   initialRawContent = '',
   initialChannel = 'sms',
-  initialThreatLevel = 'CRITICAL',
-  initialCategory = 'BANK_IMPERSONATION',
+  initialThreatLevel = 'SUSPICIOUS',
+  initialCategory = 'phishing',
+  initialIndicators = [],
+  initialEvidence = [],
   onSubmitted,
 }) => {
   const { user } = useAuth();
   const [channel, setChannel] = useState<'sms' | 'email' | 'whatsapp' | 'call' | 'web'>(initialChannel);
   const [threatLevel, setThreatLevel] = useState<ThreatLevel>(initialThreatLevel);
   const [category, setCategory] = useState(initialCategory);
+  const [observedDate, setObservedDate] = useState(getTodayDateString());
+  const [visibility, setVisibility] = useState<ReportVisibility>('community_public');
   const [editedText, setEditedText] = useState('');
   const [autoRedactions, setAutoRedactions] = useState<RedactionSummaryItem[]>([]);
   const [hasConsented, setHasConsented] = useState(false);
@@ -59,11 +74,14 @@ export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
     setChannel(initialChannel);
     setThreatLevel(initialThreatLevel);
     setCategory(initialCategory);
+    setObservedDate(getTodayDateString());
+    setVisibility('community_public');
     setHasConsented(false);
     setSubmitError(null);
   }, [isOpen, initialRawContent, initialChannel, initialThreatLevel, initialCategory]);
 
   const remainingPII = containsPII(editedText);
+  const scrubbedEvidence = initialEvidence.map((e) => redactPII(e)).filter(Boolean);
 
   const handleRerunRedactor = () => {
     const inspection = inspectAndRedactPII(editedText);
@@ -90,33 +108,40 @@ export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const created = await submitPublicThreat({
+      const created = await submitPendingReport({
         reporterUid: user.uid,
         rawContent: editedText,
-        threatLevel,
-        threatCategories: [category],
-        tacticalIndicators: [`Channel: ${channel.toUpperCase()}`],
+        category,
+        indicators: initialIndicators,
+        evidence: scrubbedEvidence,
+        riskAssessment: threatLevel,
+        observedDate,
+        visibility,
         inferenceSource: 'on_device',
         channel,
       });
 
       onSubmitted?.({
-        id: created.id || `th-${Date.now()}`,
-        threatLevel: created.threatLevel,
+        id: created.id || `rep-${Date.now()}`,
+        threatLevel: created.riskAssessment,
         confidenceScore: 0,
-        threatCategory: category,
+        threatCategory: created.category,
         redactedExcerpt: created.redactedSummary,
         channel: created.channel,
         inferenceSource: created.inferenceSource,
-        timestamp: 'Just now',
+        timestamp: created.observedDate,
         upvotes: 0,
-        campaignId: created.campaignId,
+        campaignId: null,
       });
       onClose();
     } catch (err: unknown) {
-      setSubmitError(
-        err instanceof Error ? err.message : 'Failed to publish community report.'
-      );
+      if (err instanceof DuplicateReportError) {
+        setSubmitError(err.message);
+      } else {
+        setSubmitError(
+          err instanceof Error ? err.message : 'Failed to publish community report.'
+        );
+      }
     } finally {
       setSubmitting(false);
     }
@@ -126,6 +151,7 @@ export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
     Boolean(editedText.trim()) &&
     !remainingPII &&
     hasConsented &&
+    Boolean(observedDate) &&
     firebaseStatus.isConfigured &&
     Boolean(user);
 
@@ -134,8 +160,8 @@ export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
       <Dialog
         isOpen={isOpen}
         onClose={onClose}
-        title="Review & Consent Before Community Reporting"
-        description="Private analysis stays on your device. Edit the redacted text below before anything is shared."
+        title="Submit Redacted Scam Observation"
+        description="Submitted as a pending report (never auto-verified). Edit the redacted text before publishing."
         icon={<ShieldCheck className="w-4 h-4 text-emerald-400" />}
         maxWidth="2xl"
         footer={
@@ -150,7 +176,7 @@ export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
               disabled={!canPublish}
               isLoading={submitting}
             >
-              Publish Redacted Report
+              Submit Pending Report
             </Button>
           </>
         }
@@ -199,13 +225,14 @@ export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
             </Select>
 
             <Select
-              label="Risk Level"
+              label="Risk Assessment"
               value={threatLevel}
               onChange={(e) => setThreatLevel(e.target.value as ThreatLevel)}
             >
               <option value="CRITICAL">Critical</option>
               <option value="HIGH">High Risk</option>
               <option value="SUSPICIOUS">Suspicious</option>
+              <option value="UNKNOWN">Ambiguous</option>
             </Select>
 
             <Select
@@ -223,12 +250,32 @@ export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
             </Select>
           </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input
+              label="Observed Date"
+              type="date"
+              value={observedDate}
+              max={getTodayDateString()}
+              onChange={(e) => setObservedDate(e.target.value)}
+              required
+            />
+
+            <Select
+              label="Visibility Preference"
+              value={visibility}
+              onChange={(e) => setVisibility(e.target.value as ReportVisibility)}
+            >
+              <option value="community_public">Community Public Feed (Redacted)</option>
+              <option value="analysts_only">Analysts Only (Private Triage)</option>
+            </Select>
+          </div>
+
           {/* Editable Redacted Preview */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-zinc-300 flex items-center gap-1.5">
                 <Eye className="w-3.5 h-3.5 text-cyan-400" />
-                Editable Redacted Text (Remove any remaining personal context)
+                Editable Redacted Observation
               </span>
               <Button
                 type="button"
@@ -257,11 +304,11 @@ export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
           {/* Transparent Data-Sharing Explanation */}
           <div className="p-3 rounded-md bg-canvas border border-surface-border text-[11px] text-zinc-400 space-y-1.5 leading-relaxed">
             <p className="font-semibold text-zinc-200">
-              What will be shared with the public community feed:
+              What will be stored in Firestore (<code className="font-mono text-cyan-300">pending_reports</code>):
             </p>
             <ul className="list-disc list-inside space-y-0.5">
               <li>
-                <strong className="text-zinc-300">Published:</strong> Your edited redacted text above, channel, category, risk level, and a pattern digest used strictly to group similar reports (hashing is not guaranteed anonymization).
+                <strong className="text-zinc-300">Stored:</strong> Your edited redacted summary, category, indicators, sanitized evidence quotes, risk assessment, observed date, visibility preference, server timestamp, and <code className="font-mono">verificationStatus: &quot;pending&quot;</code>.
               </li>
               <li>
                 <strong className="text-zinc-300">Kept Private:</strong> Your original unredacted message, any personal details you removed, and your email address.
@@ -275,7 +322,7 @@ export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
               <span>
                 {!firebaseStatus.isConfigured
                   ? 'Cloud Firestore is not configured in .env. Community publishing is disabled.'
-                  : 'Sign in with Firebase Auth to publish a redacted community report.'}
+                  : 'Sign in with Firebase Auth to submit a pending community report.'}
               </span>
               <Button
                 type="button"
@@ -298,7 +345,7 @@ export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
               className="mt-0.5 rounded border-surface-subtle bg-canvas text-accent-violet focus:ring-violet-500"
             />
             <span>
-              I have reviewed and edited the redacted text above, understand what data will be published to the community feed, and explicitly consent to share it.
+              I have reviewed and edited the redacted text above, understand what data will be stored under <code className="font-mono text-zinc-300">{visibility}</code> visibility, and explicitly consent to submit this pending report.
             </span>
           </label>
         </form>

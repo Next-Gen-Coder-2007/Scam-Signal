@@ -151,6 +151,9 @@ export const CommunityFeedView: React.FC = () => {
                   <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-surface-elevated text-zinc-400 border border-surface-border">
                     {threat.channel}
                   </span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-950/30 text-amber-300 border border-amber-500/25">
+                    Pending Review
+                  </span>
                   <span className="text-xs text-zinc-500 font-mono">{threat.timestamp}</span>
                 </div>
 
@@ -169,7 +172,7 @@ export const CommunityFeedView: React.FC = () => {
               <div className="mt-3 flex items-center justify-between text-xs text-zinc-400 pt-2.5 border-t border-surface-border">
                 <div className="flex items-center gap-4">
                   <span className="text-[11px] text-zinc-400 font-mono">
-                    {threat.upvotes || 0} Corroborations
+                    Status: Pending Triage
                   </span>
                   <span className="text-surface-subtle">|</span>
                   <span className="text-[11px] text-zinc-500">
