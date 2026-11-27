@@ -248,7 +248,7 @@ export const AnalysisResultCard: React.FC<AnalysisResultCardProps> = ({
             className="w-full sm:w-auto"
           >
             <Radio className="w-3.5 h-3.5" />
-            <span>Share Scrubbed Signal to Feed</span>
+            <span>Prepare Community Report</span>
           </Button>
         )}
       </div>

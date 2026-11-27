@@ -19,6 +19,7 @@ import { Textarea, Select } from '../../components/ui/Input';
 import { useScamAnalyzer } from '../../hooks/useScamAnalyzer';
 import { AnalysisResultCard } from '../../components/scam/AnalysisResultCard';
 import { RedactionPreviewModal } from '../../components/scam/RedactionPreviewModal';
+import { CommunityReportModal } from '../../components/scam/CommunityReportModal';
 import {
   ThreatAnalysisResult,
   AnalyzerChannel,
@@ -74,6 +75,8 @@ export const PrivateAnalyzerView: React.FC = () => {
   const [content, setContent] = useState('');
   const [channel, setChannel] = useState<AnalyzerChannel>('sms');
   const [showRedactionModal, setShowRedactionModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportTarget, setReportTarget] = useState<ThreatAnalysisResult | null>(null);
   const [inferenceMode, setInferenceMode] = useState<InferenceMode>(
     InferenceMode.PREFER_ON_DEVICE
   );
@@ -136,10 +139,17 @@ export const PrivateAnalyzerView: React.FC = () => {
   };
 
   const handleShareToFeed = (analyzed: ThreatAnalysisResult) => {
-    setShareSuccessNotice(
-      `Scrubbed signal #${analyzed.id} prepared with pattern hash ${analyzed.normalizedPatternHash.slice(0, 8)}. Use Threat Feed to publish to Cloud Firestore.`
-    );
-    setTimeout(() => setShareSuccessNotice(null), 5000);
+    setReportTarget(analyzed);
+    setShowReportModal(true);
+  };
+
+  const mapChannelForReport = (
+    ch: AnalyzerChannel
+  ): 'sms' | 'email' | 'whatsapp' | 'call' | 'web' => {
+    if (ch === 'sms' || ch === 'email' || ch === 'whatsapp' || ch === 'call' || ch === 'web') {
+      return ch;
+    }
+    return ch === 'job_offer' ? 'web' : 'sms';
   };
 
   const isBusy = status === 'analyzing' || status === 'downloading';
@@ -454,6 +464,21 @@ export const PrivateAnalyzerView: React.FC = () => {
         isOpen={showRedactionModal}
         onClose={() => setShowRedactionModal(false)}
         rawText={content}
+      />
+
+      <CommunityReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        initialRawContent={content}
+        initialChannel={mapChannelForReport(channel)}
+        initialThreatLevel={reportTarget?.riskLevel ?? 'SUSPICIOUS'}
+        initialCategory={reportTarget?.scamCategory ?? 'phishing'}
+        onSubmitted={(item) => {
+          setShareSuccessNotice(
+            `Redacted report #${item.id} published to the community feed with your consent.`
+          );
+          setTimeout(() => setShareSuccessNotice(null), 5000);
+        }}
       />
     </div>
   );
