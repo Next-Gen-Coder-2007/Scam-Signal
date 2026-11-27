@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { redactPII, containsPII, computePatternHash } from '../../src/utils/redactor';
+import {
+  redactPII,
+  inspectAndRedactPII,
+  containsPII,
+  computePatternHash,
+} from '../../src/utils/redactor';
 
 describe('PII Redactor and Pattern Hasher', () => {
   it('scrubs international and standard phone numbers', () => {
@@ -35,9 +40,55 @@ describe('PII Redactor and Pattern Hasher', () => {
     expect(scrubbed).toContain('OTP [REDACTED_SECRET]');
   });
 
+  it('scrubs street and apartment physical addresses', () => {
+    const raw =
+      'Courier delivery failed at 742 Evergreen Terrace, Apt 4B and Flat 12, Oakwood Plaza. Update now.';
+    const scrubbed = redactPII(raw);
+    expect(scrubbed).not.toContain('Flat 12');
+    expect(scrubbed).toContain('[REDACTED_ADDRESS]');
+
+    const streetRaw = 'Package waiting at 125 Market Street, Suite 200.';
+    const streetScrubbed = redactPII(streetRaw);
+    expect(streetScrubbed).not.toContain('125 Market Street');
+    expect(streetScrubbed).toContain('[REDACTED_ADDRESS]');
+  });
+
+  it('scrubs contextual personal names without over-redacting generic words', () => {
+    const raw = 'Dear John Smith, I am Sarah Jenkins from HR. Regards, Priya.';
+    const scrubbed = redactPII(raw);
+    expect(scrubbed).not.toContain('John Smith');
+    expect(scrubbed).not.toContain('Sarah Jenkins');
+    expect(scrubbed).not.toContain('Priya');
+    expect(scrubbed).toContain('Dear [REDACTED_NAME]');
+    expect(scrubbed).toContain('I am [REDACTED_NAME]');
+    expect(scrubbed).toContain('Regards, [REDACTED_NAME]');
+  });
+
+  it('scrubs sensitive URL query parameters like tokens and OTPs', () => {
+    const raw = 'Verify at https://example-login.top/auth?token=abc123secret&otp=991822';
+    const scrubbed = redactPII(raw);
+    expect(scrubbed).not.toContain('abc123secret');
+    expect(scrubbed).not.toContain('991822');
+    expect(scrubbed).toContain('token=[REDACTED_TOKEN]');
+    expect(scrubbed).toContain('otp=[REDACTED_TOKEN]');
+  });
+
+  it('provides accurate redaction counts via inspectAndRedactPII', () => {
+    const raw =
+      'Hi Alex Rivera, send $50 to pay@okaxis or email scammer@fraud.xyz from 100 Pine Road.';
+    const inspection = inspectAndRedactPII(raw);
+    expect(inspection.hasRemainingPII).toBe(false);
+    expect(inspection.redactions.length).toBeGreaterThanOrEqual(4);
+    expect(inspection.redactedText).not.toContain('Alex Rivera');
+    expect(inspection.redactedText).not.toContain('pay@okaxis');
+    expect(inspection.redactedText).not.toContain('scammer@fraud.xyz');
+    expect(inspection.redactedText).not.toContain('100 Pine Road');
+  });
+
   it('correctly detects presence of PII via containsPII', () => {
     expect(containsPII('Reach me at support@bankfraud.xyz')).toBe(true);
     expect(containsPII('Your OTP is 9182')).toBe(true);
+    expect(containsPII('Deliver to 450 Oak Avenue')).toBe(true);
     expect(containsPII('Generic notification with clean content')).toBe(false);
   });
 
