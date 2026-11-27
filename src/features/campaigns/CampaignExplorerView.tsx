@@ -1,142 +1,260 @@
-import React, { useMemo } from 'react';
-import { Fingerprint, Hash, Network, Database } from 'lucide-react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  Network,
+  Database,
+  Calendar,
+  Clock,
+  ArrowRight,
+  AlertTriangle,
+  Loader2,
+  RefreshCw,
+  Fingerprint,
+} from 'lucide-react';
 import { Card } from '../../components/common/Card';
 import { EmptyState } from '../../components/common/EmptyState';
-import { useCommunityFeed } from '../../hooks/useCommunityFeed';
-import { clusterThreatReports } from '../../services/campaigns/clusteringService';
-import { PublicThreatDocument } from '../../services/firestore/threatConverter';
-import { Timestamp } from 'firebase/firestore';
+import { Button } from '../../components/ui/Button';
+import { CampaignStatusBadge } from '../../components/campaigns/CampaignStatusBadge';
+import { firebaseStatus } from '../../services/firebase/firebaseApp';
+import {
+  fetchCampaignIntelligenceList,
+  type CampaignIntelligenceSummary,
+  type CampaignVerificationStage,
+} from '../../services/firestore/campaignIntelligenceService';
+
+function formatDateLabel(iso: string | null): string {
+  if (!iso) return 'Not recorded';
+  return iso.slice(0, 10);
+}
+
+function formatCategoryLabel(category: string): string {
+  return category
+    .split('_')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+}
 
 export const CampaignExplorerView: React.FC = () => {
-  const { threats, isFirebaseReady } = useCommunityFeed();
+  const [campaigns, setCampaigns] = useState<CampaignIntelligenceSummary[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [stageFilter, setStageFilter] = useState<'all' | CampaignVerificationStage>('all');
 
-  const threatDocs = useMemo<PublicThreatDocument[]>(() => {
-    return threats.map((t) => ({
-      id: t.id,
-      reporterUid: 'community-member',
-      threatLevel: t.threatLevel,
-      threatCategories: [t.threatCategory],
-      redactedSummary: t.redactedExcerpt,
-      normalizedPatternHash: t.campaignId ? t.campaignId.replace('camp-', '') : 'unhashed',
-      tacticalIndicators: [
-        `Observed vector: ${t.channel.toUpperCase()}`,
-        `Threat Category: ${t.threatCategory}`,
-      ],
-      inferenceSource: t.inferenceSource,
-      channel: t.channel,
-      upvotes: t.upvotes || 0,
-      campaignId: t.campaignId || null,
-      createdAt: Timestamp.now(),
-    }));
-  }, [threats]);
+  const loadCampaigns = useCallback(async () => {
+    if (!firebaseStatus.isConfigured) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchCampaignIntelligenceList();
+      setCampaigns(data);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Failed to load campaign intelligence from Firestore.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const liveCampaigns = useMemo(() => {
-    return clusterThreatReports(threatDocs);
-  }, [threatDocs]);
+  useEffect(() => {
+    void loadCampaigns();
+  }, [loadCampaigns]);
+
+  const filteredCampaigns = useMemo(() => {
+    if (stageFilter === 'all') return campaigns;
+    return campaigns.filter((c) => c.verificationStage === stageFilter);
+  }, [campaigns, stageFilter]);
+
+  const stageCounts = useMemo(() => {
+    return {
+      all: campaigns.length,
+      potential: campaigns.filter((c) => c.verificationStage === 'potential').length,
+      under_review: campaigns.filter((c) => c.verificationStage === 'under_review').length,
+      verified: campaigns.filter((c) => c.verificationStage === 'verified').length,
+    };
+  }, [campaigns]);
 
   return (
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-surface-border">
         <div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 flex-wrap">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-100">
-              Correlated Campaign Clusters
+              Campaign Intelligence
             </h1>
             <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-cyan-400 border border-surface-border">
-              Deterministic Matching
+              Firestore Evidence
             </span>
           </div>
           <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-            Grouping decentralized scam reports through cryptographic pattern hashes without hallucinated links.
+            Inspect potential, under-review, and verified scam campaigns backed by deterministic report-to-campaign links.
           </p>
         </div>
+
+        {firebaseStatus.isConfigured && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => void loadCampaigns()}
+            disabled={loading}
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </Button>
+        )}
       </div>
 
-      {/* Methodology Banner */}
-      <Card className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-md bg-surface-elevated text-cyan-400 border border-surface-border">
+      {/* Methodology & Status Legend */}
+      <Card className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div className="p-2.5 rounded-md bg-surface-elevated text-cyan-400 border border-surface-border shrink-0">
             <Fingerprint className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-zinc-200">
-              Zero-Hallucination Campaign Rules
-            </h3>
-            <p className="text-xs text-zinc-400 mt-0.5">
-              Clusters are formed strictly from SHA-256 pattern digests of already-redacted reports, shared indicators, and verified payment handles. Hashing is used for deterministic grouping, not as guaranteed anonymization.
+            <h2 className="text-sm font-semibold text-zinc-200">
+              Transparent Campaign Attribution
+            </h2>
+            <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed">
+              Potential campaigns are never automatically marked verified. Only campaigns with
+              explicit analyst review move to Under Review or Verified Campaign status.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 text-xs font-mono text-zinc-400 shrink-0">
-          <div className="px-3 py-1.5 rounded bg-canvas border border-surface-border">
-            <span className="text-emerald-400">{liveCampaigns.length}</span> Clusters
-          </div>
-          <div className="px-3 py-1.5 rounded bg-canvas border border-surface-border">
-            <span className="text-cyan-400">{threats.length}</span> Ingested Signals
-          </div>
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {(
+            [
+              ['all', `All (${stageCounts.all})`],
+              ['potential', `Potential (${stageCounts.potential})`],
+              ['under_review', `Under Review (${stageCounts.under_review})`],
+              ['verified', `Verified (${stageCounts.verified})`],
+            ] as const
+          ).map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setStageFilter(key)}
+              className={`px-2.5 py-1 rounded text-xs font-mono border transition-colors ${
+                stageFilter === key
+                  ? 'bg-accent-violet/20 border-accent-violet text-zinc-100'
+                  : 'bg-canvas border-surface-border text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </Card>
 
-      {/* Campaign Cards */}
-      <div className="grid grid-cols-1 gap-4">
-        {!isFirebaseReady ? (
-          <EmptyState
-            icon={Database}
-            title="Cloud Firestore Not Configured"
-            description="Campaign clustering aggregates scrubbed community reports from Cloud Firestore. Configure your Firebase environment variables in .env to view live campaign clusters."
-          />
-        ) : liveCampaigns.length > 0 ? (
-          liveCampaigns.map((camp) => (
+      {/* Main Content */}
+      {!firebaseStatus.isConfigured ? (
+        <EmptyState
+          icon={Database}
+          title="Cloud Firestore Not Configured"
+          description="Campaign Intelligence reads real correlated campaigns and report links from Cloud Firestore. Configure your Firebase environment variables in .env to view live campaigns."
+        />
+      ) : loading ? (
+        <div className="flex flex-col items-center justify-center py-16 text-zinc-400 gap-3">
+          <Loader2 className="w-6 h-6 animate-spin text-accent-violet-muted" />
+          <p className="text-xs font-mono">Loading campaign intelligence from Firestore...</p>
+        </div>
+      ) : error ? (
+        <Card className="border-rose-500/30 bg-rose-950/20 space-y-3">
+          <div className="flex items-center gap-2 text-rose-300 text-sm font-semibold">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <span>Unable to Load Campaigns</span>
+          </div>
+          <p className="text-xs text-rose-200/80">{error}</p>
+          <Button variant="secondary" size="sm" onClick={() => void loadCampaigns()}>
+            Retry
+          </Button>
+        </Card>
+      ) : filteredCampaigns.length === 0 ? (
+        <EmptyState
+          icon={Network}
+          title="No Matching Campaigns Found"
+          description={
+            campaigns.length === 0
+              ? 'No correlated campaigns have been recorded in Firestore yet.'
+              : 'No campaigns match the selected verification stage filter.'
+          }
+        />
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {filteredCampaigns.map((camp) => (
             <Card key={camp.id} className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2.5 flex-wrap">
                     <h3 className="text-base font-semibold text-zinc-100">{camp.name}</h3>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-rose-950/40 text-rose-300 border border-rose-500/30">
-                      {camp.status}
-                    </span>
+                    <CampaignStatusBadge stage={camp.verificationStage} />
                   </div>
-                  <p className="text-xs text-zinc-400 mt-0.5">{camp.threatType}</p>
+                  <p className="text-xs font-mono text-zinc-400">
+                    Category: <span className="text-zinc-200">{formatCategoryLabel(camp.category)}</span>
+                  </p>
                 </div>
 
-                <div className="flex items-center gap-2 text-xs font-mono">
-                  <span className="px-2.5 py-1 rounded bg-canvas border border-surface-border text-zinc-300">
-                    {camp.totalSignals} Signals
+                <Link to={`/campaigns/${camp.id}`} className="shrink-0">
+                  <Button variant="secondary" size="sm">
+                    <span>Inspect Evidence</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Button>
+                </Link>
+              </div>
+
+              {/* Real Firestore Metrics */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                <div className="px-3 py-2 rounded bg-void border border-surface-border flex items-center justify-between">
+                  <span className="text-zinc-400">Associated Reports</span>
+                  <span className="font-mono font-semibold text-zinc-100">
+                    {camp.associatedReportCount}
                   </span>
-                  <span className="px-2.5 py-1 rounded bg-canvas border border-surface-border text-cyan-300 flex items-center gap-1">
-                    <Hash className="w-3 h-3 text-cyan-400" />
-                    <span>{camp.primaryHash.slice(0, 10)}</span>
+                </div>
+                <div className="px-3 py-2 rounded bg-void border border-surface-border flex items-center justify-between">
+                  <span className="text-zinc-400 flex items-center gap-1">
+                    <Calendar className="w-3 h-3 text-zinc-500" />
+                    First Observed
+                  </span>
+                  <span className="font-mono text-zinc-200">
+                    {formatDateLabel(camp.firstObservedAt)}
+                  </span>
+                </div>
+                <div className="px-3 py-2 rounded bg-void border border-surface-border flex items-center justify-between">
+                  <span className="text-zinc-400 flex items-center gap-1">
+                    <Clock className="w-3 h-3 text-zinc-500" />
+                    Latest Activity
+                  </span>
+                  <span className="font-mono text-zinc-200">
+                    {formatDateLabel(camp.latestActivityAt)}
                   </span>
                 </div>
               </div>
 
+              {/* Shared Indicators */}
               <div>
                 <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block mb-1.5">
-                  Observed Tactical Indicators (IOCs)
+                  Shared Indicators
                 </span>
-                <div className="flex flex-wrap gap-2">
-                  {camp.indicators.map((ioc, idx) => (
-                    <span
-                      key={idx}
-                      className="px-2.5 py-1 rounded bg-canvas border border-surface-border text-xs font-mono text-zinc-300"
-                    >
-                      {ioc}
-                    </span>
-                  ))}
-                </div>
+                {camp.sharedIndicators.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {camp.sharedIndicators.map((indicator) => (
+                      <span
+                        key={indicator}
+                        className="px-2 py-0.5 rounded text-[11px] font-mono bg-surface-elevated border border-surface-border text-cyan-300"
+                      >
+                        {indicator}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-zinc-500">No shared indicator tags recorded.</p>
+                )}
               </div>
             </Card>
-          ))
-        ) : (
-          <EmptyState
-            icon={Network}
-            title="No Active Campaign Clusters"
-            description="Reports with matching normalized pattern hashes will cluster automatically as community signals arrive."
-          />
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

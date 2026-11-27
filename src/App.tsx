@@ -5,6 +5,7 @@ import { AppShell } from './components/layout/AppShell';
 import { PrivateAnalyzerView } from './features/analyzer/PrivateAnalyzerView';
 import { CommunityFeedView } from './features/feed/CommunityFeedView';
 import { CampaignExplorerView } from './features/campaigns/CampaignExplorerView';
+import { CampaignDetailsView } from './features/campaigns/CampaignDetailsView';
 import { TriageConsoleView } from './features/admin/TriageConsoleView';
 import { PrivacyPolicyView } from './features/privacy/PrivacyPolicyView';
 import { AuthPage } from './features/auth/AuthPage';
@@ -20,6 +21,7 @@ export const App: React.FC = () => {
             <Route index element={<PrivateAnalyzerView />} />
             <Route path="feed" element={<CommunityFeedView />} />
             <Route path="campaigns" element={<CampaignExplorerView />} />
+            <Route path="campaigns/:campaignId" element={<CampaignDetailsView />} />
             <Route
               path="admin"
               element={
