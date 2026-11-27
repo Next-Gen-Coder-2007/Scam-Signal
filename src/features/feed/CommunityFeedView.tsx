@@ -6,31 +6,55 @@ import {
   Database,
   RefreshCw,
   Radio,
+  Search,
+  Eye,
+  Calendar,
+  ShieldCheck,
+  Clock,
 } from 'lucide-react';
 import { Card } from '../../components/common/Card';
 import { ThreatBadge } from '../../components/common/ThreatBadge';
-import { InferenceBadge } from '../../components/common/InferenceBadge';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Button } from '../../components/ui/Button';
+import { Input, Select } from '../../components/ui/Input';
 import { AuthModal } from '../../components/auth/AuthModal';
 import { CommunityReportModal } from '../../components/scam/CommunityReportModal';
+import { ReviewStatusBadge } from '../../components/scam/ReviewStatusBadge';
+import { ReportDetailModal } from '../../components/scam/ReportDetailModal';
 import { useCommunityFeed } from '../../hooks/useCommunityFeed';
 import { useAuth } from '../../context/AuthContext';
+import { PendingReportDocument } from '../../services/firestore/threatConverter';
+import {
+  SCAM_CATEGORY_LABELS,
+  ScamCategory,
+} from '../../services/ai/analysisSchema';
+import { ThreatLevel } from '../../types/threat';
+import { redactPII } from '../../utils/redactor';
 
 export const CommunityFeedView: React.FC = () => {
-  const { threats, loading, error, isFirebaseReady, refresh } = useCommunityFeed();
+  const {
+    reports,
+    loading,
+    loadingMore,
+    error,
+    hasMore,
+    category,
+    riskLevel,
+    sortOrder,
+    searchQuery,
+    setCategory,
+    setRiskLevel,
+    setSortOrder,
+    setSearchQuery,
+    loadMore,
+    refresh,
+    isFirebaseReady,
+  } = useCommunityFeed();
   const { user } = useAuth();
 
-  const [filter, setFilter] = useState<'all' | 'critical' | 'sms' | 'whatsapp'>('all');
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-
-  const filteredThreats = threats.filter((t) => {
-    if (filter === 'critical') return t.threatLevel === 'CRITICAL';
-    if (filter === 'sms') return t.channel === 'sms';
-    if (filter === 'whatsapp') return t.channel === 'whatsapp';
-    return true;
-  });
+  const [selectedReport, setSelectedReport] = useState<PendingReportDocument | null>(null);
 
   const handleOpenSubmit = () => {
     if (!isFirebaseReady || !user) {
@@ -40,6 +64,13 @@ export const CommunityFeedView: React.FC = () => {
     setIsSubmitModalOpen(true);
   };
 
+  const handleResetFilters = () => {
+    setCategory('ALL');
+    setRiskLevel('ALL');
+    setSortOrder('newest');
+    setSearchQuery('');
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -47,7 +78,7 @@ export const CommunityFeedView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2.5">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-100">
-              Community Threat Intelligence
+              Community Reports
             </h1>
             <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-zinc-300 border border-surface-border">
               <span
@@ -55,32 +86,15 @@ export const CommunityFeedView: React.FC = () => {
                   isFirebaseReady ? 'bg-emerald-400' : 'bg-amber-400'
                 }`}
               />
-              {isFirebaseReady ? `Firestore (${threats.length})` : 'Local Mode'}
+              {isFirebaseReady ? `${reports.length} Loaded` : 'Local Mode'}
             </span>
           </div>
           <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-            Redacted, user-consented scam reports corroborated by the community.
+            Searchable, redacted scam observations. Verified warnings are clearly separated from unverified user reports.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="flex items-center gap-1 p-1 bg-surface rounded-md border border-surface-border">
-            {(['all', 'critical', 'sms', 'whatsapp'] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setFilter(tab)}
-                className={`px-2.5 py-1 text-[11px] rounded font-medium transition-colors uppercase ${
-                  filter === tab
-                    ? 'bg-surface-elevated text-zinc-100 border border-surface-subtle'
-                    : 'text-zinc-400 hover:text-zinc-200 border border-transparent'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-
           {isFirebaseReady && (
             <Button variant="secondary" size="sm" onClick={refresh} disabled={loading}>
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -90,17 +104,89 @@ export const CommunityFeedView: React.FC = () => {
 
           <Button variant="primary" onClick={handleOpenSubmit}>
             <Plus className="w-3.5 h-3.5" />
-            <span>Submit Signal</span>
+            <span>Submit Report</span>
           </Button>
         </div>
       </div>
 
-      {/* Unconfigured State */}
+      {/* Visual Distinction Legend */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        <div className="p-3 rounded-md bg-emerald-950/15 border border-emerald-500/25 flex items-center gap-2.5">
+          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+          <div>
+            <span className="font-semibold text-emerald-300 block">Verified Warning</span>
+            <span className="text-[11px] text-zinc-400">
+              Reviewed and corroborated by an analyst.
+            </span>
+          </div>
+        </div>
+        <div className="p-3 rounded-md bg-amber-950/15 border border-amber-500/25 flex items-center gap-2.5">
+          <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+          <div>
+            <span className="font-semibold text-amber-300 block">Unverified User Report</span>
+            <span className="text-[11px] text-zinc-400">
+              Voluntarily submitted by a user; awaiting analyst review.
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Search & Filter Controls */}
+      <Card padding="sm" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="relative">
+          <Input
+            aria-label="Search community reports"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search evidence, category, indicators..."
+            className="pl-8"
+          />
+          <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-2.5 pointer-events-none" />
+        </div>
+
+        <Select
+          aria-label="Filter by scam category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
+          <option value="ALL">All Categories</option>
+          <option value="job_scam">Job Scam</option>
+          <option value="phishing">Phishing</option>
+          <option value="impersonation">Impersonation</option>
+          <option value="investment_fraud">Investment Fraud</option>
+          <option value="payment_fraud">Payment Fraud</option>
+          <option value="delivery_scam">Delivery Scam</option>
+          <option value="suspicious_links">Suspicious Links</option>
+        </Select>
+
+        <Select
+          aria-label="Filter by risk level"
+          value={riskLevel}
+          onChange={(e) => setRiskLevel(e.target.value as ThreatLevel | 'ALL')}
+        >
+          <option value="ALL">All Risk Levels</option>
+          <option value="CRITICAL">Critical Threat</option>
+          <option value="HIGH">High Risk</option>
+          <option value="SUSPICIOUS">Suspicious</option>
+          <option value="UNKNOWN">Ambiguous</option>
+        </Select>
+
+        <Select
+          aria-label="Sort by recency"
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
+        >
+          <option value="newest">Sort: Newest First</option>
+          <option value="oldest">Sort: Oldest First</option>
+        </Select>
+      </Card>
+
+      {/* States: Unconfigured / Error / Loading / Empty / List */}
       {!isFirebaseReady ? (
         <EmptyState
           icon={Database}
           title="Cloud Firestore Not Configured"
-          description="Community threat feed synchronization requires Firebase configuration. Add your Firebase project keys to .env (see .env.example) to read and publish scrubbed community signals."
+          description="Community reports require Firebase configuration. Add your Firebase project keys to .env (see .env.example) to query paginated public reports."
           action={{
             label: 'View Setup Instructions',
             onClick: () => setIsAuthModalOpen(true),
@@ -118,76 +204,106 @@ export const CommunityFeedView: React.FC = () => {
         </div>
       ) : loading ? (
         <Card className="p-8 text-center text-xs text-zinc-400">
-          Loading scrubbed threat signals from Cloud Firestore...
+          Loading community reports from Cloud Firestore...
         </Card>
-      ) : filteredThreats.length === 0 ? (
+      ) : reports.length === 0 ? (
         <EmptyState
           icon={Radio}
-          title="No Threat Signals Found"
-          description="No scrubbed threat reports match the selected filter in Cloud Firestore yet. Sign in and submit the first signal to help protect the community."
+          title="No Matching Community Reports"
+          description="No redacted reports match your current search or filter criteria."
           action={{
-            label: 'Submit Signal',
-            onClick: handleOpenSubmit,
+            label: 'Reset Filters',
+            onClick: handleResetFilters,
           }}
         />
       ) : (
         <div className="space-y-3">
-          {filteredThreats.map((threat) => (
-            <Card
-              key={threat.id}
-              variant={
-                threat.threatLevel === 'CRITICAL'
-                  ? 'critical'
-                  : threat.threatLevel === 'HIGH'
-                  ? 'warning'
-                  : 'default'
-              }
-              className="hover:border-surface-subtle transition-colors duration-150"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <ThreatBadge level={threat.threatLevel} />
-                  <InferenceBadge source={threat.inferenceSource} />
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-surface-elevated text-zinc-400 border border-surface-border">
-                    {threat.channel}
-                  </span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-950/30 text-amber-300 border border-amber-500/25">
-                    Pending Review
-                  </span>
-                  <span className="text-xs text-zinc-500 font-mono">{threat.timestamp}</span>
-                </div>
+          {reports.map((report) => {
+            const isVerified = report.verificationStatus === 'verified';
+            const categoryLabel =
+              SCAM_CATEGORY_LABELS[report.category as ScamCategory] ??
+              report.category.replace(/_/g, ' ');
+            const safeSummary = redactPII(report.redactedSummary);
 
-                {threat.campaignId && (
-                  <div className="flex items-center gap-1 text-[11px] font-mono text-cyan-300 bg-canvas border border-surface-border px-2 py-0.5 rounded">
-                    <Hash className="w-3 h-3 text-cyan-400" />
-                    <span>{threat.campaignId}</span>
+            return (
+              <Card
+                key={report.id}
+                variant={
+                  isVerified
+                    ? 'default'
+                    : report.riskAssessment === 'CRITICAL'
+                    ? 'critical'
+                    : report.riskAssessment === 'HIGH'
+                    ? 'warning'
+                    : 'default'
+                }
+                className="hover:border-surface-subtle transition-colors duration-150"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <ReviewStatusBadge status={report.verificationStatus} />
+                    <ThreatBadge level={report.riskAssessment} size="sm" />
+                    <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-surface-elevated text-zinc-200 border border-surface-border">
+                      {categoryLabel}
+                    </span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-canvas text-zinc-400 border border-surface-border">
+                      {report.channel}
+                    </span>
                   </div>
-                )}
-              </div>
 
-              <div className="mt-3 p-3 rounded-md bg-canvas border border-surface-border font-mono text-xs text-zinc-300 leading-relaxed">
-                {threat.redactedExcerpt}
-              </div>
-
-              <div className="mt-3 flex items-center justify-between text-xs text-zinc-400 pt-2.5 border-t border-surface-border">
-                <div className="flex items-center gap-4">
-                  <span className="text-[11px] text-zinc-400 font-mono">
-                    Status: Pending Triage
-                  </span>
-                  <span className="text-surface-subtle">|</span>
-                  <span className="text-[11px] text-zinc-500">
-                    Category: {threat.threatCategory}
-                  </span>
+                  <div className="flex items-center gap-2 text-[11px] font-mono text-zinc-400 shrink-0">
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span>{report.observedDate || 'Recent'}</span>
+                  </div>
                 </div>
 
-                <span className="text-[10px] font-mono text-zinc-500">
-                  ID: {threat.id}
-                </span>
-              </div>
-            </Card>
-          ))}
+                {/* Redacted Evidence Summary */}
+                <div className="mt-3 p-3 rounded-md bg-canvas border border-surface-border font-mono text-xs text-zinc-300 leading-relaxed line-clamp-3">
+                  {safeSummary}
+                </div>
+
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 pt-2.5 border-t border-surface-border">
+                  <div className="flex items-center gap-3 text-[11px] font-mono text-zinc-500">
+                    <span className="flex items-center gap-1">
+                      <Hash className="w-3 h-3 text-cyan-400" />
+                      {report.normalizedPatternHash.slice(0, 10)}
+                    </span>
+                    <span>•</span>
+                    <span>{report.indicators.length} indicators</span>
+                  </div>
+
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setSelectedReport(report)}
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>View Details</span>
+                  </Button>
+                </div>
+              </Card>
+            );
+          })}
+
+          {/* Cursor Pagination Controls */}
+          {hasMore && (
+            <div className="pt-2 flex justify-center">
+              <Button
+                variant="secondary"
+                onClick={loadMore}
+                isLoading={loadingMore}
+              >
+                {loadingMore ? 'Loading More...' : 'Load More Reports'}
+              </Button>
+            </div>
+          )}
         </div>
       )}
+
+      <ReportDetailModal
+        report={selectedReport}
+        onClose={() => setSelectedReport(null)}
+      />
 
       <CommunityReportModal
         isOpen={isSubmitModalOpen}
