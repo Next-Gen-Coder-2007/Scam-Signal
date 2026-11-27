@@ -9,6 +9,7 @@ import {
   ExternalLink,
   ShieldCheck,
   Cpu,
+  UserCog,
 } from 'lucide-react';
 import { NavItem } from '../../types/navigation';
 import { cn } from '../../utils/cn';
@@ -45,6 +46,12 @@ const NAV_ITEMS: NavItem[] = [
     href: '/privacy',
     icon: Lock,
     description: 'Zero-PII safeguards',
+  },
+  {
+    label: 'Profile & Settings',
+    href: '/profile',
+    icon: UserCog,
+    description: 'Account & AI preferences',
   },
 ];
 

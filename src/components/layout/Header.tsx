@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Menu, Lock, LogIn, LogOut, User } from 'lucide-react';
 import { InferenceBadge } from '../common/InferenceBadge';
 import { Button } from '../ui/Button';
@@ -50,12 +51,18 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
 
           {user ? (
             <div className="flex items-center gap-2">
-              <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded text-xs bg-surface border border-surface-border text-zinc-200">
+              <Link
+                to="/profile"
+                className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded text-xs bg-surface border border-surface-border text-zinc-200 hover:border-accent-violet/50 transition-colors"
+                title="Profile & Settings"
+              >
                 <User className="w-3.5 h-3.5 text-accent-violet-muted" />
                 <span className="max-w-[120px] truncate font-mono text-[11px]">
-                  {user.isAnonymous ? 'Guest' : user.email || user.uid.slice(0, 8)}
+                  {user.isAnonymous
+                    ? 'Guest'
+                    : user.displayName || user.email || user.uid.slice(0, 8)}
                 </span>
-              </div>
+              </Link>
               <Button variant="secondary" size="sm" onClick={signOut}>
                 <LogOut className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Sign Out</span>
