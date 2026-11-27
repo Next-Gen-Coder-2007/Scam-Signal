@@ -33,7 +33,7 @@ const CLAIMED_ORG_RULES: PatternRule<Exclude<ClaimedOrgType, 'unknown_unspecifie
   },
   {
     label: 'government_tax',
-    patterns: [/\b(irs|hmrc|income tax|tax refund|customs|government|ministry|social security|police|federal|court notice)\b/i],
+    patterns: [/\b(irs|hmrc|income tax|tax refund|tax department|tax authority|revenue service|customs|government|ministry|social security|police|federal|court notice)\b/i],
   },
   {
     label: 'postal_delivery',
@@ -68,7 +68,7 @@ const CLAIMED_ORG_RULES: PatternRule<Exclude<ClaimedOrgType, 'unknown_unspecifie
 const REQUESTED_ACTION_RULES: PatternRule<Exclude<RequestedAction, 'none_detected'>>[] = [
   {
     label: 'share_otp_or_credentials',
-    patterns: [/\b(otp|one[- ]time password|pin|cvv|password|passcode|login credentials|seed phrase|recovery phrase|verify your identity|update kyc)\b/i],
+    patterns: [/\b(otp|one[- ]time password|pin|cvv|password|passcode|login credentials|seed phrase|recovery phrase|verify your identity|verify your account|update kyc)\b/i],
   },
   {
     label: 'scan_qr_or_upi',
@@ -150,7 +150,7 @@ const URGENCY_PATTERN_RULES: PatternRule<UrgencyPattern>[] = [
   },
   {
     label: 'missed_delivery_hold',
-    patterns: [/\b(delivery failed|parcel on hold|package held|unable to deliver|reschedule delivery)\b/i],
+    patterns: [/\b(delivery failed|(?:parcel|package|delivery)\s+(?:is\s+)?on hold|package held|unable to deliver|reschedule delivery)\b/i],
   },
 ];
 
