@@ -9,17 +9,32 @@ import {
   signOutUser,
 } from '../services/firebase/authService';
 import { firebaseStatus } from '../services/firebase/firebaseApp';
+import {
+  UserProfileDocument,
+  UserPreferences,
+  loadOrCreateUserProfile,
+  updateUserProfilePreferences,
+} from '../services/firestore/userProfileService';
 
 interface AuthContextValue {
   user: AuthUser | null;
+  profile: UserProfileDocument | null;
   loading: boolean;
   error: string | null;
   isConfigured: boolean;
   signInGoogle: () => Promise<AuthUser | null>;
   signInEmail: (email: string, password: string) => Promise<AuthUser | null>;
-  signUpEmail: (email: string, password: string) => Promise<AuthUser | null>;
+  signUpEmail: (
+    email: string,
+    password: string,
+    displayName?: string
+  ) => Promise<AuthUser | null>;
   signInGuest: () => Promise<AuthUser | null>;
   signOut: () => Promise<void>;
+  updateProfileSettings: (updates: {
+    displayName?: string;
+    preferences?: Partial<UserPreferences>;
+  }) => Promise<UserProfileDocument | null>;
   clearError: () => void;
 }
 
@@ -27,12 +42,23 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [profile, setProfile] = useState<UserProfileDocument | null>(null);
   const [loading, setLoading] = useState<boolean>(firebaseStatus.isConfigured);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubscribe = subscribeToAuthChanges((authUser) => {
+    const unsubscribe = subscribeToAuthChanges(async (authUser) => {
       setUser(authUser);
+      if (authUser && firebaseStatus.isConfigured) {
+        try {
+          const loadedProfile = await loadOrCreateUserProfile(authUser);
+          setProfile(loadedProfile);
+        } catch {
+          setProfile(null);
+        }
+      } else {
+        setProfile(null);
+      }
       setLoading(false);
     });
     return () => unsubscribe();
@@ -66,8 +92,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 
   const signUpEmail = useCallback(
-    (email: string, password: string) =>
-      runAuthAction(() => signUpWithEmail(email, password)),
+    (email: string, password: string, displayName?: string) =>
+      runAuthAction(() => signUpWithEmail(email, password, displayName)),
     [runAuthAction]
   );
 
@@ -80,10 +106,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null);
     try {
       await signOutUser();
+      setUser(null);
+      setProfile(null);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Sign-out failed.');
     }
   }, []);
+
+  const updateProfileSettings = useCallback(
+    async (updates: {
+      displayName?: string;
+      preferences?: Partial<UserPreferences>;
+    }): Promise<UserProfileDocument | null> => {
+      if (!user || !profile) {
+        setError('You must be signed in to update profile settings.');
+        return null;
+      }
+      setError(null);
+      try {
+        const updated = await updateUserProfilePreferences(user.uid, updates, profile);
+        setProfile(updated);
+        if (updates.displayName) {
+          setUser((prev) =>
+            prev ? { ...prev, displayName: updated.displayName } : prev
+          );
+        }
+        return updated;
+      } catch (err: unknown) {
+        setError(
+          err instanceof Error ? err.message : 'Failed to update profile settings.'
+        );
+        return null;
+      }
+    },
+    [user, profile]
+  );
 
   const clearError = useCallback(() => setError(null), []);
 
@@ -91,6 +148,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider
       value={{
         user,
+        profile,
         loading,
         error,
         isConfigured: firebaseStatus.isConfigured,
@@ -99,6 +157,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signUpEmail,
         signInGuest,
         signOut,
+        updateProfileSettings,
         clearError,
       }}
     >
