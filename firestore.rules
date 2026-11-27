@@ -71,6 +71,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Collective AI Campaign Explanations (advisory only, separated from deterministic links)
+    match /campaign_analyses/{campaignId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // Legacy public_threats collection (locked to read-only for backward compatibility)
     match /public_threats/{threatId} {
       allow read: if true;

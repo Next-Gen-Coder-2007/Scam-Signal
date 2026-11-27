@@ -71,6 +71,27 @@ export interface ReportCampaignLinkDocument {
   updatedAt: Timestamp | FieldValue;
 }
 
+export interface CampaignAnalysisDocument {
+  id?: string;
+  campaignId: string;
+  deterministicSummary: {
+    status: 'CANDIDATE' | 'ACTIVE_WAVE';
+    verificationStatus: 'unverified';
+    totalReports: number;
+    supportingIndicators: string[];
+    linkCount: number;
+  };
+  sharedIndicatorsSummary: string;
+  relationshipExplanation: string;
+  inconsistencies: string[];
+  evidenceToReview: string[];
+  referencedReportIds: string[];
+  inferenceSource: InferenceSource;
+  modelIdentifier: string;
+  createdAt: Timestamp | FieldValue;
+  updatedAt: Timestamp | FieldValue;
+}
+
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
@@ -259,6 +280,64 @@ export const reportCampaignLinkConverter: FirestoreDataConverter<ReportCampaignL
         ? data.supportingIndicators
         : [],
       explanation: data.explanation || '',
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+    };
+  },
+};
+
+export const campaignAnalysisConverter: FirestoreDataConverter<CampaignAnalysisDocument> = {
+  toFirestore(analysis: CampaignAnalysisDocument) {
+    if (!analysis.campaignId) {
+      throw new Error('Campaign analysis requires a campaignId.');
+    }
+    return {
+      campaignId: analysis.campaignId,
+      deterministicSummary: {
+        status: analysis.deterministicSummary.status,
+        verificationStatus: 'unverified' as const,
+        totalReports: Math.max(0, analysis.deterministicSummary.totalReports),
+        supportingIndicators: analysis.deterministicSummary.supportingIndicators.slice(0, 30),
+        linkCount: Math.max(0, analysis.deterministicSummary.linkCount),
+      },
+      sharedIndicatorsSummary: analysis.sharedIndicatorsSummary,
+      relationshipExplanation: analysis.relationshipExplanation,
+      inconsistencies: analysis.inconsistencies.slice(0, 10),
+      evidenceToReview: analysis.evidenceToReview.slice(0, 10),
+      referencedReportIds: Array.from(new Set(analysis.referencedReportIds)).slice(0, 15),
+      inferenceSource: analysis.inferenceSource || 'unknown',
+      modelIdentifier: analysis.modelIdentifier || 'Firebase AI Logic',
+      createdAt: analysis.createdAt || serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    };
+  },
+
+  fromFirestore(
+    snapshot: QueryDocumentSnapshot,
+    options: SnapshotOptions
+  ): CampaignAnalysisDocument {
+    const data = snapshot.data(options);
+    return {
+      id: snapshot.id,
+      campaignId: data.campaignId || snapshot.id,
+      deterministicSummary: {
+        status: data.deterministicSummary?.status || 'CANDIDATE',
+        verificationStatus: 'unverified',
+        totalReports: Number(data.deterministicSummary?.totalReports || 0),
+        supportingIndicators: Array.isArray(data.deterministicSummary?.supportingIndicators)
+          ? data.deterministicSummary.supportingIndicators
+          : [],
+        linkCount: Number(data.deterministicSummary?.linkCount || 0),
+      },
+      sharedIndicatorsSummary: data.sharedIndicatorsSummary || '',
+      relationshipExplanation: data.relationshipExplanation || '',
+      inconsistencies: Array.isArray(data.inconsistencies) ? data.inconsistencies : [],
+      evidenceToReview: Array.isArray(data.evidenceToReview) ? data.evidenceToReview : [],
+      referencedReportIds: Array.isArray(data.referencedReportIds)
+        ? data.referencedReportIds
+        : [],
+      inferenceSource: data.inferenceSource || 'unknown',
+      modelIdentifier: data.modelIdentifier || 'Firebase AI Logic',
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     };
