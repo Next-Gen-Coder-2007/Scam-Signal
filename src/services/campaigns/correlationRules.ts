@@ -37,6 +37,9 @@ export const GENERIC_NON_DISCRIMINATIVE_WORDS = new Set([
   'today',
   'now',
   'immediately',
+  'the',
+  'this',
+  'below',
 ]);
 
 export const CorrelationEvidenceItemSchema = z.object({
