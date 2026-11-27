@@ -44,29 +44,29 @@ const EXAMPLE_MESSAGES: Array<{
   text: string;
 }> = [
   {
-    label: 'Bank Alert SMS',
+    label: 'Bank Alert SMS (Scam)',
     channel: 'sms',
     text: 'URGENT: Axis Bank alert. Your debit card 4532 9012 8841 9012 has been temporarily suspended due to suspicious activity. Verify identity immediately to prevent permanent block: http://axis-secure-verify.xyz/login',
   },
   {
-    label: 'WhatsApp Prize',
-    channel: 'whatsapp',
-    text: 'Congratulations! Your WhatsApp number won $1,500 in our annual customer appreciation draw. Reply with your bank account number and OTP to claim before midnight.',
-  },
-  {
-    label: 'Phishing Email',
-    channel: 'email',
-    text: 'Security Notice: Unusual sign-in detected from an unrecognized device. Your cloud storage will be deleted in 24 hours unless you confirm your password at https://account-verify-support.top/login.',
-  },
-  {
-    label: 'Remote Job Offer',
+    label: 'Remote Job Offer (Scam)',
     channel: 'job_offer',
     text: 'Hello! I am Sarah from HR Global Recruiters. Earn $300/day liking YouTube videos from home. To activate your employee portal, send a refundable $50 deposit to UPI recruitment@okaxis.',
   },
   {
-    label: 'Payment Request',
+    label: 'Delivery Fee (Scam)',
     channel: 'payment_request',
-    text: 'Hi, this is your parcel courier. Customs clearance fee of $2.95 is unpaid for tracking #FX-894102. Pay immediately via https://fedx-customs-track.top or parcel returns today.',
+    text: 'FedEx Express: Parcel #FX-894102 cannot be delivered due to unpaid customs tax ($2.95). Pay within 12h at https://fedx-customs-track.top or parcel returns.',
+  },
+  {
+    label: 'Legitimate Appointment',
+    channel: 'sms',
+    text: 'Reminder: Your dental checkup with Dr. Patel at Oakwood Clinic is scheduled for Thursday at 10:30 AM. Reply YES to confirm or call our front desk if you need to reschedule.',
+  },
+  {
+    label: 'Ambiguous Message',
+    channel: 'whatsapp',
+    text: 'Hi, did you get a chance to review the updated schedule I sent over earlier this week? Let me know when you have a minute.',
   },
 ];
 
