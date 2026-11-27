@@ -27,6 +27,10 @@ import {
   parseAndValidateScamDnaAiResponse,
   type ScamDnaAiOutput,
 } from '../dna/scamDnaSchema';
+import {
+  parseAndValidateCollectiveAnalysisResponse,
+  type CollectiveCampaignAiOutput,
+} from '../campaigns/collectiveAnalysisSchema';
 
 export { InferenceMode, ThreatResponseSchema };
 export type { ThreatResponseData };
@@ -417,5 +421,86 @@ export async function executeScamDnaInference(options: {
     };
   } catch (err: unknown) {
     throw mapHybridError(err, mode);
+  }
+}
+
+const COLLECTIVE_SYSTEM_INSTRUCTION = `You are ScamSignal Collective Analyst, assisting human security analysts with correlated campaign review.
+Rules:
+1. Analyze ONLY the supplied approved, sanitized report signatures and deterministic matching links.
+2. Summarize the shared indicators, explain why the reports may be related, identify any inconsistencies across the reports, and suggest concrete evidence for analysts to review.
+3. NEVER invent a relationship, domain, or report ID unsupported by the supplied evidence.
+4. Every ID in "referencedReportIds" MUST appear verbatim in the supplied report list.
+5. Frame explanations cautiously as analytical hypotheses, never confirmed facts.
+6. Respond strictly in raw valid JSON.`;
+
+const COLLECTIVE_RESPONSE_SCHEMA = Schema.object({
+  properties: {
+    sharedIndicatorsSummary: Schema.string(),
+    relationshipExplanation: Schema.string(),
+    inconsistencies: Schema.array({ items: Schema.string() }),
+    evidenceToReview: Schema.array({ items: Schema.string() }),
+    referencedReportIds: Schema.array({ items: Schema.string() }),
+  },
+});
+
+export interface CollectiveCampaignInferenceResult extends CollectiveCampaignAiOutput {
+  source: InferenceSource;
+  modelIdentifier: string;
+}
+
+/**
+ * Executes collective campaign analysis strictly via Firebase AI Logic ONLY_IN_CLOUD.
+ * Validates that the model does not invent unsupported report references.
+ */
+export async function executeCollectiveCampaignInference(options: {
+  compactPayload: string;
+  allowedReportIds: readonly string[];
+  signal?: AbortSignal;
+}): Promise<CollectiveCampaignInferenceResult> {
+  if (!ai || !firebaseStatus.isConfigured) {
+    throw new HybridAIError(
+      'FIREBASE_NOT_CONFIGURED',
+      `Firebase AI Logic cannot run: missing environment variables (${firebaseStatus.missingKeys.join(', ')}).`
+    );
+  }
+
+  const hybridParams: HybridParams = {
+    mode: InferenceMode.ONLY_IN_CLOUD,
+    inCloudParams: {
+      model: CLOUD_MODEL_ID,
+      systemInstruction: COLLECTIVE_SYSTEM_INSTRUCTION,
+      generationConfig: {
+        responseMimeType: 'application/json',
+        responseSchema: COLLECTIVE_RESPONSE_SCHEMA,
+        temperature: 0.1,
+      },
+    },
+  };
+
+  try {
+    const model = getGenerativeModel(ai, hybridParams);
+    const result = await model.generateContent(options.compactPayload, {
+      signal: options.signal,
+    });
+    const mappedSource = mapSDKInferenceSource(result.response.inferenceSource);
+    const validated = parseAndValidateCollectiveAnalysisResponse(
+      result.response.text(),
+      options.allowedReportIds
+    );
+
+    return {
+      ...validated,
+      source: mappedSource,
+      modelIdentifier:
+        mappedSource === 'in_cloud' ? `${CLOUD_MODEL_ID} (Cloud)` : 'Firebase AI Logic',
+    };
+  } catch (err: unknown) {
+    if (
+      err instanceof Error &&
+      err.message.includes('unsupported report ID')
+    ) {
+      throw new HybridAIError('INVALID_RESPONSE', err.message, err);
+    }
+    throw mapHybridError(err, InferenceMode.ONLY_IN_CLOUD);
   }
 }
