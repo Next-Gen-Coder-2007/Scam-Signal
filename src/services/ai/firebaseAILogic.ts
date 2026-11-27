@@ -18,6 +18,15 @@ import {
   ThreatResponseData,
   parseAndValidateModelResponse,
 } from './analysisSchema';
+import {
+  CLAIMED_ORG_TYPES,
+  IMPERSONATION_INDICATORS,
+  PAYMENT_MECHANISMS,
+  REQUESTED_ACTIONS,
+  URGENCY_PATTERNS,
+  parseAndValidateScamDnaAiResponse,
+  type ScamDnaAiOutput,
+} from '../dna/scamDnaSchema';
 
 export { InferenceMode, ThreatResponseSchema };
 export type { ThreatResponseData };
@@ -327,5 +336,86 @@ export async function executeHybridInference(
     };
   } catch (err: unknown) {
     throw mapHybridError(err, options.mode);
+  }
+}
+
+const DNA_SYSTEM_INSTRUCTION = `You are ScamSignal DNA, a structured threat-signature classifier for sanitized scam reports.
+Rules:
+1. Classify ONLY based on the sanitized text provided. Never invent missing domains, organizations, payment methods, or evidence.
+2. If an organization type, requested action, or payment mechanism is not clearly supported by the text, use "unknown_unspecified" or "none_detected".
+3. Choose values strictly from the allowed enum lists.
+4. Keep "rationale" concise (1-2 sentences) explaining your classification as an interpretation, not a confirmed fact.
+5. Respond strictly in raw valid JSON.`;
+
+const DNA_RESPONSE_SCHEMA = Schema.object({
+  properties: {
+    scamCategory: Schema.enumString({ enum: [...SCAM_CATEGORIES] }),
+    claimedOrganizationType: Schema.enumString({ enum: [...CLAIMED_ORG_TYPES] }),
+    requestedAction: Schema.enumString({ enum: [...REQUESTED_ACTIONS] }),
+    paymentMechanism: Schema.enumString({ enum: [...PAYMENT_MECHANISMS] }),
+    urgencyPatterns: Schema.array({
+      items: Schema.enumString({ enum: [...URGENCY_PATTERNS] }),
+    }),
+    impersonationIndicators: Schema.array({
+      items: Schema.enumString({ enum: [...IMPERSONATION_INDICATORS] }),
+    }),
+    rationale: Schema.string(),
+  },
+});
+
+export interface ScamDnaAiInferenceResult extends ScamDnaAiOutput {
+  source: InferenceSource;
+}
+
+/**
+ * Runs structured Scam DNA interpretation on already-sanitized report text
+ * using Firebase AI Logic (defaults to ONLY_IN_CLOUD for sanitized reports).
+ */
+export async function executeScamDnaInference(options: {
+  sanitizedText: string;
+  channel?: string;
+  mode?: InferenceMode;
+  signal?: AbortSignal;
+}): Promise<ScamDnaAiInferenceResult> {
+  if (!ai || !firebaseStatus.isConfigured) {
+    throw new HybridAIError(
+      'FIREBASE_NOT_CONFIGURED',
+      `Firebase AI Logic cannot run: missing environment variables (${firebaseStatus.missingKeys.join(', ')}).`
+    );
+  }
+
+  const mode = options.mode ?? InferenceMode.ONLY_IN_CLOUD;
+  const hybridParams: HybridParams =
+    mode === InferenceMode.ONLY_ON_DEVICE
+      ? {
+          mode: InferenceMode.ONLY_ON_DEVICE,
+          onDeviceParams: { createOptions: { signal: options.signal } },
+        }
+      : {
+          mode,
+          inCloudParams: {
+            model: CLOUD_MODEL_ID,
+            systemInstruction: DNA_SYSTEM_INSTRUCTION,
+            generationConfig: {
+              responseMimeType: 'application/json',
+              responseSchema: DNA_RESPONSE_SCHEMA,
+              temperature: 0.1,
+            },
+          },
+        };
+
+  try {
+    const model = getGenerativeModel(ai, hybridParams);
+    const prompt = `Channel: ${options.channel ?? 'unknown'}\nSanitized Report:\n${options.sanitizedText}`;
+    const result = await model.generateContent(prompt, { signal: options.signal });
+    const mappedSource = mapSDKInferenceSource(result.response.inferenceSource);
+    const validated = parseAndValidateScamDnaAiResponse(result.response.text());
+
+    return {
+      ...validated,
+      source: mappedSource,
+    };
+  } catch (err: unknown) {
+    throw mapHybridError(err, mode);
   }
 }
