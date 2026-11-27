@@ -9,7 +9,10 @@ import {
   where,
   orderBy,
   limit,
+  startAfter,
   serverTimestamp,
+  QueryConstraint,
+  QueryDocumentSnapshot,
 } from 'firebase/firestore';
 import { db, firebaseStatus } from '../firebase/firebaseApp';
 import { FirebaseNotConfiguredError } from '../firebase/authService';
@@ -166,24 +169,79 @@ export async function submitPendingReport(
   };
 }
 
+export interface CommunityReportsQueryOptions {
+  pageSize?: number;
+  cursor?: QueryDocumentSnapshot<PendingReportDocument> | null;
+  category?: string;
+  riskLevel?: ThreatLevel | 'ALL';
+  sortOrder?: 'newest' | 'oldest';
+}
+
+export interface PaginatedReportsResult {
+  items: PendingReportDocument[];
+  nextCursor: QueryDocumentSnapshot<PendingReportDocument> | null;
+  hasMore: boolean;
+}
+
+/**
+ * Fetches approved/pending community-visible reports using cursor-based pagination
+ * and Firestore-level filtering/sorting. Excludes rejected and analysts-only reports.
+ */
+export async function fetchCommunityReportsPage(
+  options: CommunityReportsQueryOptions = {}
+): Promise<PaginatedReportsResult> {
+  const firestore = requireDb();
+  const pageSize = Math.min(Math.max(options.pageSize ?? 10, 1), 50);
+
+  const reportsRef = collection(firestore, 'pending_reports').withConverter(
+    pendingReportConverter
+  );
+
+  const constraints: QueryConstraint[] = [
+    where('visibility', '==', 'community_public'),
+    where('verificationStatus', 'in', ['pending', 'verified']),
+  ];
+
+  if (options.category && options.category !== 'ALL') {
+    constraints.push(where('category', '==', options.category));
+  }
+
+  if (options.riskLevel && options.riskLevel !== 'ALL') {
+    constraints.push(where('riskAssessment', '==', options.riskLevel));
+  }
+
+  constraints.push(
+    orderBy('createdAt', options.sortOrder === 'oldest' ? 'asc' : 'desc')
+  );
+
+  if (options.cursor) {
+    constraints.push(startAfter(options.cursor));
+  }
+
+  // Fetch one extra document to determine whether more pages exist
+  constraints.push(limit(pageSize + 1));
+
+  const q = query(reportsRef, ...constraints);
+  const snapshot = await getDocs(q);
+  const docs = snapshot.docs;
+  const hasMore = docs.length > pageSize;
+  const pageDocs = hasMore ? docs.slice(0, pageSize) : docs;
+
+  return {
+    items: pageDocs.map((d) => d.data()),
+    nextCursor: pageDocs.length > 0 ? pageDocs[pageDocs.length - 1] : null,
+    hasMore,
+  };
+}
+
 /**
  * Fetches publicly visible pending community reports from Cloud Firestore.
  */
 export async function fetchCommunityReports(
   maxResults = 50
 ): Promise<PendingReportDocument[]> {
-  const firestore = requireDb();
-  const reportsRef = collection(firestore, 'pending_reports').withConverter(
-    pendingReportConverter
-  );
-  const q = query(
-    reportsRef,
-    where('visibility', '==', 'community_public'),
-    orderBy('createdAt', 'desc'),
-    limit(maxResults)
-  );
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map((d) => d.data());
+  const page = await fetchCommunityReportsPage({ pageSize: maxResults });
+  return page.items;
 }
 
 /**
