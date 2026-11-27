@@ -71,6 +71,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Private User Profiles & Preferences (strictly owner-only, no social directory)
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
     // User Private Threat Logs (if synced with explicit consent)
     match /user_scans/{scanId} {
       allow read, delete: if isOwner(resource.data.userId);

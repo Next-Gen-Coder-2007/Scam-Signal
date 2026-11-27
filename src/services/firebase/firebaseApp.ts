@@ -1,5 +1,10 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth } from 'firebase/auth';
+import {
+  getAuth,
+  Auth,
+  setPersistence,
+  browserLocalPersistence,
+} from 'firebase/auth';
 import {
   initializeFirestore,
   persistentLocalCache,
@@ -98,6 +103,11 @@ if (!validation.isValid) {
 
     app = getApps().length > 0 ? getApp() : initializeApp(sdkConfig);
     auth = getAuth(app);
+    if (typeof window !== 'undefined') {
+      void setPersistence(auth, browserLocalPersistence).catch(() => {
+        // Fallback silently if browser storage is restricted
+      });
+    }
     db = initializeFirestore(app, {
       localCache: persistentLocalCache({
         tabManager: persistentMultipleTabManager(),
