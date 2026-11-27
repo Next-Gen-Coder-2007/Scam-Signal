@@ -92,6 +92,27 @@ export interface CampaignAnalysisDocument {
   updatedAt: Timestamp | FieldValue;
 }
 
+export interface CampaignConfirmationDocument {
+  id?: string;
+  campaignId: string;
+  userUid: string;
+  note?: string;
+  createdAt: Timestamp | FieldValue;
+}
+
+export type DisputeModerationStatus = 'open' | 'reviewed_upheld' | 'reviewed_dismissed';
+
+export interface CampaignDisputeDocument {
+  id?: string;
+  campaignId: string;
+  targetReportId: string | null;
+  userUid: string;
+  reason: string;
+  moderationStatus: DisputeModerationStatus;
+  createdAt: Timestamp | FieldValue;
+  updatedAt: Timestamp | FieldValue;
+}
+
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
@@ -338,6 +359,71 @@ export const campaignAnalysisConverter: FirestoreDataConverter<CampaignAnalysisD
         : [],
       inferenceSource: data.inferenceSource || 'unknown',
       modelIdentifier: data.modelIdentifier || 'Firebase AI Logic',
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+    };
+  },
+};
+
+export const campaignConfirmationConverter: FirestoreDataConverter<CampaignConfirmationDocument> = {
+  toFirestore(conf: CampaignConfirmationDocument) {
+    if (!conf.campaignId || !conf.userUid) {
+      throw new Error('Campaign confirmation requires campaignId and userUid.');
+    }
+    return {
+      campaignId: conf.campaignId,
+      userUid: conf.userUid,
+      ...(conf.note ? { note: conf.note.trim().slice(0, 300) } : {}),
+      createdAt: conf.createdAt || serverTimestamp(),
+    };
+  },
+
+  fromFirestore(
+    snapshot: QueryDocumentSnapshot,
+    options: SnapshotOptions
+  ): CampaignConfirmationDocument {
+    const data = snapshot.data(options);
+    return {
+      id: snapshot.id,
+      campaignId: data.campaignId || '',
+      userUid: data.userUid || '',
+      note: data.note,
+      createdAt: data.createdAt,
+    };
+  },
+};
+
+export const campaignDisputeConverter: FirestoreDataConverter<CampaignDisputeDocument> = {
+  toFirestore(dispute: CampaignDisputeDocument) {
+    if (!dispute.campaignId || !dispute.userUid) {
+      throw new Error('Campaign dispute requires campaignId and userUid.');
+    }
+    if (!dispute.reason || dispute.reason.trim().length < 10) {
+      throw new Error('Dispute reason must be at least 10 characters.');
+    }
+    return {
+      campaignId: dispute.campaignId,
+      targetReportId: dispute.targetReportId ?? null,
+      userUid: dispute.userUid,
+      reason: dispute.reason.trim().slice(0, 500),
+      moderationStatus: 'open' as const,
+      createdAt: dispute.createdAt || serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    };
+  },
+
+  fromFirestore(
+    snapshot: QueryDocumentSnapshot,
+    options: SnapshotOptions
+  ): CampaignDisputeDocument {
+    const data = snapshot.data(options);
+    return {
+      id: snapshot.id,
+      campaignId: data.campaignId || '',
+      targetReportId: data.targetReportId ?? null,
+      userUid: data.userUid || '',
+      reason: data.reason || '',
+      moderationStatus: data.moderationStatus || 'open',
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     };

@@ -77,6 +77,32 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Community Confirmations ("I encountered a similar message") - 1 per user per campaign
+    match /campaign_confirmations/{confirmationId} {
+      allow read: if true;
+      allow create: if isAuthenticated()
+        && confirmationId == (request.resource.data.campaignId + '_' + request.auth.uid)
+        && request.resource.data.userUid == request.auth.uid
+        && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      allow delete: if isOwner(resource.data.userUid) || isAdmin();
+    }
+
+    // Community Disputes ("Dispute a reported connection") - 1 per user per campaign
+    match /campaign_disputes/{disputeId} {
+      allow read: if true;
+      allow create: if isAuthenticated()
+        && disputeId == (request.resource.data.campaignId + '_' + request.auth.uid)
+        && request.resource.data.userUid == request.auth.uid
+        && request.resource.data.moderationStatus == 'open'
+        && request.resource.data.reason is string
+        && request.resource.data.reason.size() >= 10
+        && request.resource.data.reason.size() <= 500
+        && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin();
+      allow delete: if isOwner(resource.data.userUid) || isAdmin();
+    }
+
     // Legacy public_threats collection (locked to read-only for backward compatibility)
     match /public_threats/{threatId} {
       allow read: if true;
