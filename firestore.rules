@@ -65,6 +65,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Report-to-Campaign Correlation Links (unverified until analyst triage)
+    match /report_campaign_links/{linkId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // Legacy public_threats collection (locked to read-only for backward compatibility)
     match /public_threats/{threatId} {
       allow read: if true;

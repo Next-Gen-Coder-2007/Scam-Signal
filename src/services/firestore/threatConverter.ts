@@ -56,6 +56,21 @@ export interface CampaignDocument {
   updatedAt: Timestamp | FieldValue;
 }
 
+export type ReportCampaignLinkStatus = 'candidate' | 'confirmed' | 'dismissed';
+
+export interface ReportCampaignLinkDocument {
+  id?: string;
+  reportId: string;
+  campaignId: string;
+  correlationScore: number;
+  status: ReportCampaignLinkStatus;
+  verificationStatus: 'unverified' | 'verified';
+  supportingIndicators: string[];
+  explanation: string;
+  createdAt: Timestamp | FieldValue;
+  updatedAt: Timestamp | FieldValue;
+}
+
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
@@ -201,6 +216,49 @@ export const campaignConverter: FirestoreDataConverter<CampaignDocument> = {
         : [],
       status: data.status || 'MONITORING',
       indicators: Array.isArray(data.indicators) ? data.indicators : [],
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+    };
+  },
+};
+
+export const reportCampaignLinkConverter: FirestoreDataConverter<ReportCampaignLinkDocument> = {
+  toFirestore(link: ReportCampaignLinkDocument) {
+    if (!link.reportId || !link.campaignId) {
+      throw new Error('Report-to-campaign link requires both reportId and campaignId.');
+    }
+    return {
+      reportId: link.reportId,
+      campaignId: link.campaignId,
+      correlationScore: Number(Math.max(0, Math.min(1, link.correlationScore)).toFixed(3)),
+      status: link.status || 'candidate',
+      // Never automatically mark any correlated campaign link as verified
+      verificationStatus: 'unverified' as const,
+      supportingIndicators: Array.isArray(link.supportingIndicators)
+        ? link.supportingIndicators.slice(0, 20)
+        : [],
+      explanation: link.explanation || '',
+      createdAt: link.createdAt || serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    };
+  },
+
+  fromFirestore(
+    snapshot: QueryDocumentSnapshot,
+    options: SnapshotOptions
+  ): ReportCampaignLinkDocument {
+    const data = snapshot.data(options);
+    return {
+      id: snapshot.id,
+      reportId: data.reportId || '',
+      campaignId: data.campaignId || '',
+      correlationScore: typeof data.correlationScore === 'number' ? data.correlationScore : 0,
+      status: data.status || 'candidate',
+      verificationStatus: data.verificationStatus === 'verified' ? 'verified' : 'unverified',
+      supportingIndicators: Array.isArray(data.supportingIndicators)
+        ? data.supportingIndicators
+        : [],
+      explanation: data.explanation || '',
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     };
