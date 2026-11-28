@@ -44,5 +44,6 @@ describe('Firestore Security Rules Invariants', () => {
     expect(rules).toContain("!request.resource.data.keys().hasAny(['isAdmin', 'role', 'admin'])");
     expect(rules).toContain('match /moderation_audit_logs/{logId}');
     expect(rules).toContain('allow read: if isAdmin();');
+    expect(rules).toContain('match /{document=**}');
   });
 });

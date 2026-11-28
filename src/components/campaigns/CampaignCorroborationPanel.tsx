@@ -17,9 +17,9 @@ import {
   moderateCampaignDisputeAdmin,
   submitCampaignConfirmation,
   submitCampaignDispute,
-  transitionCampaignStatusAdmin,
   type CampaignCorroborationSummary,
 } from '../../services/firestore/corroborationService';
+import { callModerateCampaignStatus } from '../../services/firestore/adminModerationService';
 import type { CampaignDocument } from '../../services/firestore/threatConverter';
 
 interface CampaignCorroborationPanelProps {
@@ -120,14 +120,14 @@ export const CampaignCorroborationPanel: React.FC<CampaignCorroborationPanelProp
     setSubmitting(true);
     setFeedback(null);
     try {
-      await transitionCampaignStatusAdmin({
+      await callModerateCampaignStatus({
         campaignId,
         nextStatus,
-        isAdmin: user.isAdmin,
+        reason: `Campaign status updated from details panel (${currentStatus} -> ${nextStatus})`,
       });
       setFeedback({
         type: 'success',
-        message: `Campaign status updated to ${nextStatus}.`,
+        message: `Campaign status updated to ${nextStatus} and logged.`,
       });
       onCampaignUpdated?.();
     } catch (err) {

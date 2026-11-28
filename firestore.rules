@@ -84,7 +84,7 @@ service cloud.firestore {
 
     // Community Confirmations ("I encountered a similar message") - 1 per user per campaign
     match /campaign_confirmations/{confirmationId} {
-      allow read: if true;
+      allow read: if isAuthenticated();
       allow create: if isAuthenticated()
         && confirmationId == (request.resource.data.campaignId + '_' + request.auth.uid)
         && request.resource.data.userUid == request.auth.uid
@@ -95,7 +95,7 @@ service cloud.firestore {
 
     // Community Disputes ("Dispute a reported connection") - 1 per user per campaign
     match /campaign_disputes/{disputeId} {
-      allow read: if true;
+      allow read: if isAuthenticated();
       allow create: if isAuthenticated()
         && disputeId == (request.resource.data.campaignId + '_' + request.auth.uid)
         && request.resource.data.userUid == request.auth.uid
@@ -138,6 +138,11 @@ service cloud.firestore {
       allow read, delete: if isOwner(resource.data.userId);
       allow create: if isOwner(request.resource.data.userId);
       allow update: if false;
+    }
+
+    // Explicit default deny for any unmatched collection or subcollection
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
