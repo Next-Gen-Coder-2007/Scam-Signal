@@ -33,14 +33,14 @@ export const Input: React.FC<InputProps> = ({
       <input
         id={inputId}
         className={cn(
-          'w-full h-9 px-3 rounded-md bg-canvas border text-xs text-zinc-100 placeholder-zinc-600 transition-colors focus:outline-none focus:border-accent-violet',
+          'w-full h-9 px-3 rounded-md bg-canvas border text-xs text-zinc-100 placeholder-zinc-500 transition-colors focus:outline-none focus:border-accent-violet',
           error ? 'border-rose-500/60' : 'border-surface-border hover:border-surface-subtle',
           className
         )}
         {...props}
       />
       {error && <p className="text-[11px] text-rose-400">{error}</p>}
-      {!error && hint && <p className="text-[11px] text-zinc-500">{hint}</p>}
+      {!error && hint && <p className="text-[11px] text-zinc-400">{hint}</p>}
     </div>
   );
 };
@@ -71,7 +71,7 @@ export const Textarea: React.FC<TextareaProps> = ({
       <textarea
         id={fieldId}
         className={cn(
-          'w-full p-3 rounded-md bg-canvas border text-xs sm:text-sm text-zinc-100 placeholder-zinc-600 font-mono leading-relaxed transition-colors focus:outline-none focus:border-accent-violet resize-none',
+          'w-full p-3 rounded-md bg-canvas border text-xs sm:text-sm text-zinc-100 placeholder-zinc-500 font-mono leading-relaxed transition-colors focus:outline-none focus:border-accent-violet resize-none',
           error ? 'border-rose-500/60' : 'border-surface-border hover:border-surface-subtle',
           className
         )}

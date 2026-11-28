@@ -4,7 +4,7 @@ import { Card } from '../../components/common/Card';
 
 export const PrivacyPolicyView: React.FC = () => {
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6">
       {/* Header */}
       <div className="pb-4 border-b border-surface-border">
         <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-100">

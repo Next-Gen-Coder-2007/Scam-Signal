@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   ShieldAlert,
@@ -89,6 +89,15 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+  useEffect(() => {
+    if (!isOpen || !onClose) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [isOpen, onClose]);
+
   return (
     <>
       {isOpen && (
@@ -119,7 +128,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 HYBRID
               </span>
             </div>
-            <p className="text-[11px] text-zinc-500 truncate">
+            <p className="text-[11px] text-zinc-400 truncate">
               Detect individually. Protect collectively.
             </p>
           </div>
@@ -127,7 +136,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
         {/* Navigation list */}
         <nav aria-label="Main Navigation" className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          <div className="px-3 pb-2 text-[10px] font-semibold tracking-wider uppercase text-zinc-500">
+          <div className="px-3 pb-2 text-[10px] font-semibold tracking-wider uppercase text-zinc-400">
             Operations
           </div>
           {NAV_ITEMS.map((item) => {
@@ -160,7 +169,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                       />
                       <div className="truncate">
                         <span className="block truncate">{item.label}</span>
-                        <span className="block text-[10px] text-zinc-500 font-normal truncate">
+                        <span className="block text-[10px] text-zinc-400 font-normal truncate">
                           {item.description}
                         </span>
                       </div>
