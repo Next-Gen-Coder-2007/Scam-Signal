@@ -1,7 +1,19 @@
-import React from 'react';
-import { CheckCircle2, Lock } from 'lucide-react';
+import React, { useEffect, useState, useCallback } from 'react';
+import {
+  CheckCircle2,
+  Lock,
+  RefreshCw,
+  AlertTriangle,
+  Loader2,
+  Shield,
+  FileText,
+  Link2,
+  History,
+} from 'lucide-react';
 import { Card } from '../../components/common/Card';
+import { ThreatBadge } from '../../components/common/ThreatBadge';
 import { Button } from '../../components/ui/Button';
+import { Dialog } from '../../components/ui/Dialog';
 import {
   Table,
   TableHeader,
@@ -10,105 +22,559 @@ import {
   TableHead,
   TableCell,
 } from '../../components/ui/Table';
+import { firebaseStatus } from '../../services/firebase/firebaseApp';
+import {
+  callModerateCampaignLink,
+  callModerateCampaignStatus,
+  callModeratePendingReport,
+  fetchCampaignsForModeration,
+  fetchCandidateLinksForModeration,
+  fetchModerationAuditLogs,
+  fetchPendingReportsForModeration,
+  type ModerationAuditLogEntry,
+} from '../../services/firestore/adminModerationService';
+import type {
+  CampaignDocument,
+  PendingReportDocument,
+  ReportCampaignLinkDocument,
+} from '../../services/firestore/threatConverter';
+
+type PendingConfirmationAction =
+  | {
+      kind: 'report';
+      reportId: string;
+      decision: 'verified' | 'rejected';
+      title: string;
+      description: string;
+    }
+  | {
+      kind: 'link';
+      linkId: string;
+      nextStatus: 'confirmed' | 'dismissed';
+      nextVerificationStatus: 'verified' | 'unverified';
+      title: string;
+      description: string;
+    }
+  | {
+      kind: 'campaign';
+      campaignId: string;
+      nextStatus: CampaignDocument['status'];
+      title: string;
+      description: string;
+    };
 
 export const TriageConsoleView: React.FC = () => {
+  const [reports, setReports] = useState<PendingReportDocument[]>([]);
+  const [links, setLinks] = useState<ReportCampaignLinkDocument[]>([]);
+  const [campaigns, setCampaigns] = useState<CampaignDocument[]>([]);
+  const [auditLogs, setAuditLogs] = useState<ModerationAuditLogEntry[]>([]);
+
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  const [selectedReport, setSelectedReport] = useState<PendingReportDocument | null>(null);
+  const [confirmAction, setConfirmAction] = useState<PendingConfirmationAction | null>(null);
+  const [auditReason, setAuditReason] = useState('');
+
+  const loadConsoleData = useCallback(async () => {
+    if (!firebaseStatus.isConfigured) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const [repData, linkData, campData, logData] = await Promise.all([
+        fetchPendingReportsForModeration(),
+        fetchCandidateLinksForModeration(),
+        fetchCampaignsForModeration(),
+        fetchModerationAuditLogs(),
+      ]);
+      setReports(repData);
+      setLinks(linkData);
+      setCampaigns(campData);
+      setAuditLogs(logData);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to load moderation console data. Verify admin permissions.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadConsoleData();
+  }, [loadConsoleData]);
+
+  const executeConfirmedAction = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!confirmAction) return;
+
+    setSubmitting(true);
+    setError(null);
+    setSuccessMsg(null);
+    const reason = auditReason.trim() || 'Admin triage decision';
+
+    try {
+      if (confirmAction.kind === 'report') {
+        await callModeratePendingReport({
+          reportId: confirmAction.reportId,
+          decision: confirmAction.decision,
+          reason,
+        });
+        setSuccessMsg(
+          `Report ${confirmAction.reportId} marked as ${confirmAction.decision} and logged.`
+        );
+      } else if (confirmAction.kind === 'link') {
+        await callModerateCampaignLink({
+          linkId: confirmAction.linkId,
+          nextStatus: confirmAction.nextStatus,
+          nextVerificationStatus: confirmAction.nextVerificationStatus,
+          reason,
+        });
+        setSuccessMsg(
+          `Campaign link ${confirmAction.linkId} updated to ${confirmAction.nextStatus} and logged.`
+        );
+      } else {
+        await callModerateCampaignStatus({
+          campaignId: confirmAction.campaignId,
+          nextStatus: confirmAction.nextStatus,
+          reason,
+        });
+        setSuccessMsg(
+          `Campaign ${confirmAction.campaignId} transitioned to ${confirmAction.nextStatus} and logged.`
+        );
+      }
+
+      setConfirmAction(null);
+      setAuditReason('');
+      await loadConsoleData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Moderation operation failed.');
+      setConfirmAction(null);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-surface-border">
         <div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 flex-wrap">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-100">
-              Analyst Triage & Verification Desk
+              Administrative Moderation Console
             </h1>
             <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-amber-300 border border-surface-border">
-              Role: Security Analyst
+              Server-Verified Admin Claims
             </span>
           </div>
           <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-            Audit unverified community signals, confirm campaign IOCs, and enforce verification integrity.
+            Review pending sanitized reports, investigate campaign connections, and record audited status changes via Cloud Functions.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-surface border border-surface-border text-xs font-mono text-emerald-400">
-          <CheckCircle2 className="w-4 h-4" />
-          <span>App Check Authenticated</span>
+        <div className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-surface border border-surface-border text-xs font-mono text-emerald-400">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>Claims Enforced</span>
+          </div>
+          {firebaseStatus.isConfigured && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => void loadConsoleData()}
+              disabled={loading}
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* Security Rule Guard Card */}
+      {/* Security Boundary Notice */}
       <Card>
         <div className="flex items-start gap-3">
-          <div className="p-2 rounded-md bg-surface-elevated text-amber-400 border border-surface-border">
+          <div className="p-2 rounded-md bg-surface-elevated text-amber-400 border border-surface-border shrink-0">
             <Lock className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-zinc-200">
-              Role-Based Verification Protection
-            </h3>
+            <h2 className="text-sm font-semibold text-zinc-200">
+              Trusted Server-Side Authorization &amp; Audit Logging
+            </h2>
             <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-              Standard users cannot elevate threat verification flags or link campaigns. Changes to threat severity or campaign links are gated behind verified Firebase Auth custom claims (<code className="text-cyan-400 font-mono">admin: true</code>) and validated Cloud Functions.
+              All report approvals, campaign link confirmations, and status transitions execute
+              through Cloud Functions verifying <code className="text-cyan-400 font-mono">request.auth.token.admin === true</code>.
+              Admin privileges cannot be granted via user-editable Firestore fields, and every action writes an immutable record to <code className="text-cyan-400 font-mono">moderation_audit_logs</code>.
             </p>
           </div>
         </div>
       </Card>
 
-      {/* Triage Queue Table */}
-      <Card className="space-y-3">
-        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
-          Pending Signal Verification Queue
-        </h3>
+      {error && (
+        <div className="p-3.5 rounded-md bg-rose-950/35 border border-rose-500/40 text-rose-200 text-xs flex items-start gap-2">
+          <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+          <span>{error}</span>
+        </div>
+      )}
 
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead>Report ID</TableHead>
-              <TableHead>Channel</TableHead>
-              <TableHead>Reported Vector</TableHead>
-              <TableHead>Model Source</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow>
-              <TableCell className="font-mono text-zinc-200">#SIG-4019</TableCell>
-              <TableCell className="font-mono uppercase text-zinc-400">SMS</TableCell>
-              <TableCell className="text-zinc-200">
-                Impersonation bank message with typo-squatted domain link
-              </TableCell>
-              <TableCell className="font-mono text-emerald-400">Gemini Nano</TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Button variant="cyan" size="sm">
-                    Verify
-                  </Button>
-                  <Button variant="secondary" size="sm">
-                    Reject
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="font-mono text-zinc-200">#SIG-4018</TableCell>
-              <TableCell className="font-mono uppercase text-zinc-400">WhatsApp</TableCell>
-              <TableCell className="text-zinc-200">
-                Fake task deposit scheme with suspicious UPI ID
-              </TableCell>
-              <TableCell className="font-mono text-cyan-400">Hybrid Fallback</TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Button variant="cyan" size="sm">
-                    Verify
-                  </Button>
-                  <Button variant="secondary" size="sm">
-                    Reject
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </Card>
+      {successMsg && (
+        <div className="p-3.5 rounded-md bg-emerald-950/30 border border-emerald-500/35 text-emerald-200 text-xs flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{successMsg}</span>
+        </div>
+      )}
+
+      {!firebaseStatus.isConfigured ? (
+        <Card className="text-xs text-amber-200 border-amber-500/30 bg-amber-950/15">
+          Configure Firebase environment variables in <code className="font-mono">.env</code> to
+          connect to Firestore and Cloud Functions moderation endpoints.
+        </Card>
+      ) : loading && reports.length === 0 && campaigns.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-zinc-400 gap-3">
+          <Loader2 className="w-6 h-6 animate-spin text-accent-violet-muted" />
+          <p className="text-xs font-mono">Loading moderation queues and audit logs...</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {/* 1. Pending Reports Queue */}
+          <Card className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-cyan-400" />
+                <h2 className="text-sm font-semibold text-zinc-100">
+                  Pending Reports Queue ({reports.length})
+                </h2>
+              </div>
+            </div>
+
+            {reports.length === 0 ? (
+              <p className="text-xs text-zinc-500 py-3">No pending reports awaiting review.</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead>Report</TableHead>
+                    <TableHead>Category &amp; Risk</TableHead>
+                    <TableHead>Sanitized Summary</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {reports.map((rep) => (
+                    <TableRow key={rep.id}>
+                      <TableCell className="font-mono text-xs text-zinc-300">
+                        <div>{rep.id?.slice(0, 14)}</div>
+                        <div className="text-[10px] text-zinc-500">{rep.observedDate}</div>
+                      </TableCell>
+                      <TableCell className="space-y-1">
+                        <ThreatBadge level={rep.riskAssessment} />
+                        <div className="text-[11px] font-mono text-zinc-400">
+                          {rep.category}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs text-zinc-300 max-w-md">
+                        <p className="line-clamp-2">{rep.redactedSummary}</p>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedReport(rep)}
+                          className="text-[11px] font-mono text-cyan-400 hover:underline mt-1"
+                        >
+                          Inspect sanitized evidence
+                        </button>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="cyan"
+                            size="sm"
+                            onClick={() => {
+                              setAuditReason('');
+                              setConfirmAction({
+                                kind: 'report',
+                                reportId: rep.id || '',
+                                decision: 'verified',
+                                title: 'Approve & Verify Report',
+                                description: `Mark report ${rep.id} as a verified warning visible to the community.`,
+                              });
+                            }}
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => {
+                              setAuditReason('');
+                              setConfirmAction({
+                                kind: 'report',
+                                reportId: rep.id || '',
+                                decision: 'rejected',
+                                title: 'Reject Pending Report',
+                                description: `Reject report ${rep.id} and exclude it from verified public warnings.`,
+                              });
+                            }}
+                          >
+                            Reject
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </Card>
+
+          {/* 2. Candidate Campaign Connections */}
+          <Card className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Link2 className="w-4 h-4 text-accent-violet-muted" />
+              <h2 className="text-sm font-semibold text-zinc-100">
+                Candidate Campaign Connections ({links.length})
+              </h2>
+            </div>
+
+            {links.length === 0 ? (
+              <p className="text-xs text-zinc-500 py-3">
+                No candidate report-to-campaign links awaiting investigation.
+              </p>
+            ) : (
+              <div className="space-y-2.5">
+                {links.map((link) => (
+                  <div
+                    key={link.id}
+                    className="p-3 rounded-md bg-void border border-surface-border flex flex-col lg:flex-row lg:items-center justify-between gap-3 text-xs"
+                  >
+                    <div className="space-y-1">
+                      <div className="font-mono text-zinc-200">
+                        Report <span className="text-cyan-300">{link.reportId}</span> → Campaign{' '}
+                        <span className="text-accent-violet-muted">{link.campaignId}</span> (Score:{' '}
+                        {link.correlationScore.toFixed(2)})
+                      </div>
+                      <p className="text-zinc-400">{link.explanation}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Button
+                        variant="cyan"
+                        size="sm"
+                        onClick={() => {
+                          setAuditReason('');
+                          setConfirmAction({
+                            kind: 'link',
+                            linkId: link.id || `${link.reportId}_${link.campaignId}`,
+                            nextStatus: 'confirmed',
+                            nextVerificationStatus: 'verified',
+                            title: 'Confirm & Verify Campaign Link',
+                            description: `Confirm deterministic link between ${link.reportId} and campaign ${link.campaignId}.`,
+                          });
+                        }}
+                      >
+                        Confirm Link
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          setAuditReason('');
+                          setConfirmAction({
+                            kind: 'link',
+                            linkId: link.id || `${link.reportId}_${link.campaignId}`,
+                            nextStatus: 'dismissed',
+                            nextVerificationStatus: 'unverified',
+                            title: 'Dismiss Campaign Link',
+                            description: `Dismiss candidate connection between ${link.reportId} and ${link.campaignId}.`,
+                          });
+                        }}
+                      >
+                        Dismiss
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
+          {/* 3. Campaign Verification Status */}
+          <Card className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-emerald-400" />
+              <h2 className="text-sm font-semibold text-zinc-100">
+                Campaign Status Controls ({campaigns.length})
+              </h2>
+            </div>
+
+            {campaigns.length === 0 ? (
+              <p className="text-xs text-zinc-500 py-3">No campaigns recorded yet.</p>
+            ) : (
+              <div className="space-y-2.5">
+                {campaigns.map((camp) => (
+                  <div
+                    key={camp.id}
+                    className="p-3 rounded-md bg-void border border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                  >
+                    <div>
+                      <p className="font-semibold text-zinc-100">{camp.name}</p>
+                      <p className="text-[11px] font-mono text-zinc-400">
+                        Status: <span className="text-cyan-300">{camp.status}</span> ·{' '}
+                        {camp.totalSignals} signals
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {(['MONITORING', 'ACTIVE_WAVE', 'CONTAINED'] as const)
+                        .filter((s) => s !== camp.status)
+                        .map((nextStatus) => (
+                          <Button
+                            key={nextStatus}
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => {
+                              setAuditReason('');
+                              setConfirmAction({
+                                kind: 'campaign',
+                                campaignId: camp.id || '',
+                                nextStatus,
+                                title: `Set Campaign Status to ${nextStatus}`,
+                                description: `Update campaign ${camp.name} (${camp.id}) from ${camp.status} to ${nextStatus}.`,
+                              });
+                            }}
+                          >
+                            Set {nextStatus}
+                          </Button>
+                        ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
+          {/* 4. Moderation Audit Log */}
+          <Card className="space-y-3">
+            <div className="flex items-center gap-2">
+              <History className="w-4 h-4 text-zinc-400" />
+              <h2 className="text-sm font-semibold text-zinc-100">
+                Moderation Audit Log ({auditLogs.length})
+              </h2>
+            </div>
+
+            {auditLogs.length === 0 ? (
+              <p className="text-xs text-zinc-500 py-3">
+                No moderation audit entries recorded yet.
+              </p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead>Action</TableHead>
+                    <TableHead>Target</TableHead>
+                    <TableHead>Transition</TableHead>
+                    <TableHead>Reason</TableHead>
+                    <TableHead>Actor</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {auditLogs.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell className="font-mono text-xs text-cyan-300">
+                        {log.action}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-zinc-300">
+                        {log.targetType}:{log.targetId.slice(0, 12)}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-zinc-400">
+                        {log.previousStatus} → {log.newStatus}
+                      </TableCell>
+                      <TableCell className="text-xs text-zinc-300">{log.reason}</TableCell>
+                      <TableCell className="font-mono text-[11px] text-zinc-400">
+                        {log.actorEmail || log.actorUid.slice(0, 10)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </Card>
+        </div>
+      )}
+
+      {/* Sanitized Evidence Inspection Dialog */}
+      <Dialog
+        isOpen={Boolean(selectedReport)}
+        onClose={() => setSelectedReport(null)}
+        title="Inspect Sanitized Report Evidence"
+        description={`Report ${selectedReport?.id ?? ''} · ${selectedReport?.observedDate ?? ''}`}
+        maxWidth="lg"
+      >
+        {selectedReport && (
+          <div className="space-y-4 text-xs">
+            <div className="p-3 rounded bg-void border border-surface-border text-zinc-200 leading-relaxed">
+              {selectedReport.redactedSummary}
+            </div>
+            <div>
+              <p className="font-mono uppercase text-[10px] text-zinc-400 mb-1">
+                Observed Evidence
+              </p>
+              <ul className="list-disc list-inside text-zinc-300 space-y-1">
+                {selectedReport.evidence.map((ev, i) => (
+                  <li key={i}>{ev}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex justify-end">
+              <Button variant="secondary" size="sm" onClick={() => setSelectedReport(null)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        )}
+      </Dialog>
+
+      {/* Moderation Confirmation Dialog */}
+      <Dialog
+        isOpen={Boolean(confirmAction)}
+        onClose={() => !submitting && setConfirmAction(null)}
+        title={confirmAction?.title || 'Confirm Moderation Action'}
+        description={confirmAction?.description}
+        maxWidth="md"
+      >
+        <form onSubmit={executeConfirmedAction} className="space-y-4 text-xs">
+          <div className="space-y-1.5">
+            <label className="block font-medium text-zinc-300">
+              Audit Log Reason (recorded permanently)
+            </label>
+            <textarea
+              value={auditReason}
+              onChange={(e) => setAuditReason(e.target.value)}
+              rows={3}
+              maxLength={500}
+              required
+              placeholder="Document the evidence or verification rationale..."
+              className="w-full rounded-md bg-void border border-surface-border px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-accent-violet"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={submitting}
+              onClick={() => setConfirmAction(null)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" size="sm" isLoading={submitting}>
+              Confirm &amp; Execute
+            </Button>
+          </div>
+        </form>
+      </Dialog>
     </div>
   );
 };
