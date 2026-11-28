@@ -16,8 +16,13 @@ service cloud.firestore {
 
     // Pending user-submitted scam observations (strictly separated from verified campaigns)
     match /pending_reports/{reportId} {
-      // Publicly visible reports can be read; analysts-only reports are restricted to owner or admins
-      allow read: if resource.data.visibility == 'community_public'
+      // Publicly visible reports can be read; analysts-only reports are restricted to owner or admins.
+      // Allow get when resource == null so deduplication existence checks do not fail with permission-denied.
+      allow get: if resource == null
+        || resource.data.visibility == 'community_public'
+        || isOwner(resource.data.reporterUid)
+        || isAdmin();
+      allow list: if resource.data.visibility == 'community_public'
         || isOwner(resource.data.reporterUid)
         || isAdmin();
 

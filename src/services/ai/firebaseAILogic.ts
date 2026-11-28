@@ -256,6 +256,19 @@ function mapHybridError(err: unknown, mode: InferenceMode): HybridAIError {
   const msg = err instanceof Error ? err.message : String(err);
   const lower = msg.toLowerCase();
 
+  if (
+    lower.includes('failed to fetch') ||
+    lower.includes('networkerror') ||
+    lower.includes('network request failed') ||
+    lower.includes('err_internet_disconnected')
+  ) {
+    return new HybridAIError(
+      'NETWORK_ERROR',
+      'Network disconnection while contacting Firebase AI Logic cloud backend.',
+      err
+    );
+  }
+
   if (lower.includes('download') || lower.includes('downloading')) {
     return new HybridAIError(
       'MODEL_DOWNLOADING',
