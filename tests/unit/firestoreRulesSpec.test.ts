@@ -34,4 +34,9 @@ describe('Firestore Security Rules Invariants', () => {
     expect(rules).toContain("request.resource.data.moderationStatus == 'open'");
     expect(rules).toContain('allow update: if false;');
   });
+
+  it('protects user alert_states subcollection with owner-only read/write rules', () => {
+    expect(rules).toContain('match /alert_states/{alertId}');
+    expect(rules).toContain('allow read, write: if isOwner(userId);');
+  });
 });
