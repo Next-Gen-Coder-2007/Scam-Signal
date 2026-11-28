@@ -110,13 +110,22 @@ service cloud.firestore {
     }
 
     // Private User Profiles & Preferences (strictly owner-only, no social directory)
+    // Never allow users to set admin/role privilege fields on their profile document
     match /users/{userId} {
-      allow read, write: if isOwner(userId);
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId)
+        && !request.resource.data.keys().hasAny(['isAdmin', 'role', 'admin']);
 
       // Owner-only in-app notification read/unread state
       match /alert_states/{alertId} {
         allow read, write: if isOwner(userId);
       }
+    }
+
+    // Immutable Moderation Audit Logs (written only by trusted Cloud Functions / Admin SDK)
+    match /moderation_audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false;
     }
 
     // User Private Threat Logs (if synced with explicit consent)
