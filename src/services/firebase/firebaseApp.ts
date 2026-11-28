@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore';
 import {
   initializeAppCheck,
+  ReCaptchaEnterpriseProvider,
   ReCaptchaV3Provider,
   AppCheck,
 } from 'firebase/app-check';
@@ -127,8 +128,12 @@ if (!validation.isValid) {
               ? true
               : envConfig.appCheckDebugToken;
         }
+        const useV3Classic =
+          import.meta.env.VITE_FIREBASE_APP_CHECK_PROVIDER?.trim().toLowerCase() === 'v3';
         appCheck = initializeAppCheck(app, {
-          provider: new ReCaptchaV3Provider(envConfig.appCheckSiteKey),
+          provider: useV3Classic
+            ? new ReCaptchaV3Provider(envConfig.appCheckSiteKey)
+            : new ReCaptchaEnterpriseProvider(envConfig.appCheckSiteKey),
           isTokenAutoRefreshEnabled: true,
         });
         firebaseStatus.appCheckStatus = 'active';
