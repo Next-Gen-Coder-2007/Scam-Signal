@@ -10,11 +10,18 @@ import {
   ShieldCheck,
   Cpu,
   UserCog,
+  LayoutDashboard,
 } from 'lucide-react';
 import { NavItem } from '../../types/navigation';
 import { cn } from '../../utils/cn';
 
 const NAV_ITEMS: NavItem[] = [
+  {
+    label: 'Dashboard',
+    href: '/dashboard',
+    icon: LayoutDashboard,
+    description: 'Live threat & campaign overview',
+  },
   {
     label: 'Private Analyzer',
     href: '/',

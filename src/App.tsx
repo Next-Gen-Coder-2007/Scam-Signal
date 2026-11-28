@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { AppShell } from './components/layout/AppShell';
 import { PrivateAnalyzerView } from './features/analyzer/PrivateAnalyzerView';
+import { DashboardView } from './features/dashboard/DashboardView';
 import { CommunityFeedView } from './features/feed/CommunityFeedView';
 import { CampaignExplorerView } from './features/campaigns/CampaignExplorerView';
 import { CampaignDetailsView } from './features/campaigns/CampaignDetailsView';
@@ -19,6 +20,7 @@ export const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<AppShell />}>
             <Route index element={<PrivateAnalyzerView />} />
+            <Route path="dashboard" element={<DashboardView />} />
             <Route path="feed" element={<CommunityFeedView />} />
             <Route path="campaigns" element={<CampaignExplorerView />} />
             <Route path="campaigns/:campaignId" element={<CampaignDetailsView />} />
