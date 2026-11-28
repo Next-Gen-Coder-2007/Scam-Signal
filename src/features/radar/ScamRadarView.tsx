@@ -30,6 +30,7 @@ import {
   type ScamRadarSnapshot,
 } from '../../services/firestore/scamRadarService';
 import type { DashboardTimeWindow } from '../../services/firestore/dashboardService';
+import { formatFirestoreError } from '../../utils/firestoreErrors';
 
 export const ScamRadarView: React.FC = () => {
   const [filters, setFilters] = useState<ScamRadarFilters>({
@@ -58,9 +59,7 @@ export const ScamRadarView: React.FC = () => {
       const data = await fetchLiveScamRadarSnapshot(filters);
       setSnapshot(data);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Unable to load Scam Radar data from Firestore.'
-      );
+      setError(formatFirestoreError(err, 'Unable to load Scam Radar data.'));
     } finally {
       setLoading(false);
     }

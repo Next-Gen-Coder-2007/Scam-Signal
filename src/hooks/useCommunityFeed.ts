@@ -4,6 +4,7 @@ import { ThreatLevel, ThreatSummaryItem } from '../types/threat';
 import { firebaseStatus } from '../services/firebase/firebaseApp';
 import { fetchCommunityReportsPage } from '../services/firestore/threatService';
 import { PendingReportDocument } from '../services/firestore/threatConverter';
+import { formatFirestoreError } from '../utils/firestoreErrors';
 
 const PAGE_SIZE = 10;
 
@@ -45,9 +46,10 @@ export function useCommunityFeed() {
       setHasMore(page.hasMore);
     } catch (err: unknown) {
       setError(
-        err instanceof Error
-          ? err.message
-          : 'Failed to load community reports from Firestore.'
+        formatFirestoreError(
+          err,
+          'Failed to load community reports from Firestore.'
+        )
       );
     } finally {
       setLoading(false);
@@ -74,9 +76,10 @@ export function useCommunityFeed() {
       setHasMore(page.hasMore);
     } catch (err: unknown) {
       setError(
-        err instanceof Error
-          ? err.message
-          : 'Failed to load additional community reports.'
+        formatFirestoreError(
+          err,
+          'Failed to load additional community reports.'
+        )
       );
     } finally {
       setLoadingMore(false);

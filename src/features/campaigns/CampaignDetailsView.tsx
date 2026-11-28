@@ -21,6 +21,7 @@ import {
   fetchCampaignDetails,
   type CampaignDetailsData,
 } from '../../services/firestore/campaignIntelligenceService';
+import { formatFirestoreError } from '../../utils/firestoreErrors';
 
 function formatDateLabel(iso: string | null): string {
   if (!iso) return 'Not recorded';
@@ -55,9 +56,7 @@ export const CampaignDetailsView: React.FC = () => {
         setSelectedReportId(data.links[0].reportId);
       }
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to load campaign details from Firestore.'
-      );
+      setError(formatFirestoreError(err, 'Failed to load campaign details.'));
     } finally {
       setLoading(false);
     }

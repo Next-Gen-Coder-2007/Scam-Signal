@@ -38,6 +38,7 @@ import type {
   PendingReportDocument,
   ReportCampaignLinkDocument,
 } from '../../services/firestore/threatConverter';
+import { formatFirestoreError } from '../../utils/firestoreErrors';
 
 type PendingConfirmationAction =
   | {
@@ -95,9 +96,7 @@ export const TriageConsoleView: React.FC = () => {
       setAuditLogs(logData);
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : 'Unable to load moderation console data. Verify admin permissions.'
+        formatFirestoreError(err, 'Unable to load moderation console data. Verify admin permissions.')
       );
     } finally {
       setLoading(false);

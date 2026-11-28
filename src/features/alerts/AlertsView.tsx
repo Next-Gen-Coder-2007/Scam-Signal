@@ -23,6 +23,7 @@ import {
   markAllAlertsRead,
   type AlertNotificationItem,
 } from '../../services/firestore/alertsService';
+import { formatFirestoreError } from '../../utils/firestoreErrors';
 
 const FOLLOWABLE_CATEGORIES = SCAM_CATEGORIES.filter(
   (c) => c !== 'legitimate_or_benign' && c !== 'ambiguous_unclear'
@@ -52,9 +53,7 @@ export const AlertsView: React.FC = () => {
       const items = await fetchUserAlerts(user.uid, followedCategories);
       setAlerts(items);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Unable to load alerts from Firestore.'
-      );
+      setError(formatFirestoreError(err, 'Unable to load alerts.'));
     } finally {
       setLoading(false);
     }

@@ -33,6 +33,7 @@ import {
 } from '../../src/services/ai/firebaseAILogic';
 import { redactPII, containsPII } from '../../src/utils/redactor';
 import { validateAnalyzerInput } from '../../src/utils/validation';
+import { formatFirestoreError } from '../../src/utils/firestoreErrors';
 import { extractScamDna } from '../../src/services/dna/scamDnaService';
 import { correlateReportPair } from '../../src/services/campaigns/campaignCorrelationEngine';
 
@@ -178,5 +179,15 @@ describe('End-to-End Audit: Failure Modes, Inference Sources & Pipeline Integrit
     expect(pair.supportingIndicators.some((i) => i.value === 'verify-kyc-bank.xyz')).toBe(
       true
     );
+  });
+
+  it('sanitizes Firestore index/console URLs so project IDs never leak in UI errors', () => {
+    const rawIndexErr = new Error(
+      'The query requires an index. That index is currently building and cannot be used yet. See its status here: https://console.firebase.google.com/v1/r/project/scamsignal-373bc/firestore/indexes?create_composite=abc'
+    );
+    const formatted = formatFirestoreError(rawIndexErr);
+    expect(formatted).not.toContain('scamsignal-373bc');
+    expect(formatted).not.toContain('console.firebase.google.com');
+    expect(formatted).toContain('Database index is still building');
   });
 });

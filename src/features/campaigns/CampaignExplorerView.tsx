@@ -21,6 +21,7 @@ import {
   type CampaignIntelligenceSummary,
   type CampaignVerificationStage,
 } from '../../services/firestore/campaignIntelligenceService';
+import { formatFirestoreError } from '../../utils/firestoreErrors';
 
 function formatDateLabel(iso: string | null): string {
   if (!iso) return 'Not recorded';
@@ -48,9 +49,7 @@ export const CampaignExplorerView: React.FC = () => {
       const data = await fetchCampaignIntelligenceList();
       setCampaigns(data);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to load campaign intelligence from Firestore.'
-      );
+      setError(formatFirestoreError(err, 'Failed to load campaign intelligence.'));
     } finally {
       setLoading(false);
     }

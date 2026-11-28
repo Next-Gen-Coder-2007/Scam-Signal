@@ -27,6 +27,7 @@ import {
   type DashboardSnapshot,
   type DashboardTimeWindow,
 } from '../../services/firestore/dashboardService';
+import { formatFirestoreError } from '../../utils/firestoreErrors';
 
 const TIME_WINDOWS: { value: DashboardTimeWindow; label: string }[] = [
   { value: '7d', label: 'Last 7 Days' },
@@ -49,9 +50,7 @@ export const DashboardView: React.FC = () => {
       const data = await fetchDashboardSnapshot(timeWindow);
       setSnapshot(data);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Unable to load dashboard intelligence from Firestore.'
-      );
+      setError(formatFirestoreError(err, 'Unable to load dashboard intelligence.'));
     } finally {
       setLoading(false);
     }
