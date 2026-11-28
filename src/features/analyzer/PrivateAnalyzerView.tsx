@@ -162,31 +162,31 @@ export const PrivateAnalyzerView: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-surface-border">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-100">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900">
               Private Scam Analyzer
             </h1>
-            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-cyan-400 border border-surface-border">
+            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-cyan-700 border border-surface-border">
               PREFER_ON_DEVICE
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-600 mt-1">
             Paste suspicious SMS, WhatsApp messages, emails, job offers, or payment requests for instant triage.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5 px-3 py-2 rounded-md bg-surface border border-surface-border text-xs">
-          <Lock className="w-4 h-4 text-emerald-400 shrink-0" />
+          <Lock className="w-4 h-4 text-emerald-600 shrink-0" />
           <div className="text-[11px]">
-            <span className="font-semibold text-zinc-200 block">Client-Side Scrubbing</span>
-            <span className="text-zinc-400">Personal details redacted before analysis</span>
+            <span className="font-semibold text-slate-800 block">Client-Side Scrubbing</span>
+            <span className="text-slate-600">Personal details redacted before analysis</span>
           </div>
         </div>
       </div>
 
       {/* Share Notice */}
       {shareSuccessNotice && (
-        <div className="p-3 rounded-md bg-cyan-950/30 border border-cyan-500/35 text-cyan-200 text-xs flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" />
+        <div className="p-3 rounded-md bg-cyan-50 border border-cyan-200 text-cyan-800 text-xs flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-cyan-700 shrink-0" />
           <span>{shareSuccessNotice}</span>
         </div>
       )}
@@ -198,7 +198,7 @@ export const PrivateAnalyzerView: React.FC = () => {
           <Card className="space-y-4">
             {/* Channel Selector */}
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-600">
                 Message Type
               </span>
               <div className="flex flex-wrap items-center gap-1 p-1 bg-canvas rounded-md border border-surface-border">
@@ -209,8 +209,8 @@ export const PrivateAnalyzerView: React.FC = () => {
                     onClick={() => setChannel(ch.id)}
                     className={`px-2.5 py-1 text-[11px] rounded font-medium transition-colors ${
                       channel === ch.id
-                        ? 'bg-surface-elevated text-zinc-100 border border-surface-subtle'
-                        : 'text-zinc-400 hover:text-zinc-200 border border-transparent'
+                        ? 'bg-surface-elevated text-slate-900 border border-surface-subtle'
+                        : 'text-slate-600 hover:text-slate-800 border border-transparent'
                     }`}
                   >
                     {ch.label}
@@ -233,10 +233,10 @@ export const PrivateAnalyzerView: React.FC = () => {
                 <span
                   className={`font-mono ${
                     isOverLimit
-                      ? 'text-rose-400 font-semibold'
+                      ? 'text-rose-700 font-semibold'
                       : isNearLimit
-                      ? 'text-amber-400'
-                      : 'text-zinc-500'
+                      ? 'text-amber-600'
+                      : 'text-slate-500'
                   }`}
                 >
                   {content.length.toLocaleString()} / {MAX_MESSAGE_LENGTH.toLocaleString()} chars
@@ -246,7 +246,7 @@ export const PrivateAnalyzerView: React.FC = () => {
                     <button
                       type="button"
                       onClick={handleClear}
-                      className="text-zinc-400 hover:text-zinc-200 flex items-center gap-1 font-mono transition-colors"
+                      className="text-slate-600 hover:text-slate-800 flex items-center gap-1 font-mono transition-colors"
                     >
                       <Eraser className="w-3.5 h-3.5" />
                       <span>Clear</span>
@@ -256,7 +256,7 @@ export const PrivateAnalyzerView: React.FC = () => {
                     type="button"
                     onClick={() => setShowRedactionModal(true)}
                     disabled={!content.trim()}
-                    className="text-zinc-400 hover:text-cyan-300 disabled:opacity-40 flex items-center gap-1 font-mono transition-colors"
+                    className="text-slate-600 hover:text-cyan-800 disabled:opacity-40 flex items-center gap-1 font-mono transition-colors"
                   >
                     <Eye className="w-3.5 h-3.5" />
                     <span>Audit PII Redaction</span>
@@ -267,7 +267,7 @@ export const PrivateAnalyzerView: React.FC = () => {
 
             {/* Example Messages */}
             <div className="space-y-1.5">
-              <span className="text-[11px] font-medium text-zinc-400 block">
+              <span className="text-[11px] font-medium text-slate-600 block">
                 Load an example message:
               </span>
               <div className="flex flex-wrap gap-2">
@@ -335,11 +335,11 @@ export const PrivateAnalyzerView: React.FC = () => {
             {status === 'downloading' && (
               <div className="p-3 rounded-md bg-canvas border border-surface-border space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-zinc-300 flex items-center gap-1.5">
-                    <Download className="w-3.5 h-3.5 text-cyan-400" />
+                  <span className="text-slate-700 flex items-center gap-1.5">
+                    <Download className="w-3.5 h-3.5 text-cyan-700" />
                     <span>Downloading on-device Gemini Nano model...</span>
                   </span>
-                  <span className="font-mono text-cyan-400">
+                  <span className="font-mono text-cyan-700">
                     {downloadProgress ?? 0}%
                   </span>
                 </div>
@@ -357,51 +357,51 @@ export const PrivateAnalyzerView: React.FC = () => {
         {/* Telemetry & Advisory Sidebar */}
         <div className="space-y-4">
           <Card className="space-y-3">
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-accent-violet-muted" />
+            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-accent-violet" />
               Inference Telemetry
             </h3>
 
             <div className="space-y-2 text-xs">
               <div className="flex items-center justify-between p-2 rounded bg-canvas border border-surface-border">
-                <span className="text-zinc-400">Selected Mode</span>
-                <span className="font-mono text-cyan-300">{inferenceMode}</span>
+                <span className="text-slate-600">Selected Mode</span>
+                <span className="font-mono text-cyan-800">{inferenceMode}</span>
               </div>
               <div className="flex items-center justify-between p-2 rounded bg-canvas border border-surface-border">
-                <span className="text-zinc-400">Cloud Fallback</span>
-                <span className="font-mono text-zinc-200">{CLOUD_MODEL_ID}</span>
+                <span className="text-slate-600">Cloud Fallback</span>
+                <span className="font-mono text-slate-800">{CLOUD_MODEL_ID}</span>
               </div>
               <div className="flex items-center justify-between p-2 rounded bg-canvas border border-surface-border">
-                <span className="text-zinc-400">SDK Status</span>
+                <span className="text-slate-600">SDK Status</span>
                 <span
                   className={`font-mono ${
-                    firebaseStatus.isConfigured ? 'text-emerald-400' : 'text-amber-400'
+                    firebaseStatus.isConfigured ? 'text-emerald-600' : 'text-amber-600'
                   }`}
                 >
                   {firebaseStatus.isConfigured ? 'CONFIGURED' : 'UNCONFIGURED'}
                 </span>
               </div>
               <div className="flex items-center justify-between p-2 rounded bg-canvas border border-surface-border">
-                <span className="text-zinc-400">Last Source</span>
-                <span className="font-mono text-zinc-200">
+                <span className="text-slate-600">Last Source</span>
+                <span className="font-mono text-slate-800">
                   {result ? result.inferenceSource : 'not_run'}
                 </span>
               </div>
             </div>
 
-            <p className="pt-2 border-t border-surface-border text-[11px] text-zinc-400 leading-relaxed">
+            <p className="pt-2 border-t border-surface-border text-[11px] text-slate-600 leading-relaxed">
               The runtime inference source is captured directly from{' '}
-              <code className="font-mono text-zinc-300">result.response.inferenceSource</code>{' '}
+              <code className="font-mono text-slate-700">result.response.inferenceSource</code>{' '}
               and is never simulated.
             </p>
           </Card>
 
-          <div className="p-3.5 rounded-lg bg-amber-950/20 border border-amber-500/25 text-amber-200/90 text-xs leading-relaxed space-y-1.5">
-            <div className="flex items-center gap-1.5 font-semibold text-amber-300">
+          <div className="p-3.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs leading-relaxed space-y-1.5">
+            <div className="flex items-center gap-1.5 font-semibold text-amber-800">
               <AlertTriangle className="w-4 h-4 shrink-0" />
               <span>Advisory Notice</span>
             </div>
-            <p className="text-[11px] text-amber-200/80">
+            <p className="text-[11px] text-amber-800">
               Scam assessments are automated AI pattern classifications. Always verify independently using official phone numbers or apps before taking financial action.
             </p>
           </div>
@@ -410,12 +410,12 @@ export const PrivateAnalyzerView: React.FC = () => {
 
       {/* Error Recovery State */}
       {status === 'error' && (
-        <div className="p-4 rounded-lg bg-rose-950/30 border border-rose-500/35 text-rose-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="p-4 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-start gap-2.5">
-            <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+            <AlertTriangle className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" />
             <div className="space-y-1">
               {errorCode && (
-                <span className="block font-mono text-[10px] text-rose-300 uppercase">
+                <span className="block font-mono text-[10px] text-rose-700 uppercase">
                   Error Code: {errorCode}
                 </span>
               )}

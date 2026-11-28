@@ -174,18 +174,18 @@ export const CampaignCorroborationPanel: React.FC<CampaignCorroborationPanelProp
     <Card className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-semibold text-zinc-100">Community Corroboration</h2>
-          <p className="text-xs text-zinc-400">
+          <h2 className="text-sm font-semibold text-slate-900">Community Corroboration</h2>
+          <p className="text-xs text-slate-600">
             Counts reflect only stored confirmation and dispute records (max 1 per user).
           </p>
         </div>
 
         {summary && !loading && (
           <div className="flex items-center gap-2 text-xs font-mono">
-            <span className="px-2.5 py-1 rounded bg-emerald-950/30 border border-emerald-500/30 text-emerald-300">
+            <span className="px-2.5 py-1 rounded bg-emerald-50 border border-emerald-200 text-emerald-700">
               {summary.confirmationCount} Confirmations
             </span>
-            <span className="px-2.5 py-1 rounded bg-amber-950/30 border border-amber-500/30 text-amber-300">
+            <span className="px-2.5 py-1 rounded bg-amber-50 border border-amber-200 text-amber-800">
               {summary.disputeCount} Disputes ({summary.openDisputeCount} open)
             </span>
           </div>
@@ -196,14 +196,14 @@ export const CampaignCorroborationPanel: React.FC<CampaignCorroborationPanelProp
         <div
           className={`p-3 rounded-md text-xs flex items-start gap-2 border ${
             feedback.type === 'success'
-              ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-200'
-              : 'bg-rose-950/30 border-rose-500/30 text-rose-200'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+              : 'bg-rose-50 border-rose-200 text-rose-700'
           }`}
         >
           {feedback.type === 'success' ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
           ) : (
-            <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+            <AlertTriangle className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" />
           )}
           <span>{feedback.message}</span>
         </div>
@@ -211,8 +211,8 @@ export const CampaignCorroborationPanel: React.FC<CampaignCorroborationPanelProp
 
       {!user ? (
         <div className="p-3.5 rounded-md bg-void border border-surface-border flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 text-zinc-300">
-            <Lock className="w-3.5 h-3.5 text-zinc-400" />
+          <div className="flex items-center gap-2 text-slate-700">
+            <Lock className="w-3.5 h-3.5 text-slate-600" />
             <span>Sign in to confirm a similar encounter or dispute a connection.</span>
           </div>
           <Link to="/auth">
@@ -244,7 +244,7 @@ export const CampaignCorroborationPanel: React.FC<CampaignCorroborationPanelProp
               disabled={submitting || loading || Boolean(summary?.userHasDisputed)}
               onClick={() => setShowDisputeForm((prev) => !prev)}
             >
-              <Flag className="w-3.5 h-3.5 text-amber-300" />
+              <Flag className="w-3.5 h-3.5 text-amber-800" />
               <span>
                 {summary?.userHasDisputed ? 'Dispute Submitted' : 'Dispute Connection'}
               </span>
@@ -256,7 +256,7 @@ export const CampaignCorroborationPanel: React.FC<CampaignCorroborationPanelProp
               onSubmit={handleDisputeSubmit}
               className="p-3.5 rounded-md bg-void border border-surface-border space-y-3"
             >
-              <label className="block text-xs font-medium text-zinc-300">
+              <label className="block text-xs font-medium text-slate-700">
                 Explain why this campaign or report connection appears inaccurate (no PII, 10–500 chars)
               </label>
               <textarea
@@ -267,7 +267,7 @@ export const CampaignCorroborationPanel: React.FC<CampaignCorroborationPanelProp
                 required
                 rows={3}
                 placeholder="e.g., These two reports reference unrelated organizations..."
-                className="w-full rounded-md bg-surface border border-surface-border px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-accent-violet"
+                className="w-full rounded-md bg-surface border border-surface-border px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-accent-violet"
               />
               <div className="flex justify-end gap-2">
                 <Button
@@ -290,13 +290,13 @@ export const CampaignCorroborationPanel: React.FC<CampaignCorroborationPanelProp
       {/* Trusted Admin Moderation Controls */}
       {user?.isAdmin && (
         <div className="pt-4 border-t border-surface-border space-y-3">
-          <div className="flex items-center gap-2 text-xs font-semibold text-amber-300">
+          <div className="flex items-center gap-2 text-xs font-semibold text-amber-800">
             <Shield className="w-4 h-4" />
             <span>Administrative Moderation Controls</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-zinc-400 mr-1">Transition Status:</span>
+            <span className="text-xs text-slate-600 mr-1">Transition Status:</span>
             {allowedTransitions.map((nextStatus) => (
               <Button
                 key={nextStatus}
@@ -312,7 +312,7 @@ export const CampaignCorroborationPanel: React.FC<CampaignCorroborationPanelProp
 
           {summary && summary.disputes.filter((d) => d.moderationStatus === 'open').length > 0 && (
             <div className="space-y-2">
-              <p className="text-[11px] font-mono uppercase text-zinc-400">Open Disputes</p>
+              <p className="text-[11px] font-mono uppercase text-slate-600">Open Disputes</p>
               {summary.disputes
                 .filter((d) => d.moderationStatus === 'open')
                 .map((d) => (
@@ -320,7 +320,7 @@ export const CampaignCorroborationPanel: React.FC<CampaignCorroborationPanelProp
                     key={d.id}
                     className="p-3 rounded bg-void border border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
                   >
-                    <p className="text-zinc-300">{d.reason}</p>
+                    <p className="text-slate-700">{d.reason}</p>
                     <div className="flex items-center gap-2 shrink-0">
                       <Button
                         variant="secondary"

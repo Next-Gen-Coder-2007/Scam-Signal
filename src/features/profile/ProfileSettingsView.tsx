@@ -57,8 +57,8 @@ export const ProfileSettingsView: React.FC = () => {
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-lg font-semibold text-zinc-100">Profile &amp; Preferences</h1>
-          <p className="text-xs text-zinc-400">
+          <h1 className="text-lg font-semibold text-slate-900">Profile &amp; Preferences</h1>
+          <p className="text-xs text-slate-600">
             Manage your ScamSignal display name, default analysis privacy mode, and session.
           </p>
         </div>
@@ -69,15 +69,15 @@ export const ProfileSettingsView: React.FC = () => {
       </div>
 
       {error && (
-        <div className="p-3 rounded-md bg-rose-950/35 border border-rose-500/35 text-rose-200 text-xs flex items-start gap-2">
-          <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+        <div className="p-3 rounded-md bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2">
+          <AlertTriangle className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}
 
       {savedNotice && (
-        <div className="p-3 rounded-md bg-emerald-950/30 border border-emerald-500/30 text-emerald-200 text-xs flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+        <div className="p-3 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>Profile and preferences saved to your account.</span>
         </div>
       )}
@@ -85,42 +85,42 @@ export const ProfileSettingsView: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Account Metadata */}
         <div className="md:col-span-1 p-5 rounded-lg bg-surface border border-surface-border space-y-4">
-          <div className="flex items-center gap-2 text-zinc-100">
-            <Shield className="w-4 h-4 text-accent-violet-muted" />
+          <div className="flex items-center gap-2 text-slate-900">
+            <Shield className="w-4 h-4 text-accent-violet" />
             <h2 className="text-sm font-semibold">Account Metadata</h2>
           </div>
 
           <dl className="space-y-3 text-xs">
             <div>
-              <dt className="text-zinc-500 font-mono text-[10px] uppercase">Email</dt>
-              <dd className="text-zinc-200 font-mono break-all mt-0.5">
+              <dt className="text-slate-500 font-mono text-[10px] uppercase">Email</dt>
+              <dd className="text-slate-800 font-mono break-all mt-0.5">
                 {user.email ?? 'Anonymous Session'}
               </dd>
             </div>
             <div>
-              <dt className="text-zinc-500 font-mono text-[10px] uppercase">User ID</dt>
-              <dd className="text-zinc-300 font-mono break-all text-[11px] mt-0.5">{user.uid}</dd>
+              <dt className="text-slate-500 font-mono text-[10px] uppercase">User ID</dt>
+              <dd className="text-slate-700 font-mono break-all text-[11px] mt-0.5">{user.uid}</dd>
             </div>
             <div>
-              <dt className="text-zinc-500 font-mono text-[10px] uppercase">Provider</dt>
-              <dd className="text-zinc-200 font-mono mt-0.5">{user.providerId}</dd>
+              <dt className="text-slate-500 font-mono text-[10px] uppercase">Provider</dt>
+              <dd className="text-slate-800 font-mono mt-0.5">{user.providerId}</dd>
             </div>
             <div>
-              <dt className="text-zinc-500 font-mono text-[10px] uppercase">Role</dt>
-              <dd className="text-zinc-200 font-mono mt-0.5">
+              <dt className="text-slate-500 font-mono text-[10px] uppercase">Role</dt>
+              <dd className="text-slate-800 font-mono mt-0.5">
                 {user.isAdmin ? 'Analyst (Admin)' : user.isAnonymous ? 'Guest' : 'Member'}
               </dd>
             </div>
             {user.createdAt && (
               <div>
-                <dt className="text-zinc-500 font-mono text-[10px] uppercase">Created</dt>
-                <dd className="text-zinc-400 text-[11px] mt-0.5">{user.createdAt}</dd>
+                <dt className="text-slate-500 font-mono text-[10px] uppercase">Created</dt>
+                <dd className="text-slate-600 text-[11px] mt-0.5">{user.createdAt}</dd>
               </div>
             )}
             {user.lastSignInAt && (
               <div>
-                <dt className="text-zinc-500 font-mono text-[10px] uppercase">Last Sign-In</dt>
-                <dd className="text-zinc-400 text-[11px] mt-0.5">{user.lastSignInAt}</dd>
+                <dt className="text-slate-500 font-mono text-[10px] uppercase">Last Sign-In</dt>
+                <dd className="text-slate-600 text-[11px] mt-0.5">{user.lastSignInAt}</dd>
               </div>
             )}
           </dl>
@@ -131,8 +131,8 @@ export const ProfileSettingsView: React.FC = () => {
           onSubmit={handleSave}
           className="md:col-span-2 p-5 rounded-lg bg-surface border border-surface-border space-y-5"
         >
-          <div className="flex items-center gap-2 text-zinc-100">
-            <User className="w-4 h-4 text-accent-violet-muted" />
+          <div className="flex items-center gap-2 text-slate-900">
+            <User className="w-4 h-4 text-accent-violet" />
             <h2 className="text-sm font-semibold">Identity &amp; Privacy Defaults</h2>
           </div>
 
@@ -149,13 +149,13 @@ export const ProfileSettingsView: React.FC = () => {
           />
 
           <div className="space-y-3 pt-2 border-t border-surface-border">
-            <div className="flex items-center gap-2 text-zinc-200">
-              <Sliders className="w-3.5 h-3.5 text-cyan-400" />
+            <div className="flex items-center gap-2 text-slate-800">
+              <Sliders className="w-3.5 h-3.5 text-cyan-700" />
               <span className="text-xs font-medium">Analysis &amp; Reporting Preferences</span>
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-zinc-300">
+              <label className="block text-xs font-medium text-slate-700">
                 Default Hybrid AI Inference Mode
               </label>
               <select
@@ -166,7 +166,7 @@ export const ProfileSettingsView: React.FC = () => {
                     e.target.value as UserPreferences['defaultInferenceMode'],
                   );
                 }}
-                className="w-full rounded-md bg-void border border-surface-border px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-accent-violet"
+                className="w-full rounded-md bg-void border border-surface-border px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-accent-violet"
               >
                 <option value="prefer_on_device">
                   Prefer On-Device (Local-first with cloud fallback)
@@ -181,7 +181,7 @@ export const ProfileSettingsView: React.FC = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-zinc-300">
+              <label className="block text-xs font-medium text-slate-700">
                 Default Community Report Visibility
               </label>
               <select
@@ -192,7 +192,7 @@ export const ProfileSettingsView: React.FC = () => {
                     e.target.value as UserPreferences['defaultReportVisibility'],
                   );
                 }}
-                className="w-full rounded-md bg-void border border-surface-border px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-accent-violet"
+                className="w-full rounded-md bg-void border border-surface-border px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-accent-violet"
               >
                 <option value="community_public">
                   Community Public (Eligible for public feed after review)

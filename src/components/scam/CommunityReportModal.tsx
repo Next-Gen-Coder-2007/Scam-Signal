@@ -162,7 +162,7 @@ export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
         onClose={onClose}
         title="Submit Redacted Scam Observation"
         description="Submitted as a pending report (never auto-verified). Edit the redacted text before publishing."
-        icon={<ShieldCheck className="w-4 h-4 text-emerald-400" />}
+        icon={<ShieldCheck className="w-4 h-4 text-emerald-600" />}
         maxWidth="2xl"
         footer={
           <>
@@ -183,23 +183,23 @@ export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
       >
         <form id="community-report-form" onSubmit={handlePublish} className="space-y-4">
           {submitError && (
-            <div className="p-3 rounded-md bg-rose-950/35 border border-rose-500/35 text-rose-200 text-xs flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+            <div className="p-3 rounded-md bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" />
               <span>{submitError}</span>
             </div>
           )}
 
           {/* Auto-redaction summary */}
           {autoRedactions.length > 0 && (
-            <div className="p-2.5 rounded-md bg-emerald-950/20 border border-emerald-500/25 text-xs flex flex-wrap items-center gap-2">
-              <span className="text-emerald-300 font-medium flex items-center gap-1.5">
+            <div className="p-2.5 rounded-md bg-emerald-50 border border-emerald-200 text-xs flex flex-wrap items-center gap-2">
+              <span className="text-emerald-700 font-medium flex items-center gap-1.5">
                 <Lock className="w-3.5 h-3.5" />
                 Auto-redacted:
               </span>
               {autoRedactions.map((item) => (
                 <span
                   key={item.label}
-                  className="px-2 py-0.5 rounded bg-canvas border border-surface-border font-mono text-[11px] text-emerald-200"
+                  className="px-2 py-0.5 rounded bg-canvas border border-surface-border font-mono text-[11px] text-emerald-700"
                 >
                   {item.label} ({item.count})
                 </span>
@@ -273,8 +273,8 @@ export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
           {/* Editable Redacted Preview */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-zinc-300 flex items-center gap-1.5">
-                <Eye className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="text-xs font-medium text-slate-700 flex items-center gap-1.5">
+                <Eye className="w-3.5 h-3.5 text-cyan-700" />
                 Editable Redacted Observation
               </span>
               <Button
@@ -302,23 +302,23 @@ export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
           </div>
 
           {/* Transparent Data-Sharing Explanation */}
-          <div className="p-3 rounded-md bg-canvas border border-surface-border text-[11px] text-zinc-400 space-y-1.5 leading-relaxed">
-            <p className="font-semibold text-zinc-200">
-              What will be stored in Firestore (<code className="font-mono text-cyan-300">pending_reports</code>):
+          <div className="p-3 rounded-md bg-canvas border border-surface-border text-[11px] text-slate-600 space-y-1.5 leading-relaxed">
+            <p className="font-semibold text-slate-800">
+              What will be stored in Firestore (<code className="font-mono text-cyan-800">pending_reports</code>):
             </p>
             <ul className="list-disc list-inside space-y-0.5">
               <li>
-                <strong className="text-zinc-300">Stored:</strong> Your edited redacted summary, category, indicators, sanitized evidence quotes, risk assessment, observed date, visibility preference, server timestamp, and <code className="font-mono">verificationStatus: &quot;pending&quot;</code>.
+                <strong className="text-slate-700">Stored:</strong> Your edited redacted summary, category, indicators, sanitized evidence quotes, risk assessment, observed date, visibility preference, server timestamp, and <code className="font-mono">verificationStatus: &quot;pending&quot;</code>.
               </li>
               <li>
-                <strong className="text-zinc-300">Kept Private:</strong> Your original unredacted message, any personal details you removed, and your email address.
+                <strong className="text-slate-700">Kept Private:</strong> Your original unredacted message, any personal details you removed, and your email address.
               </li>
             </ul>
           </div>
 
           {/* Firebase / Auth Guard */}
           {(!firebaseStatus.isConfigured || !user) && (
-            <div className="p-3 rounded-md bg-amber-950/25 border border-amber-500/30 text-amber-200 text-xs flex items-center justify-between gap-3">
+            <div className="p-3 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center justify-between gap-3">
               <span>
                 {!firebaseStatus.isConfigured
                   ? 'Cloud Firestore is not configured in .env. Community publishing is disabled.'
@@ -337,7 +337,7 @@ export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
           )}
 
           {/* Explicit User Consent Checkbox */}
-          <label className="flex items-start gap-2.5 p-3 rounded-md bg-surface-elevated border border-surface-border text-xs text-zinc-200 cursor-pointer select-none">
+          <label className="flex items-start gap-2.5 p-3 rounded-md bg-surface-elevated border border-surface-border text-xs text-slate-800 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={hasConsented}
@@ -345,7 +345,7 @@ export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
               className="mt-0.5 rounded border-surface-subtle bg-canvas text-accent-violet focus:ring-violet-500"
             />
             <span>
-              I have reviewed and edited the redacted text above, understand what data will be stored under <code className="font-mono text-zinc-300">{visibility}</code> visibility, and explicitly consent to submit this pending report.
+              I have reviewed and edited the redacted text above, understand what data will be stored under <code className="font-mono text-slate-700">{visibility}</code> visibility, and explicitly consent to submit this pending report.
             </span>
           </label>
         </form>

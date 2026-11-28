@@ -28,11 +28,11 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         className
       )}
     >
-      <div className="p-2.5 bg-surface-elevated rounded-md border border-surface-border mb-3.5 text-zinc-400">
-        <Icon className="w-5 h-5 text-zinc-300" />
+      <div className="p-2.5 bg-surface-elevated rounded-md border border-surface-border mb-3.5 text-slate-600">
+        <Icon className="w-5 h-5 text-slate-700" />
       </div>
-      <h3 className="text-sm font-semibold text-zinc-200 mb-1">{title}</h3>
-      <p className="text-xs text-zinc-400 max-w-md mb-5 leading-relaxed">
+      <h3 className="text-sm font-semibold text-slate-800 mb-1">{title}</h3>
+      <p className="text-xs text-slate-600 max-w-md mb-5 leading-relaxed">
         {description}
       </p>
       {action && (

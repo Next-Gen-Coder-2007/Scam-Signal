@@ -80,15 +80,15 @@ export const CampaignExplorerView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-surface-border">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
-            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-100">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900">
               Campaign Intelligence
             </h1>
-            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-cyan-400 border border-surface-border">
+            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-cyan-700 border border-surface-border">
               Firestore Evidence
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-            Inspect potential, under-review, and verified scam campaigns backed by deterministic report-to-campaign links.
+          <p className="text-xs sm:text-sm text-slate-600 mt-1">
+            Evidence-based scam campaigns with deterministic report links.
           </p>
         </div>
 
@@ -108,14 +108,14 @@ export const CampaignExplorerView: React.FC = () => {
       {/* Methodology & Status Legend */}
       <Card className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div className="flex items-start gap-3">
-          <div className="p-2.5 rounded-md bg-surface-elevated text-cyan-400 border border-surface-border shrink-0">
+          <div className="p-2.5 rounded-md bg-surface-elevated text-cyan-700 border border-surface-border shrink-0">
             <Fingerprint className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-zinc-200">
+            <h2 className="text-sm font-semibold text-slate-800">
               Transparent Campaign Attribution
             </h2>
-            <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed">
+            <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
               Potential campaigns are never automatically marked verified. Only campaigns with
               explicit analyst review move to Under Review or Verified Campaign status.
             </p>
@@ -137,8 +137,8 @@ export const CampaignExplorerView: React.FC = () => {
               onClick={() => setStageFilter(key)}
               className={`px-2.5 py-1 rounded text-xs font-mono border transition-colors ${
                 stageFilter === key
-                  ? 'bg-accent-violet/20 border-accent-violet text-zinc-100'
-                  : 'bg-canvas border-surface-border text-zinc-400 hover:text-zinc-200'
+                  ? 'bg-violet-50 border-accent-violet text-slate-900'
+                  : 'bg-canvas border-surface-border text-slate-600 hover:text-slate-800'
               }`}
             >
               {label}
@@ -157,12 +157,12 @@ export const CampaignExplorerView: React.FC = () => {
       ) : loading ? (
         <CardListSkeleton count={3} />
       ) : error ? (
-        <Card className="border-rose-500/30 bg-rose-950/20 space-y-3">
-          <div className="flex items-center gap-2 text-rose-300 text-sm font-semibold">
+        <Card className="border-rose-200 bg-rose-50 space-y-3">
+          <div className="flex items-center gap-2 text-rose-700 text-sm font-semibold">
             <AlertTriangle className="w-4 h-4 shrink-0" />
             <span>Unable to Load Campaigns</span>
           </div>
-          <p className="text-xs text-rose-200/80">{error}</p>
+          <p className="text-xs text-rose-700">{error}</p>
           <Button variant="secondary" size="sm" onClick={() => void loadCampaigns()}>
             Retry
           </Button>
@@ -184,11 +184,11 @@ export const CampaignExplorerView: React.FC = () => {
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2.5 flex-wrap">
-                    <h3 className="text-base font-semibold text-zinc-100">{camp.name}</h3>
+                    <h3 className="text-base font-semibold text-slate-900">{camp.name}</h3>
                     <CampaignStatusBadge stage={camp.verificationStage} />
                   </div>
-                  <p className="text-xs font-mono text-zinc-400">
-                    Category: <span className="text-zinc-200">{formatCategoryLabel(camp.category)}</span>
+                  <p className="text-xs font-mono text-slate-600">
+                    Category: <span className="text-slate-800">{formatCategoryLabel(camp.category)}</span>
                   </p>
                 </div>
 
@@ -203,26 +203,26 @@ export const CampaignExplorerView: React.FC = () => {
               {/* Real Firestore Metrics */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
                 <div className="px-3 py-2 rounded bg-void border border-surface-border flex items-center justify-between">
-                  <span className="text-zinc-400">Associated Reports</span>
-                  <span className="font-mono font-semibold text-zinc-100">
+                  <span className="text-slate-600">Associated Reports</span>
+                  <span className="font-mono font-semibold text-slate-900">
                     {camp.associatedReportCount}
                   </span>
                 </div>
                 <div className="px-3 py-2 rounded bg-void border border-surface-border flex items-center justify-between">
-                  <span className="text-zinc-400 flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-zinc-500" />
+                  <span className="text-slate-600 flex items-center gap-1">
+                    <Calendar className="w-3 h-3 text-slate-500" />
                     First Observed
                   </span>
-                  <span className="font-mono text-zinc-200">
+                  <span className="font-mono text-slate-800">
                     {formatDateLabel(camp.firstObservedAt)}
                   </span>
                 </div>
                 <div className="px-3 py-2 rounded bg-void border border-surface-border flex items-center justify-between">
-                  <span className="text-zinc-400 flex items-center gap-1">
-                    <Clock className="w-3 h-3 text-zinc-500" />
+                  <span className="text-slate-600 flex items-center gap-1">
+                    <Clock className="w-3 h-3 text-slate-500" />
                     Latest Activity
                   </span>
-                  <span className="font-mono text-zinc-200">
+                  <span className="font-mono text-slate-800">
                     {formatDateLabel(camp.latestActivityAt)}
                   </span>
                 </div>
@@ -230,7 +230,7 @@ export const CampaignExplorerView: React.FC = () => {
 
               {/* Shared Indicators */}
               <div>
-                <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block mb-1.5">
+                <span className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider block mb-1.5">
                   Shared Indicators
                 </span>
                 {camp.sharedIndicators.length > 0 ? (
@@ -238,14 +238,14 @@ export const CampaignExplorerView: React.FC = () => {
                     {camp.sharedIndicators.map((indicator) => (
                       <span
                         key={indicator}
-                        className="px-2 py-0.5 rounded text-[11px] font-mono bg-surface-elevated border border-surface-border text-cyan-300"
+                        className="px-2 py-0.5 rounded text-[11px] font-mono bg-surface-elevated border border-surface-border text-cyan-800"
                       >
                         {indicator}
                       </span>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-zinc-500">No shared indicator tags recorded.</p>
+                  <p className="text-xs text-slate-500">No shared indicator tags recorded.</p>
                 )}
               </div>
             </Card>

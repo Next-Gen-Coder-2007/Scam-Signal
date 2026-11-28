@@ -14,17 +14,17 @@ const STAGE_CONFIG: Record<
 > = {
   potential: {
     label: 'Potential Campaign',
-    classes: 'bg-amber-950/35 border-amber-500/35 text-amber-300',
+    classes: 'bg-amber-50 border-amber-200 text-amber-800',
     icon: HelpCircle,
   },
   under_review: {
     label: 'Under Review',
-    classes: 'bg-cyan-950/35 border-cyan-500/35 text-cyan-300',
+    classes: 'bg-cyan-50 border-cyan-200 text-cyan-800',
     icon: Eye,
   },
   verified: {
     label: 'Verified Campaign',
-    classes: 'bg-emerald-950/45 border-emerald-500/40 text-emerald-300',
+    classes: 'bg-emerald-50 border-emerald-200 text-emerald-700',
     icon: ShieldCheck,
   },
 };

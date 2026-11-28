@@ -14,7 +14,7 @@ export const CategoryDistributionChart: React.FC<CategoryDistributionChartProps>
 }) => {
   if (items.length === 0) {
     return (
-      <div className="py-6 text-center text-xs text-zinc-500">
+      <div className="py-6 text-center text-xs text-slate-500">
         No public reports recorded in this time window.
       </div>
     );
@@ -29,8 +29,8 @@ export const CategoryDistributionChart: React.FC<CategoryDistributionChartProps>
         return (
           <div key={item.category} className="space-y-1" role="listitem">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-zinc-200 font-medium truncate pr-2">{item.label}</span>
-              <span className="font-mono text-zinc-400 shrink-0">
+              <span className="text-slate-800 font-medium truncate pr-2">{item.label}</span>
+              <span className="font-mono text-slate-600 shrink-0">
                 {item.count} ({item.percentage}%)
               </span>
             </div>

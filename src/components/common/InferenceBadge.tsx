@@ -18,7 +18,7 @@ export const InferenceBadge: React.FC<InferenceBadgeProps> = ({
 }) => {
   const config = {
     on_device: {
-      bg: 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300',
+      bg: 'bg-emerald-50 border-emerald-200 text-emerald-700',
       dot: 'bg-emerald-400',
       icon: Cpu,
       defaultLabel: 'On-Device (SDK)',
@@ -30,7 +30,7 @@ export const InferenceBadge: React.FC<InferenceBadgeProps> = ({
       defaultLabel: 'In-Cloud (SDK)',
     },
     unknown: {
-      bg: 'bg-surface-elevated border-surface-border text-zinc-400',
+      bg: 'bg-surface-elevated border-surface-border text-slate-600',
       dot: 'bg-zinc-500',
       icon: HelpCircle,
       defaultLabel: 'Unknown Source',

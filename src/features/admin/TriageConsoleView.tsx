@@ -165,20 +165,20 @@ export const TriageConsoleView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-surface-border">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
-            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-100">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900">
               Administrative Moderation Console
             </h1>
-            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-amber-300 border border-surface-border">
+            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-amber-800 border border-surface-border">
               Server-Verified Admin Claims
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-            Review pending sanitized reports, investigate campaign connections, and record audited status changes via Cloud Functions.
+          <p className="text-xs sm:text-sm text-slate-600 mt-1">
+            Review pending reports, campaign links, and audit logs.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-surface border border-surface-border text-xs font-mono text-emerald-400">
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-surface border border-surface-border text-xs font-mono text-emerald-600">
             <CheckCircle2 className="w-3.5 h-3.5" />
             <span>Claims Enforced</span>
           </div>
@@ -199,38 +199,38 @@ export const TriageConsoleView: React.FC = () => {
       {/* Security Boundary Notice */}
       <Card>
         <div className="flex items-start gap-3">
-          <div className="p-2 rounded-md bg-surface-elevated text-amber-400 border border-surface-border shrink-0">
+          <div className="p-2 rounded-md bg-surface-elevated text-amber-600 border border-surface-border shrink-0">
             <Lock className="w-4 h-4" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-zinc-200">
+            <h2 className="text-sm font-semibold text-slate-800">
               Trusted Server-Side Authorization &amp; Audit Logging
             </h2>
-            <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+            <p className="text-xs text-slate-600 mt-1 leading-relaxed">
               All report approvals, campaign link confirmations, and status transitions execute
-              through Cloud Functions verifying <code className="text-cyan-400 font-mono">request.auth.token.admin === true</code>.
-              Admin privileges cannot be granted via user-editable Firestore fields, and every action writes an immutable record to <code className="text-cyan-400 font-mono">moderation_audit_logs</code>.
+              through Cloud Functions verifying <code className="text-cyan-700 font-mono">request.auth.token.admin === true</code>.
+              Admin privileges cannot be granted via user-editable Firestore fields, and every action writes an immutable record to <code className="text-cyan-700 font-mono">moderation_audit_logs</code>.
             </p>
           </div>
         </div>
       </Card>
 
       {error && (
-        <div className="p-3.5 rounded-md bg-rose-950/35 border border-rose-500/40 text-rose-200 text-xs flex items-start gap-2">
-          <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+        <div className="p-3.5 rounded-md bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2">
+          <AlertTriangle className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}
 
       {successMsg && (
-        <div className="p-3.5 rounded-md bg-emerald-950/30 border border-emerald-500/35 text-emerald-200 text-xs flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+        <div className="p-3.5 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>{successMsg}</span>
         </div>
       )}
 
       {!firebaseStatus.isConfigured ? (
-        <Card className="text-xs text-amber-200 border-amber-500/30 bg-amber-950/15">
+        <Card className="text-xs text-amber-800 border-amber-200 bg-amber-50">
           Configure Firebase environment variables in <code className="font-mono">.env</code> to
           connect to Firestore and Cloud Functions moderation endpoints.
         </Card>
@@ -242,15 +242,15 @@ export const TriageConsoleView: React.FC = () => {
           <Card className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-cyan-400" />
-                <h2 className="text-sm font-semibold text-zinc-100">
+                <FileText className="w-4 h-4 text-cyan-700" />
+                <h2 className="text-sm font-semibold text-slate-900">
                   Pending Reports Queue ({reports.length})
                 </h2>
               </div>
             </div>
 
             {reports.length === 0 ? (
-              <p className="text-xs text-zinc-500 py-3">No pending reports awaiting review.</p>
+              <p className="text-xs text-slate-500 py-3">No pending reports awaiting review.</p>
             ) : (
               <Table>
                 <TableHeader>
@@ -264,22 +264,22 @@ export const TriageConsoleView: React.FC = () => {
                 <TableBody>
                   {reports.map((rep) => (
                     <TableRow key={rep.id}>
-                      <TableCell className="font-mono text-xs text-zinc-300">
+                      <TableCell className="font-mono text-xs text-slate-700">
                         <div>{rep.id?.slice(0, 14)}</div>
-                        <div className="text-[10px] text-zinc-500">{rep.observedDate}</div>
+                        <div className="text-[10px] text-slate-500">{rep.observedDate}</div>
                       </TableCell>
                       <TableCell className="space-y-1">
                         <ThreatBadge level={rep.riskAssessment} />
-                        <div className="text-[11px] font-mono text-zinc-400">
+                        <div className="text-[11px] font-mono text-slate-600">
                           {rep.category}
                         </div>
                       </TableCell>
-                      <TableCell className="text-xs text-zinc-300 max-w-md">
+                      <TableCell className="text-xs text-slate-700 max-w-md">
                         <p className="line-clamp-2">{rep.redactedSummary}</p>
                         <button
                           type="button"
                           onClick={() => setSelectedReport(rep)}
-                          className="text-[11px] font-mono text-cyan-400 hover:underline mt-1"
+                          className="text-[11px] font-mono text-cyan-700 hover:underline mt-1"
                         >
                           Inspect sanitized evidence
                         </button>
@@ -330,14 +330,14 @@ export const TriageConsoleView: React.FC = () => {
           {/* 2. Candidate Campaign Connections */}
           <Card className="space-y-3">
             <div className="flex items-center gap-2">
-              <Link2 className="w-4 h-4 text-accent-violet-muted" />
-              <h2 className="text-sm font-semibold text-zinc-100">
+              <Link2 className="w-4 h-4 text-accent-violet" />
+              <h2 className="text-sm font-semibold text-slate-900">
                 Candidate Campaign Connections ({links.length})
               </h2>
             </div>
 
             {links.length === 0 ? (
-              <p className="text-xs text-zinc-500 py-3">
+              <p className="text-xs text-slate-500 py-3">
                 No candidate report-to-campaign links awaiting investigation.
               </p>
             ) : (
@@ -348,12 +348,12 @@ export const TriageConsoleView: React.FC = () => {
                     className="p-3 rounded-md bg-void border border-surface-border flex flex-col lg:flex-row lg:items-center justify-between gap-3 text-xs"
                   >
                     <div className="space-y-1">
-                      <div className="font-mono text-zinc-200">
-                        Report <span className="text-cyan-300">{link.reportId}</span> → Campaign{' '}
-                        <span className="text-accent-violet-muted">{link.campaignId}</span> (Score:{' '}
+                      <div className="font-mono text-slate-800">
+                        Report <span className="text-cyan-800">{link.reportId}</span> → Campaign{' '}
+                        <span className="text-accent-violet">{link.campaignId}</span> (Score:{' '}
                         {link.correlationScore.toFixed(2)})
                       </div>
-                      <p className="text-zinc-400">{link.explanation}</p>
+                      <p className="text-slate-600">{link.explanation}</p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <Button
@@ -400,14 +400,14 @@ export const TriageConsoleView: React.FC = () => {
           {/* 3. Campaign Verification Status */}
           <Card className="space-y-3">
             <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-emerald-400" />
-              <h2 className="text-sm font-semibold text-zinc-100">
+              <Shield className="w-4 h-4 text-emerald-600" />
+              <h2 className="text-sm font-semibold text-slate-900">
                 Campaign Status Controls ({campaigns.length})
               </h2>
             </div>
 
             {campaigns.length === 0 ? (
-              <p className="text-xs text-zinc-500 py-3">No campaigns recorded yet.</p>
+              <p className="text-xs text-slate-500 py-3">No campaigns recorded yet.</p>
             ) : (
               <div className="space-y-2.5">
                 {campaigns.map((camp) => (
@@ -416,9 +416,9 @@ export const TriageConsoleView: React.FC = () => {
                     className="p-3 rounded-md bg-void border border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
                   >
                     <div>
-                      <p className="font-semibold text-zinc-100">{camp.name}</p>
-                      <p className="text-[11px] font-mono text-zinc-400">
-                        Status: <span className="text-cyan-300">{camp.status}</span> ·{' '}
+                      <p className="font-semibold text-slate-900">{camp.name}</p>
+                      <p className="text-[11px] font-mono text-slate-600">
+                        Status: <span className="text-cyan-800">{camp.status}</span> ·{' '}
                         {camp.totalSignals} signals
                       </p>
                     </div>
@@ -454,14 +454,14 @@ export const TriageConsoleView: React.FC = () => {
           {/* 4. Moderation Audit Log */}
           <Card className="space-y-3">
             <div className="flex items-center gap-2">
-              <History className="w-4 h-4 text-zinc-400" />
-              <h2 className="text-sm font-semibold text-zinc-100">
+              <History className="w-4 h-4 text-slate-600" />
+              <h2 className="text-sm font-semibold text-slate-900">
                 Moderation Audit Log ({auditLogs.length})
               </h2>
             </div>
 
             {auditLogs.length === 0 ? (
-              <p className="text-xs text-zinc-500 py-3">
+              <p className="text-xs text-slate-500 py-3">
                 No moderation audit entries recorded yet.
               </p>
             ) : (
@@ -478,17 +478,17 @@ export const TriageConsoleView: React.FC = () => {
                 <TableBody>
                   {auditLogs.map((log) => (
                     <TableRow key={log.id}>
-                      <TableCell className="font-mono text-xs text-cyan-300">
+                      <TableCell className="font-mono text-xs text-cyan-800">
                         {log.action}
                       </TableCell>
-                      <TableCell className="font-mono text-xs text-zinc-300">
+                      <TableCell className="font-mono text-xs text-slate-700">
                         {log.targetType}:{log.targetId.slice(0, 12)}
                       </TableCell>
-                      <TableCell className="font-mono text-xs text-zinc-400">
+                      <TableCell className="font-mono text-xs text-slate-600">
                         {log.previousStatus} → {log.newStatus}
                       </TableCell>
-                      <TableCell className="text-xs text-zinc-300">{log.reason}</TableCell>
-                      <TableCell className="font-mono text-[11px] text-zinc-400">
+                      <TableCell className="text-xs text-slate-700">{log.reason}</TableCell>
+                      <TableCell className="font-mono text-[11px] text-slate-600">
                         {log.actorEmail || log.actorUid.slice(0, 10)}
                       </TableCell>
                     </TableRow>
@@ -510,14 +510,14 @@ export const TriageConsoleView: React.FC = () => {
       >
         {selectedReport && (
           <div className="space-y-4 text-xs">
-            <div className="p-3 rounded bg-void border border-surface-border text-zinc-200 leading-relaxed">
+            <div className="p-3 rounded bg-void border border-surface-border text-slate-800 leading-relaxed">
               {selectedReport.redactedSummary}
             </div>
             <div>
-              <p className="font-mono uppercase text-[10px] text-zinc-400 mb-1">
+              <p className="font-mono uppercase text-[10px] text-slate-600 mb-1">
                 Observed Evidence
               </p>
-              <ul className="list-disc list-inside text-zinc-300 space-y-1">
+              <ul className="list-disc list-inside text-slate-700 space-y-1">
                 {selectedReport.evidence.map((ev, i) => (
                   <li key={i}>{ev}</li>
                 ))}
@@ -542,7 +542,7 @@ export const TriageConsoleView: React.FC = () => {
       >
         <form onSubmit={executeConfirmedAction} className="space-y-4 text-xs">
           <div className="space-y-1.5">
-            <label className="block font-medium text-zinc-300">
+            <label className="block font-medium text-slate-700">
               Audit Log Reason (recorded permanently)
             </label>
             <textarea
@@ -552,7 +552,7 @@ export const TriageConsoleView: React.FC = () => {
               maxLength={500}
               required
               placeholder="Document the evidence or verification rationale..."
-              className="w-full rounded-md bg-void border border-surface-border px-3 py-2 text-xs text-zinc-100 focus:outline-none focus:border-accent-violet"
+              className="w-full rounded-md bg-void border border-surface-border px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-accent-violet"
             />
           </div>
 

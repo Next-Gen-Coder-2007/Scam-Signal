@@ -101,16 +101,16 @@ export const AlertsView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-surface-border">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
-            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-100 flex items-center gap-2">
-              <Bell className="w-5 h-5 text-cyan-400" />
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 flex items-center gap-2">
+              <Bell className="w-5 h-5 text-cyan-700" />
               <span>Alerts &amp; Notification Center</span>
             </h1>
-            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-cyan-300 border border-surface-border">
+            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-cyan-800 border border-surface-border">
               {unreadCount} Unread
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-            Follow selected scam categories to receive high-signal campaign warnings and verified community updates without noise.
+          <p className="text-xs sm:text-sm text-slate-600 mt-1">
+            High-signal warnings for your followed categories.
           </p>
         </div>
 
@@ -125,11 +125,11 @@ export const AlertsView: React.FC = () => {
       {/* Followed Scam Categories */}
       <Card className="space-y-3">
         <div className="flex items-center justify-between gap-2 flex-wrap">
-          <div className="flex items-center gap-2 text-zinc-100">
-            <SlidersHorizontal className="w-4 h-4 text-accent-violet-muted" />
+          <div className="flex items-center gap-2 text-slate-900">
+            <SlidersHorizontal className="w-4 h-4 text-accent-violet" />
             <h2 className="text-sm font-semibold">Followed Scam Categories</h2>
           </div>
-          <span className="text-[11px] font-mono text-zinc-400">
+          <span className="text-[11px] font-mono text-slate-600">
             {savingPrefs
               ? 'Saving preferences...'
               : `${followedCategories.length} selected`}
@@ -147,8 +147,8 @@ export const AlertsView: React.FC = () => {
                 onClick={() => void toggleCategory(category)}
                 className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
                   active
-                    ? 'bg-accent-violet/20 border-accent-violet text-zinc-100'
-                    : 'bg-void border-surface-border text-zinc-400 hover:text-zinc-200'
+                    ? 'bg-violet-50 border-accent-violet text-slate-900'
+                    : 'bg-void border-surface-border text-slate-600 hover:text-slate-800'
                 }`}
               >
                 {SCAM_CATEGORY_LABELS[category]}
@@ -161,9 +161,9 @@ export const AlertsView: React.FC = () => {
       {/* Notification List */}
       {followedCategories.length === 0 ? (
         <Card className="py-10 text-center space-y-2">
-          <Bell className="w-6 h-6 text-zinc-500 mx-auto" />
-          <h2 className="text-sm font-semibold text-zinc-200">No Categories Followed Yet</h2>
-          <p className="text-xs text-zinc-400 max-w-md mx-auto">
+          <Bell className="w-6 h-6 text-slate-500 mx-auto" />
+          <h2 className="text-sm font-semibold text-slate-800">No Categories Followed Yet</h2>
+          <p className="text-xs text-slate-600 max-w-md mx-auto">
             Select one or more scam categories above to track emerging campaign warnings and
             high-risk community updates relevant to you.
           </p>
@@ -171,21 +171,21 @@ export const AlertsView: React.FC = () => {
       ) : loading ? (
         <CardListSkeleton count={3} />
       ) : error ? (
-        <Card className="border-rose-500/30 bg-rose-950/20 space-y-3">
-          <div className="flex items-center gap-2 text-rose-300 text-sm font-semibold">
+        <Card className="border-rose-200 bg-rose-50 space-y-3">
+          <div className="flex items-center gap-2 text-rose-700 text-sm font-semibold">
             <AlertTriangle className="w-4 h-4" />
             <span>Unable to Load Alerts</span>
           </div>
-          <p className="text-xs text-rose-200/80">{error}</p>
+          <p className="text-xs text-rose-700">{error}</p>
           <Button variant="secondary" size="sm" onClick={() => void loadAlerts()}>
             Retry
           </Button>
         </Card>
       ) : alerts.length === 0 ? (
         <Card className="py-10 text-center space-y-2">
-          <Bell className="w-6 h-6 text-zinc-500 mx-auto" />
-          <h2 className="text-sm font-semibold text-zinc-200">You&apos;re All Caught Up</h2>
-          <p className="text-xs text-zinc-400">
+          <Bell className="w-6 h-6 text-slate-500 mx-auto" />
+          <h2 className="text-sm font-semibold text-slate-800">You&apos;re All Caught Up</h2>
+          <p className="text-xs text-slate-600">
             No new high-signal warnings or verified updates match your followed categories right now.
           </p>
         </Card>
@@ -195,7 +195,7 @@ export const AlertsView: React.FC = () => {
             <Card
               key={alert.id}
               className={`space-y-2.5 transition-colors ${
-                alert.isRead ? 'opacity-80' : 'border-cyan-500/40 bg-cyan-950/10'
+                alert.isRead ? 'opacity-80' : 'border-cyan-200 bg-cyan-50'
               }`}
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -206,23 +206,23 @@ export const AlertsView: React.FC = () => {
                       aria-label="Unread alert"
                     />
                   )}
-                  <span className="text-sm font-semibold text-zinc-100">{alert.title}</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-void border border-surface-border text-zinc-300">
+                  <span className="text-sm font-semibold text-slate-900">{alert.title}</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-void border border-surface-border text-slate-700">
                     {alert.verificationLabel}
                   </span>
                 </div>
 
-                <span className="text-[11px] font-mono text-zinc-500">
+                <span className="text-[11px] font-mono text-slate-500">
                   {alert.timestampIso.slice(0, 10)}
                 </span>
               </div>
 
-              <p className="text-xs text-zinc-300 leading-relaxed">{alert.summary}</p>
+              <p className="text-xs text-slate-700 leading-relaxed">{alert.summary}</p>
 
               <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
                 <Link
                   to={alert.href}
-                  className="inline-flex items-center gap-1 text-xs font-mono text-cyan-400 hover:text-cyan-300"
+                  className="inline-flex items-center gap-1 text-xs font-mono text-cyan-700 hover:text-cyan-800"
                 >
                   <span>
                     {alert.type === 'campaign_warning' ? 'Inspect Campaign' : 'View in Feed'}
@@ -240,7 +240,7 @@ export const AlertsView: React.FC = () => {
                     <span>Mark Read</span>
                   </Button>
                 ) : (
-                  <span className="text-[11px] font-mono text-zinc-500">Read</span>
+                  <span className="text-[11px] font-mono text-slate-500">Read</span>
                 )}
               </div>
             </Card>

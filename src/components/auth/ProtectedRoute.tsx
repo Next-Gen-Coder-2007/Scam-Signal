@@ -27,8 +27,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[320px] text-zinc-400 gap-3">
-        <Loader2 className="w-6 h-6 animate-spin text-accent-violet-muted" />
+      <div className="flex flex-col items-center justify-center min-h-[320px] text-slate-600 gap-3">
+        <Loader2 className="w-6 h-6 animate-spin text-accent-violet" />
         <p className="text-xs font-mono">Verifying authentication session...</p>
       </div>
     );
@@ -36,15 +36,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (!isConfigured) {
     return (
-      <div className="max-w-lg mx-auto my-10 p-6 rounded-lg bg-surface border border-amber-500/30 space-y-4">
-        <div className="flex items-center gap-2.5 text-amber-300">
+      <div className="max-w-lg mx-auto my-10 p-6 rounded-lg bg-surface border border-amber-200 space-y-4">
+        <div className="flex items-center gap-2.5 text-amber-800">
           <AlertTriangle className="w-5 h-5 shrink-0" />
           <h2 className="text-sm font-semibold">Firebase Authentication Not Configured</h2>
         </div>
-        <p className="text-xs text-zinc-300 leading-relaxed">
+        <p className="text-xs text-slate-700 leading-relaxed">
           Protected routes require Firebase Authentication. Configure your{' '}
-          <code className="font-mono text-zinc-100">.env</code> file from{' '}
-          <code className="font-mono text-zinc-100">.env.example</code> to enable sign-in and
+          <code className="font-mono text-slate-900">.env</code> file from{' '}
+          <code className="font-mono text-slate-900">.env.example</code> to enable sign-in and
           profile persistence.
         </p>
         <div className="flex items-center gap-2 pt-1">
@@ -63,17 +63,17 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return (
       <>
         <div className="max-w-lg mx-auto my-10 p-6 rounded-lg bg-surface border border-surface-border space-y-4">
-          <div className="flex items-center gap-2.5 text-zinc-100">
-            <div className="w-8 h-8 rounded-md bg-accent-violet/15 border border-accent-violet/30 flex items-center justify-center">
-              <Lock className="w-4 h-4 text-accent-violet-muted" />
+          <div className="flex items-center gap-2.5 text-slate-900">
+            <div className="w-8 h-8 rounded-md bg-violet-50 border border-accent-violet/30 flex items-center justify-center">
+              <Lock className="w-4 h-4 text-accent-violet" />
             </div>
             <div>
               <h2 className="text-sm font-semibold">{title}</h2>
-              <p className="text-[11px] font-mono text-zinc-400">Protected ScamSignal Route</p>
+              <p className="text-[11px] font-mono text-slate-600">Protected ScamSignal Route</p>
             </div>
           </div>
 
-          <p className="text-xs text-zinc-300 leading-relaxed">{description}</p>
+          <p className="text-xs text-slate-700 leading-relaxed">{description}</p>
 
           <div className="flex flex-wrap items-center gap-2.5 pt-1">
             <Button variant="primary" size="sm" onClick={() => setAuthModalOpen(true)}>
@@ -94,14 +94,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (requireAdmin && !user.isAdmin) {
     return (
-      <div className="max-w-lg mx-auto my-10 p-6 rounded-lg bg-surface border border-rose-500/30 space-y-4">
-        <div className="flex items-center gap-2.5 text-rose-300">
+      <div className="max-w-lg mx-auto my-10 p-6 rounded-lg bg-surface border border-rose-200 space-y-4">
+        <div className="flex items-center gap-2.5 text-rose-700">
           <ShieldAlert className="w-5 h-5 shrink-0" />
           <h2 className="text-sm font-semibold">Analyst Access Required</h2>
         </div>
-        <p className="text-xs text-zinc-300 leading-relaxed">
+        <p className="text-xs text-slate-700 leading-relaxed">
           You are signed in as{' '}
-          <span className="font-mono text-zinc-100">{user.email ?? user.uid}</span>, which does
+          <span className="font-mono text-slate-900">{user.email ?? user.uid}</span>, which does
           not have analyst permissions for the Triage Console.
         </p>
         <div className="flex flex-wrap items-center gap-2.5 pt-1">

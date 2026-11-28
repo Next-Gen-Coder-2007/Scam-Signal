@@ -77,10 +77,10 @@ export const CommunityFeedView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-surface-border">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-100">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900">
               Community Reports
             </h1>
-            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-zinc-300 border border-surface-border">
+            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-slate-700 border border-surface-border">
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
                   isFirebaseReady ? 'bg-emerald-400' : 'bg-amber-400'
@@ -89,7 +89,7 @@ export const CommunityFeedView: React.FC = () => {
               {isFirebaseReady ? `${reports.length} Loaded` : 'Local Mode'}
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-600 mt-1">
             Searchable, redacted scam observations. Verified warnings are clearly separated from unverified user reports.
           </p>
         </div>
@@ -111,20 +111,20 @@ export const CommunityFeedView: React.FC = () => {
 
       {/* Visual Distinction Legend */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-        <div className="p-3 rounded-md bg-emerald-950/15 border border-emerald-500/25 flex items-center gap-2.5">
-          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+        <div className="p-3 rounded-md bg-emerald-50 border border-emerald-200 flex items-center gap-2.5">
+          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
           <div>
-            <span className="font-semibold text-emerald-300 block">Verified Warning</span>
-            <span className="text-[11px] text-zinc-400">
+            <span className="font-semibold text-emerald-700 block">Verified Warning</span>
+            <span className="text-[11px] text-slate-600">
               Reviewed and corroborated by an analyst.
             </span>
           </div>
         </div>
-        <div className="p-3 rounded-md bg-amber-950/15 border border-amber-500/25 flex items-center gap-2.5">
-          <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+        <div className="p-3 rounded-md bg-amber-50 border border-amber-200 flex items-center gap-2.5">
+          <Clock className="w-4 h-4 text-amber-600 shrink-0" />
           <div>
-            <span className="font-semibold text-amber-300 block">Unverified User Report</span>
-            <span className="text-[11px] text-zinc-400">
+            <span className="font-semibold text-amber-800 block">Unverified User Report</span>
+            <span className="text-[11px] text-slate-600">
               Voluntarily submitted by a user; awaiting analyst review.
             </span>
           </div>
@@ -141,7 +141,7 @@ export const CommunityFeedView: React.FC = () => {
             placeholder="Search evidence, category, indicators..."
             className="pl-8"
           />
-          <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-2.5 pointer-events-none" />
+          <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5 pointer-events-none" />
         </div>
 
         <Select
@@ -193,9 +193,9 @@ export const CommunityFeedView: React.FC = () => {
           }}
         />
       ) : error ? (
-        <div className="p-4 rounded-lg bg-rose-950/30 border border-rose-500/35 text-rose-200 text-xs flex items-center justify-between gap-3">
+        <div className="p-4 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+            <AlertTriangle className="w-4 h-4 text-rose-700 shrink-0" />
             <span>{error}</span>
           </div>
           <Button variant="danger" size="sm" onClick={refresh}>
@@ -203,7 +203,7 @@ export const CommunityFeedView: React.FC = () => {
           </Button>
         </div>
       ) : loading ? (
-        <Card className="p-8 text-center text-xs text-zinc-400">
+        <Card className="p-8 text-center text-xs text-slate-600">
           Loading community reports from Cloud Firestore...
         </Card>
       ) : reports.length === 0 ? (
@@ -243,29 +243,29 @@ export const CommunityFeedView: React.FC = () => {
                   <div className="flex flex-wrap items-center gap-2">
                     <ReviewStatusBadge status={report.verificationStatus} />
                     <ThreatBadge level={report.riskAssessment} size="sm" />
-                    <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-surface-elevated text-zinc-200 border border-surface-border">
+                    <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-surface-elevated text-slate-800 border border-surface-border">
                       {categoryLabel}
                     </span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-canvas text-zinc-400 border border-surface-border">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-canvas text-slate-600 border border-surface-border">
                       {report.channel}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 text-[11px] font-mono text-zinc-400 shrink-0">
+                  <div className="flex items-center gap-2 text-[11px] font-mono text-slate-600 shrink-0">
                     <Calendar className="w-3.5 h-3.5" />
                     <span>{report.observedDate || 'Recent'}</span>
                   </div>
                 </div>
 
                 {/* Redacted Evidence Summary */}
-                <div className="mt-3 p-3 rounded-md bg-canvas border border-surface-border font-mono text-xs text-zinc-300 leading-relaxed line-clamp-3">
+                <div className="mt-3 p-3 rounded-md bg-canvas border border-surface-border font-mono text-xs text-slate-700 leading-relaxed line-clamp-3">
                   {safeSummary}
                 </div>
 
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-3 pt-2.5 border-t border-surface-border">
-                  <div className="flex items-center gap-3 text-[11px] font-mono text-zinc-500">
+                  <div className="flex items-center gap-3 text-[11px] font-mono text-slate-500">
                     <span className="flex items-center gap-1">
-                      <Hash className="w-3 h-3 text-cyan-400" />
+                      <Hash className="w-3 h-3 text-cyan-700" />
                       {report.normalizedPatternHash.slice(0, 10)}
                     </span>
                     <span>•</span>

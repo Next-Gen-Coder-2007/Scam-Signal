@@ -70,14 +70,11 @@ export const DashboardView: React.FC = () => {
       {/* Concise Welcome & Time Filter Bar */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-surface-border">
         <div>
-          <p className="text-[11px] font-mono uppercase tracking-wider text-cyan-400">
-            ScamSignal Intelligence Overview
-          </p>
-          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-100 mt-0.5">
+          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900">
             Welcome, {greetingName}
           </h1>
-          <p className="text-xs text-zinc-400 mt-1">
-            Live metrics derived strictly from stored Firestore reports, correlated campaigns, and community corroboration.
+          <p className="text-xs text-slate-600 mt-0.5">
+            Live metrics from stored reports and correlated campaigns.
           </p>
         </div>
 
@@ -90,8 +87,8 @@ export const DashboardView: React.FC = () => {
                 onClick={() => setTimeWindow(opt.value)}
                 className={`px-2.5 py-1 rounded text-xs font-mono transition-colors ${
                   timeWindow === opt.value
-                    ? 'bg-accent-violet/25 text-zinc-100 border border-accent-violet/40'
-                    : 'text-zinc-400 hover:text-zinc-200 border border-transparent'
+                    ? 'bg-violet-50 text-slate-900 border border-accent-violet/40'
+                    : 'text-slate-600 hover:text-slate-800 border border-transparent'
                 }`}
               >
                 {opt.label}
@@ -129,12 +126,12 @@ export const DashboardView: React.FC = () => {
       ) : loading && !snapshot ? (
         <DashboardSkeleton />
       ) : error ? (
-        <Card className="border-rose-500/30 bg-rose-950/20 space-y-3">
-          <div className="flex items-center gap-2 text-rose-300 text-sm font-semibold">
+        <Card className="border-rose-200 bg-rose-50 space-y-3">
+          <div className="flex items-center gap-2 text-rose-700 text-sm font-semibold">
             <AlertTriangle className="w-4 h-4 shrink-0" />
             <span>Failed to Load Dashboard</span>
           </div>
-          <p className="text-xs text-rose-200/80">{error}</p>
+          <p className="text-xs text-rose-700">{error}</p>
           <Button variant="secondary" size="sm" onClick={() => void loadDashboard()}>
             Retry
           </Button>
@@ -144,44 +141,44 @@ export const DashboardView: React.FC = () => {
           {/* Restrained KPI Strip with Explicit Data Sources */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <Card className="p-4 space-y-1">
-              <p className="text-[11px] font-mono uppercase text-zinc-400">Public Reports</p>
-              <p className="text-2xl font-semibold font-mono text-zinc-100">
+              <p className="text-[11px] font-mono uppercase text-slate-600">Public Reports</p>
+              <p className="text-2xl font-semibold font-mono text-slate-900">
                 {snapshot.metrics.publicReportsCount}
               </p>
-              <p className="text-[10px] font-mono text-zinc-500">
+              <p className="text-[10px] font-mono text-slate-500">
                 Source: pending_reports (public)
               </p>
             </Card>
             <Card className="p-4 space-y-1">
-              <p className="text-[11px] font-mono uppercase text-zinc-400">
+              <p className="text-[11px] font-mono uppercase text-slate-600">
                 Emerging Campaigns
               </p>
-              <p className="text-2xl font-semibold font-mono text-amber-300">
+              <p className="text-2xl font-semibold font-mono text-amber-800">
                 {snapshot.metrics.emergingCampaignsCount}
               </p>
-              <p className="text-[10px] font-mono text-zinc-500">
+              <p className="text-[10px] font-mono text-slate-500">
                 Source: campaigns (potential / review)
               </p>
             </Card>
             <Card className="p-4 space-y-1">
-              <p className="text-[11px] font-mono uppercase text-zinc-400">
+              <p className="text-[11px] font-mono uppercase text-slate-600">
                 Verified Intelligence
               </p>
-              <p className="text-2xl font-semibold font-mono text-emerald-300">
+              <p className="text-2xl font-semibold font-mono text-emerald-700">
                 {snapshot.metrics.verifiedItemsCount}
               </p>
-              <p className="text-[10px] font-mono text-zinc-500">
+              <p className="text-[10px] font-mono text-slate-500">
                 Source: verified reports &amp; campaigns
               </p>
             </Card>
             <Card className="p-4 space-y-1">
-              <p className="text-[11px] font-mono uppercase text-zinc-400">
+              <p className="text-[11px] font-mono uppercase text-slate-600">
                 Corroboration Records
               </p>
-              <p className="text-2xl font-semibold font-mono text-cyan-300">
+              <p className="text-2xl font-semibold font-mono text-cyan-800">
                 {snapshot.metrics.corroborationActionsCount}
               </p>
-              <p className="text-[10px] font-mono text-zinc-500">
+              <p className="text-[10px] font-mono text-slate-500">
                 Source: confirmations &amp; disputes
               </p>
             </Card>
@@ -195,12 +192,12 @@ export const DashboardView: React.FC = () => {
               <Card className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Radio className="w-4 h-4 text-cyan-400" />
-                    <h2 className="text-sm font-semibold text-zinc-100">Recent Scam Reports</h2>
+                    <Radio className="w-4 h-4 text-cyan-700" />
+                    <h2 className="text-sm font-semibold text-slate-900">Recent Scam Reports</h2>
                   </div>
                   <Link
                     to="/feed"
-                    className="inline-flex items-center gap-1 text-xs font-mono text-cyan-400 hover:text-cyan-300"
+                    className="inline-flex items-center gap-1 text-xs font-mono text-cyan-700 hover:text-cyan-800"
                   >
                     <span>View Feed</span>
                     <ArrowRight className="w-3 h-3" />
@@ -208,7 +205,7 @@ export const DashboardView: React.FC = () => {
                 </div>
 
                 {snapshot.recentReports.length === 0 ? (
-                  <p className="text-xs text-zinc-500 py-4">
+                  <p className="text-xs text-slate-500 py-4">
                     No public reports recorded in this time window.
                   </p>
                 ) : (
@@ -219,15 +216,15 @@ export const DashboardView: React.FC = () => {
                           <div className="flex items-center gap-2 flex-wrap">
                             <ThreatBadge level={report.riskAssessment} />
                             <ReviewStatusBadge status={report.verificationStatus} />
-                            <span className="text-xs font-mono text-zinc-300">
+                            <span className="text-xs font-mono text-slate-700">
                               {report.category.replace(/_/g, ' ')}
                             </span>
                           </div>
-                          <span className="text-[11px] font-mono text-zinc-500">
+                          <span className="text-[11px] font-mono text-slate-500">
                             {report.observedDate}
                           </span>
                         </div>
-                        <p className="text-xs text-zinc-300 line-clamp-2">
+                        <p className="text-xs text-slate-700 line-clamp-2">
                           {report.redactedSummary}
                         </p>
                       </div>
@@ -240,14 +237,14 @@ export const DashboardView: React.FC = () => {
               <Card className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Network className="w-4 h-4 text-accent-violet-muted" />
-                    <h2 className="text-sm font-semibold text-zinc-100">
+                    <Network className="w-4 h-4 text-accent-violet" />
+                    <h2 className="text-sm font-semibold text-slate-900">
                       Emerging Potential Campaigns
                     </h2>
                   </div>
                   <Link
                     to="/campaigns"
-                    className="inline-flex items-center gap-1 text-xs font-mono text-cyan-400 hover:text-cyan-300"
+                    className="inline-flex items-center gap-1 text-xs font-mono text-cyan-700 hover:text-cyan-800"
                   >
                     <span>All Campaigns</span>
                     <ArrowRight className="w-3 h-3" />
@@ -255,7 +252,7 @@ export const DashboardView: React.FC = () => {
                 </div>
 
                 {snapshot.emergingCampaigns.length === 0 ? (
-                  <p className="text-xs text-zinc-500 py-4">
+                  <p className="text-xs text-slate-500 py-4">
                     No emerging potential campaigns in this time window.
                   </p>
                 ) : (
@@ -268,12 +265,12 @@ export const DashboardView: React.FC = () => {
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-xs font-semibold text-zinc-100">
+                            <span className="text-xs font-semibold text-slate-900">
                               {camp.name}
                             </span>
                             <CampaignStatusBadge stage={camp.verificationStage} />
                           </div>
-                          <span className="text-[11px] font-mono text-zinc-400">
+                          <span className="text-[11px] font-mono text-slate-600">
                             {camp.associatedReportCount} reports
                           </span>
                         </div>
@@ -282,7 +279,7 @@ export const DashboardView: React.FC = () => {
                             {camp.sharedIndicators.slice(0, 4).map((ind) => (
                               <span
                                 key={ind}
-                                className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-surface border border-surface-border text-cyan-300"
+                                className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-surface border border-surface-border text-cyan-800"
                               >
                                 {ind}
                               </span>
@@ -302,12 +299,12 @@ export const DashboardView: React.FC = () => {
               <Card className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4 text-cyan-400" />
-                    <h2 className="text-sm font-semibold text-zinc-100">
+                    <BarChart3 className="w-4 h-4 text-cyan-700" />
+                    <h2 className="text-sm font-semibold text-slate-900">
                       Category Distribution
                     </h2>
                   </div>
-                  <span className="text-[10px] font-mono text-zinc-500">pending_reports</span>
+                  <span className="text-[10px] font-mono text-slate-500">pending_reports</span>
                 </div>
                 <CategoryDistributionChart items={snapshot.categoryDistribution} />
               </Card>
@@ -315,12 +312,12 @@ export const DashboardView: React.FC = () => {
               {/* Relevant Safety Alerts */}
               <Card className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <ShieldAlert className="w-4 h-4 text-rose-400" />
-                  <h2 className="text-sm font-semibold text-zinc-100">Safety Alerts</h2>
+                  <ShieldAlert className="w-4 h-4 text-rose-700" />
+                  <h2 className="text-sm font-semibold text-slate-900">Safety Alerts</h2>
                 </div>
 
                 {snapshot.safetyAlerts.length === 0 ? (
-                  <p className="text-xs text-zinc-500 py-3">
+                  <p className="text-xs text-slate-500 py-3">
                     No verified high-severity alerts or active waves in this window.
                   </p>
                 ) : (
@@ -329,18 +326,18 @@ export const DashboardView: React.FC = () => {
                       <Link
                         key={alert.id}
                         to={alert.href}
-                        className="block p-3 rounded-md bg-rose-950/15 border border-rose-500/25 hover:border-rose-500/45 transition-colors space-y-1"
+                        className="block p-3 rounded-md bg-rose-50 border border-rose-200 hover:border-rose-200 transition-colors space-y-1"
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-semibold text-rose-200 truncate">
+                          <span className="text-xs font-semibold text-rose-700 truncate">
                             {alert.title}
                           </span>
-                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-950/50 text-rose-300 shrink-0">
+                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 shrink-0">
                             {alert.severity}
                           </span>
                         </div>
-                        <p className="text-[11px] text-zinc-300 line-clamp-2">{alert.summary}</p>
-                        <p className="text-[10px] font-mono text-zinc-500">{alert.sourceLabel}</p>
+                        <p className="text-[11px] text-slate-700 line-clamp-2">{alert.summary}</p>
+                        <p className="text-[10px] font-mono text-slate-500">{alert.sourceLabel}</p>
                       </Link>
                     ))}
                   </div>
@@ -350,14 +347,14 @@ export const DashboardView: React.FC = () => {
               {/* Recent Community Activity */}
               <Card className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-emerald-400" />
-                  <h2 className="text-sm font-semibold text-zinc-100">
+                  <Activity className="w-4 h-4 text-emerald-600" />
+                  <h2 className="text-sm font-semibold text-slate-900">
                     Recent Community Activity
                   </h2>
                 </div>
 
                 {snapshot.recentActivity.length === 0 ? (
-                  <p className="text-xs text-zinc-500 py-3">
+                  <p className="text-xs text-slate-500 py-3">
                     No recent community activity recorded in this window.
                   </p>
                 ) : (
@@ -366,15 +363,15 @@ export const DashboardView: React.FC = () => {
                       <Link
                         key={item.id}
                         to={item.href}
-                        className="block py-2.5 first:pt-0 last:pb-0 hover:text-zinc-100 transition-colors"
+                        className="block py-2.5 first:pt-0 last:pb-0 hover:text-slate-900 transition-colors"
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-medium text-zinc-200">{item.title}</span>
-                          <span className="text-[10px] font-mono text-zinc-500 shrink-0">
+                          <span className="text-xs font-medium text-slate-800">{item.title}</span>
+                          <span className="text-[10px] font-mono text-slate-500 shrink-0">
                             {item.timestampIso.slice(0, 10)}
                           </span>
                         </div>
-                        <p className="text-[11px] text-zinc-400 truncate mt-0.5">{item.detail}</p>
+                        <p className="text-[11px] text-slate-600 truncate mt-0.5">{item.detail}</p>
                       </Link>
                     ))}
                   </div>

@@ -72,12 +72,12 @@ export const CampaignDetailsView: React.FC = () => {
       <div className="max-w-3xl mx-auto space-y-4">
         <Link
           to="/campaigns"
-          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-800"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Campaign Intelligence</span>
         </Link>
-        <Card className="border-amber-500/30 bg-amber-950/20 text-xs text-amber-200">
+        <Card className="border-amber-200 bg-amber-50 text-xs text-amber-800">
           Cloud Firestore is not configured in this environment. Configure <code>.env</code> to
           inspect live campaign evidence.
         </Card>
@@ -94,17 +94,17 @@ export const CampaignDetailsView: React.FC = () => {
       <div className="max-w-3xl mx-auto space-y-4">
         <Link
           to="/campaigns"
-          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-800"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Campaign Intelligence</span>
         </Link>
-        <Card className="border-rose-500/30 bg-rose-950/20 space-y-3">
-          <div className="flex items-center gap-2 text-rose-300 text-sm font-semibold">
+        <Card className="border-rose-200 bg-rose-50 space-y-3">
+          <div className="flex items-center gap-2 text-rose-700 text-sm font-semibold">
             <AlertTriangle className="w-4 h-4" />
             <span>Error Loading Campaign</span>
           </div>
-          <p className="text-xs text-rose-200/80">{error}</p>
+          <p className="text-xs text-rose-700">{error}</p>
           <Button variant="secondary" size="sm" onClick={() => void loadDetails()}>
             Retry
           </Button>
@@ -118,17 +118,17 @@ export const CampaignDetailsView: React.FC = () => {
       <div className="max-w-3xl mx-auto space-y-4">
         <Link
           to="/campaigns"
-          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-800"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Campaign Intelligence</span>
         </Link>
         <Card className="space-y-2 text-center py-10">
-          <ShieldAlert className="w-6 h-6 text-zinc-500 mx-auto" />
-          <h2 className="text-sm font-semibold text-zinc-200">Campaign Not Found</h2>
-          <p className="text-xs text-zinc-400">
+          <ShieldAlert className="w-6 h-6 text-slate-500 mx-auto" />
+          <h2 className="text-sm font-semibold text-slate-800">Campaign Not Found</h2>
+          <p className="text-xs text-slate-600">
             No campaign record exists in Firestore for ID{' '}
-            <code className="font-mono text-zinc-200">{campaignId}</code>.
+            <code className="font-mono text-slate-800">{campaignId}</code>.
           </p>
         </Card>
       </div>
@@ -143,7 +143,7 @@ export const CampaignDetailsView: React.FC = () => {
       <div>
         <Link
           to="/campaigns"
-          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 mb-3"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-800 mb-3"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Campaign Intelligence</span>
@@ -152,12 +152,12 @@ export const CampaignDetailsView: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-surface-border">
           <div className="space-y-1">
             <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-xl font-semibold text-zinc-100">{campaign.name}</h1>
+              <h1 className="text-xl font-semibold text-slate-900">{campaign.name}</h1>
               <CampaignStatusBadge stage={verificationStage} />
             </div>
-            <p className="text-xs font-mono text-zinc-400">
-              Category: <span className="text-zinc-200">{formatCategoryLabel(campaign.threatType)}</span>{' '}
-              · ID: <span className="text-zinc-300">{campaign.id}</span>
+            <p className="text-xs font-mono text-slate-600">
+              Category: <span className="text-slate-800">{formatCategoryLabel(campaign.threatType)}</span>{' '}
+              · ID: <span className="text-slate-700">{campaign.id}</span>
             </p>
           </div>
         </div>
@@ -166,24 +166,24 @@ export const CampaignDetailsView: React.FC = () => {
       {/* Real Firestore Summary Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
         <Card className="p-4 flex items-center justify-between">
-          <span className="text-zinc-400">Associated Reports</span>
-          <span className="text-base font-mono font-semibold text-zinc-100">
+          <span className="text-slate-600">Associated Reports</span>
+          <span className="text-base font-mono font-semibold text-slate-900">
             {details.associatedReportCount}
           </span>
         </Card>
         <Card className="p-4 flex items-center justify-between">
-          <span className="text-zinc-400 flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-zinc-500" />
+          <span className="text-slate-600 flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5 text-slate-500" />
             First Observed
           </span>
-          <span className="font-mono text-zinc-200">{formatDateLabel(details.firstObservedAt)}</span>
+          <span className="font-mono text-slate-800">{formatDateLabel(details.firstObservedAt)}</span>
         </Card>
         <Card className="p-4 flex items-center justify-between">
-          <span className="text-zinc-400 flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-zinc-500" />
+          <span className="text-slate-600 flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 text-slate-500" />
             Latest Activity
           </span>
-          <span className="font-mono text-zinc-200">
+          <span className="font-mono text-slate-800">
             {formatDateLabel(details.latestActivityAt)}
           </span>
         </Card>
@@ -193,12 +193,12 @@ export const CampaignDetailsView: React.FC = () => {
       <Card className="space-y-4">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2">
-            <Link2 className="w-4 h-4 text-cyan-400" />
-            <h2 className="text-sm font-semibold text-zinc-100">
+            <Link2 className="w-4 h-4 text-cyan-700" />
+            <h2 className="text-sm font-semibold text-slate-900">
               Deterministic Report Relationships
             </h2>
           </div>
-          <span className="text-[11px] font-mono text-zinc-400">
+          <span className="text-[11px] font-mono text-slate-600">
             Click a node or report below to inspect supporting evidence
           </span>
         </div>
@@ -213,7 +213,7 @@ export const CampaignDetailsView: React.FC = () => {
         {links.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-2">
             <div className="lg:col-span-1 space-y-2">
-              <p className="text-[11px] font-mono uppercase text-zinc-400">
+              <p className="text-[11px] font-mono uppercase text-slate-600">
                 Connected Reports ({links.length})
               </p>
               <div className="space-y-1.5 max-h-[280px] overflow-y-auto pr-1">
@@ -226,15 +226,15 @@ export const CampaignDetailsView: React.FC = () => {
                       onClick={() => setSelectedReportId(link.reportId)}
                       className={`w-full text-left px-3 py-2 rounded border text-xs transition-colors ${
                         active
-                          ? 'bg-cyan-950/35 border-cyan-500/50 text-zinc-100'
-                          : 'bg-void border-surface-border text-zinc-300 hover:border-zinc-600'
+                          ? 'bg-cyan-50 border-cyan-200 text-slate-900'
+                          : 'bg-void border-surface-border text-slate-700 hover:border-zinc-600'
                       }`}
                     >
                       <div className="flex items-center justify-between font-mono">
                         <span className="truncate">{link.reportId}</span>
-                        <span className="text-cyan-300">{link.correlationScore.toFixed(2)}</span>
+                        <span className="text-cyan-800">{link.correlationScore.toFixed(2)}</span>
                       </div>
-                      <div className="text-[10px] text-zinc-400 mt-0.5">
+                      <div className="text-[10px] text-slate-600 mt-0.5">
                         Link: {link.status} · {link.verificationStatus}
                       </div>
                     </button>
@@ -248,29 +248,29 @@ export const CampaignDetailsView: React.FC = () => {
                 <>
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div className="flex items-center gap-2">
-                      <FileSearch className="w-4 h-4 text-cyan-400" />
-                      <h3 className="text-xs font-semibold text-zinc-100 font-mono">
+                      <FileSearch className="w-4 h-4 text-cyan-700" />
+                      <h3 className="text-xs font-semibold text-slate-900 font-mono">
                         Evidence for {selectedLink.reportId}
                       </h3>
                     </div>
-                    <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-surface border border-surface-border text-zinc-300">
+                    <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-surface border border-surface-border text-slate-700">
                       Score: {selectedLink.correlationScore.toFixed(2)} ({selectedLink.status})
                     </span>
                   </div>
 
-                  <p className="text-xs text-zinc-300 leading-relaxed">
+                  <p className="text-xs text-slate-700 leading-relaxed">
                     {selectedLink.explanation}
                   </p>
 
                   <div>
-                    <span className="text-[10px] font-mono uppercase text-zinc-400 block mb-1.5">
+                    <span className="text-[10px] font-mono uppercase text-slate-600 block mb-1.5">
                       Supporting Indicators
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {selectedLink.supportingIndicators.map((ind) => (
                         <span
                           key={ind}
-                          className="px-2 py-0.5 rounded text-[11px] font-mono bg-surface border border-surface-border text-cyan-300"
+                          className="px-2 py-0.5 rounded text-[11px] font-mono bg-surface border border-surface-border text-cyan-800"
                         >
                           {ind}
                         </span>
@@ -297,30 +297,30 @@ export const CampaignDetailsView: React.FC = () => {
         <Card className="space-y-4 border-accent-violet/30">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-accent-violet-muted" />
-              <h2 className="text-sm font-semibold text-zinc-100">
+              <Cpu className="w-4 h-4 text-accent-violet" />
+              <h2 className="text-sm font-semibold text-slate-900">
                 Collective AI Explanation (Advisory)
               </h2>
             </div>
-            <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-accent-violet/15 border border-accent-violet/30 text-accent-violet-muted">
+            <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-violet-50 border border-accent-violet/30 text-accent-violet">
               {analysis.modelIdentifier} · {analysis.inferenceSource}
             </span>
           </div>
 
           <div className="space-y-3 text-xs">
             <div>
-              <h3 className="font-semibold text-zinc-300 mb-1">Shared Indicators Summary</h3>
-              <p className="text-zinc-300 leading-relaxed">{analysis.sharedIndicatorsSummary}</p>
+              <h3 className="font-semibold text-slate-700 mb-1">Shared Indicators Summary</h3>
+              <p className="text-slate-700 leading-relaxed">{analysis.sharedIndicatorsSummary}</p>
             </div>
             <div>
-              <h3 className="font-semibold text-zinc-300 mb-1">Why Reports May Be Related</h3>
-              <p className="text-zinc-300 leading-relaxed">{analysis.relationshipExplanation}</p>
+              <h3 className="font-semibold text-slate-700 mb-1">Why Reports May Be Related</h3>
+              <p className="text-slate-700 leading-relaxed">{analysis.relationshipExplanation}</p>
             </div>
 
             {analysis.inconsistencies.length > 0 && (
               <div>
-                <h3 className="font-semibold text-zinc-300 mb-1">Observed Inconsistencies</h3>
-                <ul className="list-disc list-inside text-zinc-400 space-y-1">
+                <h3 className="font-semibold text-slate-700 mb-1">Observed Inconsistencies</h3>
+                <ul className="list-disc list-inside text-slate-600 space-y-1">
                   {analysis.inconsistencies.map((item, idx) => (
                     <li key={idx}>{item}</li>
                   ))}
@@ -330,8 +330,8 @@ export const CampaignDetailsView: React.FC = () => {
 
             {analysis.evidenceToReview.length > 0 && (
               <div>
-                <h3 className="font-semibold text-zinc-300 mb-1">Recommended Evidence to Review</h3>
-                <ul className="list-disc list-inside text-cyan-300/90 space-y-1">
+                <h3 className="font-semibold text-slate-700 mb-1">Recommended Evidence to Review</h3>
+                <ul className="list-disc list-inside text-cyan-800 space-y-1">
                   {analysis.evidenceToReview.map((item, idx) => (
                     <li key={idx}>{item}</li>
                   ))}
@@ -339,7 +339,7 @@ export const CampaignDetailsView: React.FC = () => {
               </div>
             )}
 
-            <div className="pt-2 border-t border-surface-border text-[11px] font-mono text-zinc-400">
+            <div className="pt-2 border-t border-surface-border text-[11px] font-mono text-slate-600">
               Referenced Approved Reports: {analysis.referencedReportIds.join(', ')}
             </div>
           </div>

@@ -67,14 +67,14 @@ export const AuthPage: React.FC = () => {
     return (
       <div className="max-w-md mx-auto my-8 p-6 rounded-lg bg-surface border border-surface-border space-y-5">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-md bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
-            <ShieldCheck className="w-5 h-5 text-emerald-400" />
+          <div className="w-9 h-9 rounded-md bg-emerald-500/15 border border-emerald-200 flex items-center justify-center">
+            <ShieldCheck className="w-5 h-5 text-emerald-600" />
           </div>
           <div>
-            <h1 className="text-base font-semibold text-zinc-100">Session Active</h1>
-            <p className="text-xs text-zinc-400">
+            <h1 className="text-base font-semibold text-slate-900">Session Active</h1>
+            <p className="text-xs text-slate-600">
               Signed in as{' '}
-              <span className="font-mono text-zinc-200">
+              <span className="font-mono text-slate-800">
                 {user.displayName || user.email || 'Anonymous Session'}
               </span>
             </p>
@@ -107,30 +107,30 @@ export const AuthPage: React.FC = () => {
   return (
     <div className="max-w-md mx-auto my-8 p-6 rounded-lg bg-surface border border-surface-border space-y-5">
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-md bg-accent-violet/15 border border-accent-violet/30 flex items-center justify-center">
-          <Lock className="w-4 h-4 text-accent-violet-muted" />
+        <div className="w-9 h-9 rounded-md bg-violet-50 border border-accent-violet/30 flex items-center justify-center">
+          <Lock className="w-4 h-4 text-accent-violet" />
         </div>
         <div>
-          <h1 className="text-base font-semibold text-zinc-100">
+          <h1 className="text-base font-semibold text-slate-900">
             {mode === 'signin' ? 'Sign In to ScamSignal' : 'Create ScamSignal Account'}
           </h1>
-          <p className="text-xs text-zinc-400">
+          <p className="text-xs text-slate-600">
             Persist preferences and submit verified community threat signals.
           </p>
         </div>
       </div>
 
       {!isConfigured ? (
-        <div className="p-3.5 rounded-md bg-amber-950/25 border border-amber-500/30 text-amber-200 space-y-2 text-xs">
-          <div className="flex items-center gap-2 font-semibold text-amber-300">
+        <div className="p-3.5 rounded-md bg-amber-50 border border-amber-200 text-amber-800 space-y-2 text-xs">
+          <div className="flex items-center gap-2 font-semibold text-amber-800">
             <AlertTriangle className="w-4 h-4 shrink-0" />
             <span>Firebase Authentication Unavailable</span>
           </div>
-          <p className="text-amber-200/80 leading-relaxed">
-            Copy <code className="font-mono text-zinc-100">.env.example</code> to{' '}
-            <code className="font-mono text-zinc-100">.env</code> and configure:
+          <p className="text-amber-800 leading-relaxed">
+            Copy <code className="font-mono text-slate-900">.env.example</code> to{' '}
+            <code className="font-mono text-slate-900">.env</code> and configure:
           </p>
-          <ul className="list-disc list-inside font-mono text-[11px] text-amber-100 space-y-0.5">
+          <ul className="list-disc list-inside font-mono text-[11px] text-amber-800 space-y-0.5">
             {firebaseStatus.missingKeys.map((key) => (
               <li key={key}>{key}</li>
             ))}
@@ -139,8 +139,8 @@ export const AuthPage: React.FC = () => {
       ) : (
         <div className="space-y-4">
           {displayedError && (
-            <div className="p-3 rounded-md bg-rose-950/35 border border-rose-500/35 text-rose-200 text-xs flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+            <div className="p-3 rounded-md bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" />
               <span>{displayedError}</span>
             </div>
           )}
@@ -195,7 +195,7 @@ export const AuthPage: React.FC = () => {
               <span className="w-full border-t border-surface-border" />
             </div>
             <div className="relative flex justify-center text-[10px] uppercase font-mono">
-              <span className="bg-surface px-2 text-zinc-500">Or continue with</span>
+              <span className="bg-surface px-2 text-slate-500">Or continue with</span>
             </div>
           </div>
 
@@ -216,17 +216,17 @@ export const AuthPage: React.FC = () => {
               onClick={() => void signInGuest()}
               disabled={loading}
             >
-              <UserCheck className="w-3.5 h-3.5 text-cyan-400" />
+              <UserCheck className="w-3.5 h-3.5 text-cyan-700" />
               <span>Anonymous</span>
             </Button>
           </div>
 
-          <div className="pt-2 border-t border-surface-border text-center text-xs text-zinc-400">
+          <div className="pt-2 border-t border-surface-border text-center text-xs text-slate-600">
             {mode === 'signin' ? (
               <button
                 type="button"
                 onClick={() => switchMode('signup')}
-                className="hover:text-zinc-200 underline underline-offset-4"
+                className="hover:text-slate-800 underline underline-offset-4"
               >
                 Need an account? Sign up
               </button>
@@ -234,7 +234,7 @@ export const AuthPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => switchMode('signin')}
-                className="hover:text-zinc-200 underline underline-offset-4"
+                className="hover:text-slate-800 underline underline-offset-4"
               >
                 Already have an account? Sign in
               </button>

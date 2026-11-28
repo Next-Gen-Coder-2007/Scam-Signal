@@ -23,7 +23,7 @@ export const RedactionPreviewModal: React.FC<RedactionPreviewModalProps> = ({
       onClose={onClose}
       title="Automated PII Redaction Audit"
       description="Review how personal information is scrubbed before processing."
-      icon={<ShieldCheck className="w-4 h-4 text-emerald-400" />}
+      icon={<ShieldCheck className="w-4 h-4 text-emerald-600" />}
       maxWidth="2xl"
       footer={
         <Button variant="secondary" onClick={onClose}>
@@ -35,28 +35,28 @@ export const RedactionPreviewModal: React.FC<RedactionPreviewModalProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
           {/* Raw Input */}
           <div className="space-y-1.5">
-            <span className="text-zinc-400 font-sans font-semibold uppercase tracking-wider block text-[10px]">
+            <span className="text-slate-600 font-sans font-semibold uppercase tracking-wider block text-[10px]">
               Original Message (Local Memory Only)
             </span>
-            <div className="p-3 rounded-md bg-canvas border border-surface-border text-zinc-300 h-44 overflow-y-auto whitespace-pre-wrap leading-relaxed">
+            <div className="p-3 rounded-md bg-canvas border border-surface-border text-slate-700 h-44 overflow-y-auto whitespace-pre-wrap leading-relaxed">
               {rawText || '<empty message>'}
             </div>
           </div>
 
           {/* Sanitized Version */}
           <div className="space-y-1.5">
-            <span className="text-emerald-400 font-sans font-semibold uppercase tracking-wider flex items-center gap-1.5 text-[10px]">
+            <span className="text-emerald-600 font-sans font-semibold uppercase tracking-wider flex items-center gap-1.5 text-[10px]">
               <Lock className="w-3 h-3" />
               Scrubbed / Safe Preview
             </span>
-            <div className="p-3 rounded-md bg-canvas border border-emerald-500/30 text-emerald-200 h-44 overflow-y-auto whitespace-pre-wrap leading-relaxed">
+            <div className="p-3 rounded-md bg-canvas border border-emerald-200 text-emerald-700 h-44 overflow-y-auto whitespace-pre-wrap leading-relaxed">
               {scrubbed || '<empty message>'}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 p-3 rounded-md bg-emerald-950/20 border border-emerald-500/25 text-xs text-emerald-300">
-          <CheckCircle className="w-4 h-4 shrink-0 text-emerald-400" />
+        <div className="flex items-center gap-2 p-3 rounded-md bg-emerald-50 border border-emerald-200 text-xs text-emerald-700">
+          <CheckCircle className="w-4 h-4 shrink-0 text-emerald-600" />
           <span>
             Phone numbers, banking accounts, cards, UPI handles, and OTPs are replaced with secure placeholders.
           </span>

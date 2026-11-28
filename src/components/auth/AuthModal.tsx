@@ -79,22 +79,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       onClose={handleClose}
       title={mode === 'signin' ? 'Sign In to ScamSignal' : 'Create ScamSignal Account'}
       description="Authenticate via Firebase Auth to submit scrubbed threat signals."
-      icon={<Lock className="w-4 h-4 text-accent-violet-muted" />}
+      icon={<Lock className="w-4 h-4 text-accent-violet" />}
       maxWidth="md"
     >
       {!isConfigured ? (
         <div className="space-y-4 text-xs">
-          <div className="p-3.5 rounded-md bg-amber-950/25 border border-amber-500/30 text-amber-200 space-y-2">
-            <div className="flex items-center gap-2 font-semibold text-amber-300">
+          <div className="p-3.5 rounded-md bg-amber-50 border border-amber-200 text-amber-800 space-y-2">
+            <div className="flex items-center gap-2 font-semibold text-amber-800">
               <AlertTriangle className="w-4 h-4 shrink-0" />
               <span>Firebase Authentication Unavailable</span>
             </div>
-            <p className="text-amber-200/80 leading-relaxed">
+            <p className="text-amber-800 leading-relaxed">
               Firebase credentials are not configured in this environment. Copy{' '}
-              <code className="font-mono text-zinc-200">.env.example</code> to{' '}
-              <code className="font-mono text-zinc-200">.env</code> and populate:
+              <code className="font-mono text-slate-800">.env.example</code> to{' '}
+              <code className="font-mono text-slate-800">.env</code> and populate:
             </p>
-            <ul className="list-disc list-inside font-mono text-[11px] text-amber-100 space-y-0.5">
+            <ul className="list-disc list-inside font-mono text-[11px] text-amber-800 space-y-0.5">
               {firebaseStatus.missingKeys.map((key) => (
                 <li key={key}>{key}</li>
               ))}
@@ -109,8 +109,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       ) : (
         <div className="space-y-4">
           {(localError || error) && (
-            <div className="p-3 rounded-md bg-rose-950/35 border border-rose-500/35 text-rose-200 text-xs flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+            <div className="p-3 rounded-md bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" />
               <span>{localError || error}</span>
             </div>
           )}
@@ -170,7 +170,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               <span className="w-full border-t border-surface-border" />
             </div>
             <div className="relative flex justify-center text-[10px] uppercase font-mono">
-              <span className="bg-surface px-2 text-zinc-500">Or continue with</span>
+              <span className="bg-surface px-2 text-slate-500">Or continue with</span>
             </div>
           </div>
 
@@ -191,12 +191,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               onClick={handleGuest}
               disabled={loading}
             >
-              <UserCheck className="w-3.5 h-3.5 text-cyan-400" />
+              <UserCheck className="w-3.5 h-3.5 text-cyan-700" />
               <span>Anonymous</span>
             </Button>
           </div>
 
-          <div className="pt-2 border-t border-surface-border text-center text-xs text-zinc-400">
+          <div className="pt-2 border-t border-surface-border text-center text-xs text-slate-600">
             {mode === 'signin' ? (
               <button
                 type="button"
@@ -206,7 +206,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   clearError();
                   setMode('signup');
                 }}
-                className="hover:text-zinc-200 underline underline-offset-4"
+                className="hover:text-slate-800 underline underline-offset-4"
               >
                 Need an account? Sign up
               </button>
@@ -219,7 +219,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   clearError();
                   setMode('signin');
                 }}
-                className="hover:text-zinc-200 underline underline-offset-4"
+                className="hover:text-slate-800 underline underline-offset-4"
               >
                 Already have an account? Sign in
               </button>

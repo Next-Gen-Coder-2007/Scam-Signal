@@ -45,7 +45,7 @@ export const Dialog: React.FC<DialogProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/35 backdrop-blur-[1px]"
       role="dialog"
       aria-modal="true"
       aria-labelledby="dialog-title"
@@ -65,16 +65,16 @@ export const Dialog: React.FC<DialogProps> = ({
         <div className="flex items-start justify-between gap-4 px-5 py-4 border-b border-surface-border">
           <div className="flex items-center gap-3 min-w-0">
             {icon && (
-              <div className="p-2 rounded-md bg-surface-elevated border border-surface-border text-zinc-300 shrink-0">
+              <div className="p-2 rounded-md bg-surface-elevated border border-surface-border text-slate-600 shrink-0">
                 {icon}
               </div>
             )}
             <div className="min-w-0">
-              <h3 id="dialog-title" className="text-sm font-semibold text-zinc-100 truncate">
+              <h3 id="dialog-title" className="text-sm font-semibold text-slate-900 truncate">
                 {title}
               </h3>
               {description && (
-                <p className="text-xs text-zinc-400 mt-0.5">{description}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{description}</p>
               )}
             </div>
           </div>
@@ -82,7 +82,7 @@ export const Dialog: React.FC<DialogProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="p-1.5 rounded text-zinc-400 hover:text-zinc-100 hover:bg-surface-elevated transition-colors"
+            className="p-1.5 rounded text-slate-500 hover:text-slate-900 hover:bg-surface-elevated transition-colors"
           >
             <X className="w-4 h-4" />
           </button>

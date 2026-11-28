@@ -20,7 +20,7 @@ export const CampaignRelationshipGraph: React.FC<CampaignRelationshipGraphProps>
 }) => {
   if (links.length === 0) {
     return (
-      <div className="p-6 rounded-md bg-void border border-surface-border text-center text-xs text-zinc-400">
+      <div className="p-6 rounded-md bg-void border border-surface-border text-center text-xs text-slate-600">
         No report-to-campaign links are stored for this campaign yet.
       </div>
     );
@@ -57,7 +57,7 @@ export const CampaignRelationshipGraph: React.FC<CampaignRelationshipGraphProps>
                   y1={cy}
                   x2={nx}
                   y2={ny}
-                  stroke={isSelected ? '#22d3ee' : '#3f3f46'}
+                  stroke={isSelected ? '#0891b2' : '#cbd5e1'}
                   strokeWidth={isSelected ? 2.5 : 1.5}
                   strokeDasharray={link.verificationStatus === 'verified' ? undefined : '4 3'}
                 />
@@ -67,8 +67,8 @@ export const CampaignRelationshipGraph: React.FC<CampaignRelationshipGraphProps>
                   width={36}
                   height={18}
                   rx={4}
-                  fill="#09090b"
-                  stroke={isSelected ? '#22d3ee' : '#27272a'}
+                  fill="#ffffff"
+                  stroke={isSelected ? '#0891b2' : '#e2e8f0'}
                 />
                 <text
                   x={midX}
@@ -76,7 +76,7 @@ export const CampaignRelationshipGraph: React.FC<CampaignRelationshipGraphProps>
                   textAnchor="middle"
                   fontSize="9"
                   fontFamily="monospace"
-                  fill={isSelected ? '#67e8f9' : '#a1a1aa'}
+                  fill={isSelected ? '#0e7490' : '#475569'}
                 >
                   {link.correlationScore.toFixed(2)}
                 </text>
@@ -90,8 +90,8 @@ export const CampaignRelationshipGraph: React.FC<CampaignRelationshipGraphProps>
               cx={cx}
               cy={cy}
               r={42}
-              fill="#18181b"
-              stroke="#8b5cf6"
+              fill="#ffffff"
+              stroke="#6d28d9"
               strokeWidth={2}
             />
             <text
@@ -100,7 +100,7 @@ export const CampaignRelationshipGraph: React.FC<CampaignRelationshipGraphProps>
               textAnchor="middle"
               fontSize="10"
               fontWeight="600"
-              fill="#f4f4f5"
+              fill="#0f172a"
             >
               Campaign
             </text>
@@ -110,7 +110,7 @@ export const CampaignRelationshipGraph: React.FC<CampaignRelationshipGraphProps>
               textAnchor="middle"
               fontSize="9"
               fontFamily="monospace"
-              fill="#c4b5fd"
+              fill="#6d28d9"
             >
               {links.length} {links.length === 1 ? 'Report' : 'Reports'}
             </text>
@@ -147,8 +147,8 @@ export const CampaignRelationshipGraph: React.FC<CampaignRelationshipGraphProps>
                   width={104}
                   height={36}
                   rx={6}
-                  fill={isSelected ? '#164e63' : '#18181b'}
-                  stroke={isSelected ? '#22d3ee' : '#3f3f46'}
+                  fill={isSelected ? '#ecfeff' : '#ffffff'}
+                  stroke={isSelected ? '#0891b2' : '#cbd5e1'}
                   strokeWidth={isSelected ? 2 : 1.25}
                 />
                 <text
@@ -157,7 +157,7 @@ export const CampaignRelationshipGraph: React.FC<CampaignRelationshipGraphProps>
                   textAnchor="middle"
                   fontSize="10"
                   fontFamily="monospace"
-                  fill="#f4f4f5"
+                  fill="#0f172a"
                 >
                   {shortId}
                 </text>
@@ -166,7 +166,7 @@ export const CampaignRelationshipGraph: React.FC<CampaignRelationshipGraphProps>
                   y={ny + 11}
                   textAnchor="middle"
                   fontSize="8.5"
-                  fill={link.verificationStatus === 'verified' ? '#6ee7b7' : '#fcd34d'}
+                  fill={link.verificationStatus === 'verified' ? '#047857' : '#b45309'}
                 >
                   {link.status}
                 </text>
@@ -177,7 +177,7 @@ export const CampaignRelationshipGraph: React.FC<CampaignRelationshipGraphProps>
       </div>
 
       {links.length > displayedLinks.length && (
-        <p className="text-[11px] text-zinc-500 font-mono">
+        <p className="text-[11px] text-slate-500 font-mono">
           Showing first {displayedLinks.length} of {links.length} connected reports in graph.
           Inspect all links in the evidence list below.
         </p>

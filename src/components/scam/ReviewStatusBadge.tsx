@@ -14,17 +14,17 @@ export const ReviewStatusBadge: React.FC<ReviewStatusBadgeProps> = ({
 }) => {
   const config = {
     verified: {
-      bg: 'bg-emerald-950/45 border-emerald-500/40 text-emerald-300',
+      bg: 'bg-emerald-50 border-emerald-200 text-emerald-700',
       icon: ShieldCheck,
       label: 'Verified Warning',
     },
     pending: {
-      bg: 'bg-amber-950/35 border-amber-500/30 text-amber-300',
+      bg: 'bg-amber-50 border-amber-200 text-amber-800',
       icon: Clock,
       label: 'Unverified User Report',
     },
     rejected: {
-      bg: 'bg-rose-950/35 border-rose-500/30 text-rose-300',
+      bg: 'bg-rose-50 border-rose-200 text-rose-700',
       icon: XCircle,
       label: 'Rejected',
     },

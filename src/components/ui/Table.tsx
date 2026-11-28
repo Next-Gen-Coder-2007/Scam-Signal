@@ -20,7 +20,7 @@ export const TableHeader: React.FC<React.HTMLAttributes<HTMLTableSectionElement>
 }) => (
   <thead
     className={cn(
-      'border-b border-surface-border text-zinc-400 uppercase font-mono text-[10px] tracking-wider',
+      'border-b border-surface-border text-slate-600 uppercase font-mono text-[10px] tracking-wider',
       className
     )}
     {...props}
@@ -67,7 +67,7 @@ export const TableCell: React.FC<React.TdHTMLAttributes<HTMLTableCellElement>> =
   children,
   ...props
 }) => (
-  <td className={cn('py-3 px-3 text-zinc-300', className)} {...props}>
+  <td className={cn('py-3 px-3 text-slate-700', className)} {...props}>
     {children}
   </td>
 );

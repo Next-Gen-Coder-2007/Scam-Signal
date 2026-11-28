@@ -5,5 +5,5 @@ export interface NavItem {
   href: string;
   icon: LucideIcon;
   badge?: string;
-  description: string;
+  description?: string;
 }

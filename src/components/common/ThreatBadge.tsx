@@ -18,27 +18,27 @@ export const ThreatBadge: React.FC<ThreatBadgeProps> = ({
 }) => {
   const config = {
     CRITICAL: {
-      bg: 'bg-rose-950/50 border-rose-500/35 text-rose-300',
+      bg: 'bg-rose-50 border-rose-200 text-rose-700',
       icon: ShieldAlert,
       label: 'Critical Threat',
     },
     HIGH: {
-      bg: 'bg-rose-950/30 border-rose-500/25 text-rose-300',
+      bg: 'bg-rose-50 border-rose-200 text-rose-700',
       icon: ShieldAlert,
       label: 'High Risk',
     },
     SUSPICIOUS: {
-      bg: 'bg-amber-950/40 border-amber-500/30 text-amber-300',
+      bg: 'bg-amber-50 border-amber-200 text-amber-800',
       icon: AlertTriangle,
       label: 'Suspicious',
     },
     SAFE: {
-      bg: 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300',
+      bg: 'bg-emerald-50 border-emerald-200 text-emerald-700',
       icon: ShieldCheck,
       label: 'Clean / Safe',
     },
     UNKNOWN: {
-      bg: 'bg-surface-elevated border-surface-border text-zinc-400',
+      bg: 'bg-surface-elevated border-surface-border text-slate-600',
       icon: AlertTriangle,
       label: 'Uncertain',
     },

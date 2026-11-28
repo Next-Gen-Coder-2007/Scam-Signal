@@ -14,10 +14,10 @@ export const Card: React.FC<CardProps> = ({
   ...props
 }) => {
   const variantStyles = {
-    default: 'bg-surface border-surface-border',
+    default: 'bg-surface border-surface-border shadow-[0_1px_2px_rgba(15,23,42,0.04)]',
     elevated: 'bg-surface-elevated border-surface-subtle',
-    critical: 'bg-surface border-rose-500/35',
-    warning: 'bg-surface border-amber-500/35',
+    critical: 'bg-surface border-rose-200',
+    warning: 'bg-surface border-amber-200',
   }[variant];
 
   const paddingStyles = {
