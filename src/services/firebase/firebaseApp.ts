@@ -17,6 +17,7 @@ import {
   AppCheck,
 } from 'firebase/app-check';
 import { getAI, GoogleAIBackend, AI } from 'firebase/ai';
+import { getFunctions, Functions } from 'firebase/functions';
 
 export interface FirebaseEnvConfig {
   apiKey?: string;
@@ -76,6 +77,7 @@ let auth: Auth | null = null;
 let db: Firestore | null = null;
 let appCheck: AppCheck | null = null;
 let ai: AI | null = null;
+let functions: Functions | null = null;
 
 const envConfig = readFirebaseEnv();
 const validation = validateFirebaseConfig(envConfig);
@@ -141,11 +143,13 @@ if (!validation.isValid) {
       backend: new GoogleAIBackend(),
       useLimitedUseAppCheckTokens: Boolean(appCheck),
     });
+    functions = getFunctions(app);
   } catch (initError: unknown) {
     app = null;
     auth = null;
     db = null;
     ai = null;
+    functions = null;
     firebaseStatus.isConfigured = false;
     firebaseStatus.error =
       initError instanceof Error
@@ -154,4 +158,4 @@ if (!validation.isValid) {
   }
 }
 
-export { app, auth, db, appCheck, ai, firebaseStatus };
+export { app, auth, db, appCheck, ai, functions, firebaseStatus };
