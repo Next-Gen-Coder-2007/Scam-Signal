@@ -295,7 +295,16 @@ function mapHybridError(err: unknown, mode: InferenceMode): HybridAIError {
     );
   }
 
-  return new HybridAIError('UNKNOWN', msg || 'Firebase AI Logic inference failed.', err);
+  if (lower.includes('appcheck') || lower.includes('app-check')) {
+    return new HybridAIError(
+      'NETWORK_ERROR',
+      'Firebase App Check verification failed. If running on localhost, register your App Check debug token from the browser console in Firebase Console → App Check, or verify your reCAPTCHA site key.',
+      err
+    );
+  }
+
+  const sanitizedMsg = msg.replace(/https?:\/\/[^\s]+/gi, '[endpoint]').trim();
+  return new HybridAIError('UNKNOWN', sanitizedMsg || 'Firebase AI Logic inference failed.', err);
 }
 
 function selectHybridParams(options: HybridInferenceOptions): HybridParams {
