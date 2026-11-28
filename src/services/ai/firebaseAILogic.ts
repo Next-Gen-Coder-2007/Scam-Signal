@@ -31,6 +31,13 @@ import {
   parseAndValidateCollectiveAnalysisResponse,
   type CollectiveCampaignAiOutput,
 } from '../campaigns/collectiveAnalysisSchema';
+import {
+  VERIFIED_OFFICIAL_RESOURCES,
+  parseAndValidateSafetyAiResponse,
+  type SafetyActionAiOutput,
+  type SafetyRegion,
+  type SafetyScenario,
+} from '../safety/safetyActionSchema';
 
 export { InferenceMode, ThreatResponseSchema };
 export type { ThreatResponseData };
@@ -502,5 +509,73 @@ export async function executeCollectiveCampaignInference(options: {
       throw new HybridAIError('INVALID_RESPONSE', err.message, err);
     }
     throw mapHybridError(err, InferenceMode.ONLY_IN_CLOUD);
+  }
+}
+
+const SAFETY_SYSTEM_INSTRUCTION = `You are the ScamSignal Safety Action Assistant.
+Provide calm, practical, non-technical safety guidance for the selected scenario.
+
+Strict grounding rules:
+1. Never promise payment recovery, never offer to contact banks/police/third parties, and never claim ScamSignal can investigate or reverse transactions.
+2. For India ("IN"), when credentials or money are involved, instruct the user to contact their bank/payment provider promptly via official channels and report financial cyber fraud via the National Cyber Crime Reporting Portal (cybercrime.gov.in) or helpline 1930.
+3. Only reference officialResourceIds from this verified list: ${VERIFIED_OFFICIAL_RESOURCES.map((r) => r.id).join(', ')}.
+4. Respond strictly in raw valid JSON.`;
+
+const SAFETY_RESPONSE_SCHEMA = Schema.object({
+  properties: {
+    immediateSteps: Schema.array({ items: Schema.string() }),
+    verificationChecklist: Schema.array({ items: Schema.string() }),
+    whatNotToDo: Schema.array({ items: Schema.string() }),
+    officialResourceIds: Schema.array({ items: Schema.string() }),
+  },
+});
+
+export interface SafetyActionInferenceResult extends SafetyActionAiOutput {
+  source: InferenceSource;
+}
+
+/**
+ * Executes grounded safety action guidance via Firebase AI Logic PREFER_ON_DEVICE.
+ */
+export async function executeSafetyActionInference(options: {
+  scenario: SafetyScenario;
+  region: SafetyRegion;
+  userQuestion?: string;
+  signal?: AbortSignal;
+}): Promise<SafetyActionInferenceResult> {
+  if (!ai || !firebaseStatus.isConfigured) {
+    throw new HybridAIError(
+      'FIREBASE_NOT_CONFIGURED',
+      `Firebase AI Logic cannot run: missing environment variables (${firebaseStatus.missingKeys.join(', ')}).`
+    );
+  }
+
+  const hybridParams: HybridParams = {
+    mode: InferenceMode.PREFER_ON_DEVICE,
+    onDeviceParams: { createOptions: { signal: options.signal } },
+    inCloudParams: {
+      model: CLOUD_MODEL_ID,
+      systemInstruction: SAFETY_SYSTEM_INSTRUCTION,
+      generationConfig: {
+        responseMimeType: 'application/json',
+        responseSchema: SAFETY_RESPONSE_SCHEMA,
+        temperature: 0.2,
+      },
+    },
+  };
+
+  try {
+    const model = getGenerativeModel(ai, hybridParams);
+    const prompt = `${SAFETY_SYSTEM_INSTRUCTION}\n\nScenario: ${options.scenario}\nRegion: ${options.region}\nUser Question: ${options.userQuestion?.trim() || 'Provide standard safety steps.'}`;
+    const result = await model.generateContent(prompt, { signal: options.signal });
+    const mappedSource = mapSDKInferenceSource(result.response.inferenceSource);
+    const validated = parseAndValidateSafetyAiResponse(result.response.text());
+
+    return {
+      ...validated,
+      source: mappedSource,
+    };
+  } catch (err: unknown) {
+    throw mapHybridError(err, InferenceMode.PREFER_ON_DEVICE);
   }
 }
