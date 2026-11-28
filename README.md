@@ -2,29 +2,32 @@
 
 > **Detect individually. Protect collectively.**
 
-ScamSignal is a privacy-first, hybrid-AI scam triage and collective threat intelligence platform built with React 19, TypeScript, Vite, Tailwind CSS, Firebase, and Firebase AI Logic.
+ScamSignal is a privacy-first, hybrid-AI scam triage and collective threat intelligence platform built with **React 19**, **TypeScript**, **Vite**, **Tailwind CSS**, **Firebase**, and **Firebase AI Logic**.
 
 ---
 
 ## The Problem
 
-Everyday users receive suspicious SMS messages, WhatsApp lures, phishing emails, fake job offers, and fraudulent payment requests containing sensitive personal data (phone numbers, bank/UPI identifiers, OTPs, and addresses). Traditional cloud-only analyzers force users to choose between privacy and protection, while community threat feeds often suffer from unmoderated accusations, PII leaks, or hallucinated campaign links.
+Everyday users receive suspicious SMS messages, WhatsApp lures, phishing emails, fake job offers, and fraudulent payment requests containing sensitive personal data (phone numbers, bank/UPI identifiers, OTPs, and addresses). Cloud-only analyzers force users to upload private messages to remote servers, while informal community channels spread unverified accusations, expose victims' personal data, or invent false campaign links.
 
-ScamSignal solves this by performing **client-side PII redaction and local-first AI triage** via **Firebase AI Logic** (Gemini Nano on-device when supported), while restricting shared community intelligence to **explicitly consented, redacted signatures**, **deterministic campaign correlation**, and **server-verified moderation**.
+ScamSignal solves this by performing **client-side PII redaction and local-first AI triage** via **Firebase AI Logic** (Gemini Nano on-device when supported), while restricting shared community intelligence to **explicitly consented, redacted observations**, **deterministic campaign correlation**, and **server-verified moderation**.
 
 ---
 
-## Key Features
+## Core Features
 
-- **Private Analyzer (`/`)**: Paste suspicious SMS, WhatsApp, email, job offers, or payment requests. Scrubs PII client-side, runs Firebase AI Logic (`PREFER_ON_DEVICE`), validates structured Zod outputs, and displays the actual runtime `inferenceSource` (`on_device`, `in_cloud`, or `unknown`).
-- **Privacy-First Redaction & Reporting**: Detects and scrubs phone numbers, emails, UPI IDs, account numbers, OTPs, URLs, and addresses before allowing optional community submission with an interactive preview and consent gate.
-- **Scam DNA & Deterministic Campaign Correlation (`/campaigns`, `/campaigns/:campaignId`)**: Converts sanitized reports into normalized Scam DNA signatures, correlates reports using transparent weighted evidence rules (ignoring generic words like `"urgent"` or `"payment"`), and visualizes explainable links.
-- **Collective Campaign Analysis (`ONLY_IN_CLOUD`)**: Summarizes shared indicators, inconsistencies, and evidence to review across approved, sanitized signatures—never inventing unsupported relationships.
-- **Community Feed (`/feed`) & Corroboration**: Cursor-paginated public threat reports with filtering, sorting, encounter confirmations, and dispute reporting (capped at 1 per user per campaign).
-- **Intelligence Dashboard (`/dashboard`) & Scam Radar (`/radar`)**: Real-time Firestore metrics, category distribution, safety alerts, and isolated demonstration preview mode.
-- **Safety Action Assistant (`/safety`)**: Grounded guidance for verifying job offers, checking official contacts, phishing response, credential compromise, and financial fraud (including India's `cybercrime.gov.in` and helpline `1930`).
-- **Alerts Center (`/alerts`)**: Follow selected scam categories and track read/unread high-signal warnings.
-- **Administrative Moderation Console (`/admin`)**: Server-side Cloud Functions enforcing `request.auth.token.admin === true` custom claims with immutable `moderation_audit_logs`.
+| Route | Feature | Description |
+| :--- | :--- | :--- |
+| `/` | **Private Analyzer** | Scrubs PII client-side (`redactPII`), runs `PREFER_ON_DEVICE` Firebase AI Logic inference, and displays the actual runtime `inferenceSource` (`on_device`, `in_cloud`, or `unknown`). |
+| `/dashboard` | **Intelligence Dashboard** | Displays live Firestore metrics, recent reports, emerging potential campaigns, category distribution, safety alerts, and recent community activity. |
+| `/radar` | **Scam Radar** | Discovery view for emerging scam categories, manipulation patterns, and warnings, with isolated demonstration preview mode. |
+| `/feed` | **Community Reports** | Cursor-paginated, filterable directory of sanitized public reports clearly distinguishing **Unverified User Reports** from **Verified Warnings**. |
+| `/campaigns` | **Campaign Intelligence** | Deterministic Scam DNA correlation (`shared_domain`, tokenized payment/contact handles, impersonated orgs, specific phrases) with interactive relationship graphs and `ONLY_IN_CLOUD` collective summaries. |
+| `/safety` | **Safety Action Assistant** | Grounded incident response guidance for job offers, phishing, credential leaks, and financial fraud (including India's `cybercrime.gov.in` and helpline `1930`). |
+| `/alerts` | **Notification Center** | Follow selected scam categories and track read/unread high-signal warnings. |
+| `/admin` | **Moderation Console** | Server-verified (`admin: true` custom claims via Cloud Functions v2) triage queue, campaign link review, and immutable `moderation_audit_logs`. |
+| `/profile` & `/auth` | **Account & Settings** | Firebase Auth persistence, display name, default inference mode, and default report visibility. |
+| `/privacy` | **Privacy Architecture** | Transparent breakdown of client redaction, zero raw storage, and advisory boundaries. |
 
 ---
 
@@ -58,21 +61,49 @@ ScamSignal uses the official `firebase/ai` Web SDK (`InferenceMode`) and capture
 
 ---
 
-## Firebase Setup
+## Project Structure
 
-1. Create a Firebase project in the [Firebase Console](https://console.firebase.google.com/).
-2. Enable **Authentication** (Email/Password; optionally Google Sign-In if setting `VITE_FIREBASE_ENABLE_GOOGLE_AUTH=true`).
-3. Create a **Cloud Firestore** database and deploy `firestore.rules`.
-4. Enable **Firebase AI Logic** API in the Firebase Console.
-5. Enable **App Check** with **reCAPTCHA v3** for your web app (recommended for production).
-6. *(Optional for `/admin`)* Deploy `functions/` and assign `{ admin: true }` custom claims via the Firebase Admin SDK—never via Firestore user documents.
+```text
+src/
+├── components/       # Reusable UI, layout, auth, scam, campaign, and dashboard components
+├── context/          # AuthContext & user profile state
+├── features/         # Route views (analyzer, dashboard, radar, feed, campaigns, safety, alerts, admin, auth, profile, privacy)
+├── hooks/            # Custom hooks (useScamAnalyzer, useCommunityFeed)
+├── services/
+│   ├── ai/           # Firebase AI Logic integration & Zod response schemas
+│   ├── campaigns/    # Deterministic correlation engine & ONLY_IN_CLOUD collective analysis
+│   ├── dna/          # Scam DNA extraction & normalization
+│   ├── firebase/     # Firebase app, Auth, and App Check initialization
+│   ├── firestore/    # Typed converters, reports, campaigns, corroboration, alerts, dashboard, admin
+│   └── safety/       # Grounded Safety Action Assistant playbooks
+├── utils/            # Client-side PII redactor & input validators
+functions/            # Firebase Cloud Functions v2 for server-verified admin moderation & audit logs
+tests/unit/           # Vitest unit, security rules, and failure-mode audit suites
+```
 
 ---
 
-## Environment Variables
+## Local Setup & Development
 
-Copy `.env.example` to `.env` and populate values from **Firebase Console → Project Settings**:
+### Prerequisites
+- Node.js `>= 20`
+- npm `>= 10`
+- A Firebase project in the [Firebase Console](https://console.firebase.google.com/)
 
+### 1. Install Dependencies
+```bash
+npm install
+```
+
+### 2. Configure Firebase Services
+In the [Firebase Console](https://console.firebase.google.com/):
+1. **Authentication** → Enable **Email/Password** (and optionally **Google** or **Anonymous**).
+2. **Firestore Database** → Create a database in Production mode.
+3. **Firebase AI Logic** → Enable the Gemini Developer API.
+4. *(Optional)* **App Check** → Register your web app with reCAPTCHA v3.
+
+### 3. Configure Environment Variables
+Copy `.env.example` to `.env` (never commit `.env`):
 ```env
 VITE_FIREBASE_API_KEY=
 VITE_FIREBASE_AUTH_DOMAIN=
@@ -85,59 +116,52 @@ VITE_FIREBASE_APP_CHECK_DEBUG_TOKEN=
 VITE_FIREBASE_ENABLE_GOOGLE_AUTH=false
 ```
 
-Never commit `.env` or real credentials to source control. When `.env` is unconfigured, ScamSignal remains navigable and displays clear setup notices instead of simulating auth or database operations.
-
----
-
-## Installation & Local Development
-
-### Prerequisites
-- Node.js `>= 20`
-- npm `>= 10`
-
-### Commands
-
+### 4. Deploy Firestore Rules & Indexes
 ```bash
-# Install dependencies
-npm install
+npx firebase-tools login
+npx firebase-tools use --add
+npx firebase-tools deploy --only firestore:rules,firestore:indexes
+```
 
-# Start Vite dev server
-npm run dev
-
-# Run TypeScript typechecking
-npm run typecheck
-
-# Run Vitest unit & audit test suite
-npm run test
-
-# Build production bundle
-npm run build
+### 5. Run Locally
+```bash
+npm run dev        # Start Vite dev server
+npm run typecheck  # Run TypeScript compiler checks
+npm run test       # Run Vitest unit & audit suite
+npm run build      # Build production bundle
 ```
 
 ---
 
-## Deployment (Firebase Hosting, Rules & Functions)
+## Deployment
 
+### Option A: Deploy Frontend to Vercel (Recommended)
+1. Push your repository to GitHub (`git push origin main`).
+2. Import the repository at [vercel.com](https://vercel.com/) (`Framework: Vite`, `Build Command: npm run build`, `Output Directory: dist`). [vercel.json](./vercel.json) is included for SPA routing.
+3. Add all `VITE_FIREBASE_*` environment variables in **Vercel → Project Settings → Environment Variables** and deploy.
+4. In **Firebase Console → Authentication → Settings → Authorized domains**, add your `*.vercel.app` domain.
+
+### Option B: Deploy Frontend to Firebase Hosting
 ```bash
-# 1. Build the production frontend
 npm run build
+npx firebase-tools deploy --only hosting
+```
 
-# 2. Deploy Firestore security rules and Hosting
-firebase deploy --only firestore:rules,hosting
-
-# 3. (Optional) Build and deploy Cloud Functions for admin moderation
+### Cloud Functions (`/admin` Moderation)
+```bash
 cd functions && npm install && npm run build && cd ..
-firebase deploy --only functions
+npx firebase-tools deploy --only functions
 ```
+Assign `{ admin: true }` custom claims strictly via the Firebase Admin SDK—never via user-editable Firestore fields.
 
 ---
 
 ## Privacy & Known Limitations
 
-- **Client-Side Redaction**: Regex-based PII scrubbing (`redactPII`) catches standard phones, emails, UPI handles, cards/accounts, OTPs, URLs, and addresses, but may miss unusual unstructured names. Users must always review the `RedactionPreviewModal` before submitting.
-- **Advisory AI Outputs**: Threat classifications, Scam DNA inferences, and Safety Assistant steps are advisory pattern recognitions—never guaranteed legal/financial findings or payment recovery promises.
-- **On-Device Model Availability**: Local inference requires a browser supporting the Chrome Prompt API / Gemini Nano (`ONLY_ON_DEVICE` surfaces clear `UNSUPPORTED_BROWSER` or `LOCAL_MODEL_UNAVAILABLE` states otherwise).
-- **Test Coverage Scope**: Automated unit tests (`vitest`) run against mocked Firebase SDKs; live Firestore rules, Cloud Functions execution, and on-device Gemini Nano require verification against a configured Firebase project or Emulator Suite.
+- **Client-Side Redaction**: `redactPII` catches standard phones, emails, UPI handles, cards/accounts, OTPs, URLs, and addresses, but may miss unusual unstructured names. Users must review `RedactionPreviewModal` before submitting.
+- **Advisory AI Outputs**: Risk levels, Scam DNA inferences, and Safety Assistant guidance are advisory pattern recognitions—never legal/financial findings or payment recovery promises.
+- **On-Device Model Availability**: `ONLY_ON_DEVICE` requires a browser supporting the Chrome Prompt API / Gemini Nano and surfaces clear `UNSUPPORTED_BROWSER` or `LOCAL_MODEL_UNAVAILABLE` states otherwise.
+- **Automated Test Scope**: Vitest unit tests run with mocked Firebase SDKs; live Firestore rules, Cloud Functions, and on-device Gemini Nano require testing against a real Firebase project or Emulator Suite.
 
 ---
 
