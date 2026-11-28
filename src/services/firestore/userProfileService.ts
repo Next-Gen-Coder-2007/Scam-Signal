@@ -13,10 +13,12 @@ import {
   updateAuthDisplayName,
 } from '../firebase/authService';
 import { ReportVisibility } from './threatConverter';
+import type { ScamCategory } from '../ai/analysisSchema';
 
 export interface UserPreferences {
   defaultInferenceMode: 'prefer_on_device' | 'only_on_device' | 'only_in_cloud';
   defaultReportVisibility: ReportVisibility;
+  followedCategories?: ScamCategory[];
 }
 
 export interface UserProfileDocument {
