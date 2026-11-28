@@ -12,6 +12,7 @@ import {
   UserCog,
   LayoutDashboard,
   Radar,
+  LifeBuoy,
 } from 'lucide-react';
 import { NavItem } from '../../types/navigation';
 import { cn } from '../../utils/cn';
@@ -28,6 +29,12 @@ const NAV_ITEMS: NavItem[] = [
     href: '/radar',
     icon: Radar,
     description: 'Emerging scam discovery',
+  },
+  {
+    label: 'Safety Assistant',
+    href: '/safety',
+    icon: LifeBuoy,
+    description: 'Guided incident response',
   },
   {
     label: 'Private Analyzer',
