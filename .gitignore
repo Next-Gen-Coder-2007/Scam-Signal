@@ -1,11 +1,14 @@
 # Dependencies
 node_modules/
+functions/node_modules/
 .pnp
 .pnp.js
 
-# Production build
+# Production build & Firebase cache
 dist/
 dist-ssr/
+functions/lib/
+.firebase/
 *.local
 
 # Environment variables
