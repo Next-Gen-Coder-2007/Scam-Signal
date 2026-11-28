@@ -128,8 +128,18 @@ export const CampaignRelationshipGraph: React.FC<CampaignRelationshipGraphProps>
             return (
               <g
                 key={`node-${link.reportId}`}
-                className="cursor-pointer"
+                className="cursor-pointer focus:outline-none"
+                role="button"
+                tabIndex={0}
+                aria-label={`Inspect report ${link.reportId} (${link.status}, score ${link.correlationScore.toFixed(2)})`}
+                aria-pressed={isSelected}
                 onClick={() => onSelectReport?.(link.reportId)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onSelectReport?.(link.reportId);
+                  }
+                }}
               >
                 <rect
                   x={nx - 52}

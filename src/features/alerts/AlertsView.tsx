@@ -5,11 +5,11 @@ import {
   Check,
   CheckCheck,
   ArrowRight,
-  Loader2,
   AlertTriangle,
   SlidersHorizontal,
 } from 'lucide-react';
 import { Card } from '../../components/common/Card';
+import { CardListSkeleton } from '../../components/common/LoadingSkeleton';
 import { Button } from '../../components/ui/Button';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -169,10 +169,7 @@ export const AlertsView: React.FC = () => {
           </p>
         </Card>
       ) : loading ? (
-        <div className="flex flex-col items-center justify-center py-16 text-zinc-400 gap-3">
-          <Loader2 className="w-6 h-6 animate-spin text-accent-violet-muted" />
-          <p className="text-xs font-mono">Checking Firestore alerts...</p>
-        </div>
+        <CardListSkeleton count={3} />
       ) : error ? (
         <Card className="border-rose-500/30 bg-rose-950/20 space-y-3">
           <div className="flex items-center gap-2 text-rose-300 text-sm font-semibold">

@@ -7,12 +7,12 @@ import {
   Network,
   MapPin,
   AlertTriangle,
-  Loader2,
   Eye,
   BookOpen,
   ArrowRight,
 } from 'lucide-react';
 import { Card } from '../../components/common/Card';
+import { CardListSkeleton } from '../../components/common/LoadingSkeleton';
 import { ThreatBadge } from '../../components/common/ThreatBadge';
 import { ReviewStatusBadge } from '../../components/scam/ReviewStatusBadge';
 import { CampaignStatusBadge } from '../../components/campaigns/CampaignStatusBadge';
@@ -196,10 +196,7 @@ export const ScamRadarView: React.FC = () => {
           </p>
         </Card>
       ) : loading ? (
-        <div className="flex flex-col items-center justify-center py-16 text-zinc-400 gap-3">
-          <Loader2 className="w-6 h-6 animate-spin text-accent-violet-muted" />
-          <p className="text-xs font-mono">Scanning Firestore threat intelligence...</p>
-        </div>
+        <CardListSkeleton count={3} />
       ) : error ? (
         <Card className="border-rose-500/30 bg-rose-950/20 space-y-3">
           <div className="flex items-center gap-2 text-rose-300 text-sm font-semibold">

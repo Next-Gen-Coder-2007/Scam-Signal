@@ -4,13 +4,13 @@ import {
   Lock,
   RefreshCw,
   AlertTriangle,
-  Loader2,
   Shield,
   FileText,
   Link2,
   History,
 } from 'lucide-react';
 import { Card } from '../../components/common/Card';
+import { CardListSkeleton } from '../../components/common/LoadingSkeleton';
 import { ThreatBadge } from '../../components/common/ThreatBadge';
 import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
@@ -235,10 +235,7 @@ export const TriageConsoleView: React.FC = () => {
           connect to Firestore and Cloud Functions moderation endpoints.
         </Card>
       ) : loading && reports.length === 0 && campaigns.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-zinc-400 gap-3">
-          <Loader2 className="w-6 h-6 animate-spin text-accent-violet-muted" />
-          <p className="text-xs font-mono">Loading moderation queues and audit logs...</p>
-        </div>
+        <CardListSkeleton count={3} />
       ) : (
         <div className="space-y-6">
           {/* 1. Pending Reports Queue */}

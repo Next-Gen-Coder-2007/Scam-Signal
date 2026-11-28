@@ -6,12 +6,12 @@ import {
   Clock,
   Cpu,
   AlertTriangle,
-  Loader2,
   Link2,
   ShieldAlert,
   FileSearch,
 } from 'lucide-react';
 import { Card } from '../../components/common/Card';
+import { CardListSkeleton } from '../../components/common/LoadingSkeleton';
 import { Button } from '../../components/ui/Button';
 import { CampaignStatusBadge } from '../../components/campaigns/CampaignStatusBadge';
 import { CampaignRelationshipGraph } from '../../components/campaigns/CampaignRelationshipGraph';
@@ -86,12 +86,7 @@ export const CampaignDetailsView: React.FC = () => {
   }
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 text-zinc-400 gap-3">
-        <Loader2 className="w-6 h-6 animate-spin text-accent-violet-muted" />
-        <p className="text-xs font-mono">Loading campaign evidence...</p>
-      </div>
-    );
+    return <CardListSkeleton count={3} />;
   }
 
   if (error) {

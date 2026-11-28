@@ -7,12 +7,12 @@ import {
   Clock,
   ArrowRight,
   AlertTriangle,
-  Loader2,
   RefreshCw,
   Fingerprint,
 } from 'lucide-react';
 import { Card } from '../../components/common/Card';
 import { EmptyState } from '../../components/common/EmptyState';
+import { CardListSkeleton } from '../../components/common/LoadingSkeleton';
 import { Button } from '../../components/ui/Button';
 import { CampaignStatusBadge } from '../../components/campaigns/CampaignStatusBadge';
 import { firebaseStatus } from '../../services/firebase/firebaseApp';
@@ -155,10 +155,7 @@ export const CampaignExplorerView: React.FC = () => {
           description="Campaign Intelligence reads real correlated campaigns and report links from Cloud Firestore. Configure your Firebase environment variables in .env to view live campaigns."
         />
       ) : loading ? (
-        <div className="flex flex-col items-center justify-center py-16 text-zinc-400 gap-3">
-          <Loader2 className="w-6 h-6 animate-spin text-accent-violet-muted" />
-          <p className="text-xs font-mono">Loading campaign intelligence from Firestore...</p>
-        </div>
+        <CardListSkeleton count={3} />
       ) : error ? (
         <Card className="border-rose-500/30 bg-rose-950/20 space-y-3">
           <div className="flex items-center gap-2 text-rose-300 text-sm font-semibold">
