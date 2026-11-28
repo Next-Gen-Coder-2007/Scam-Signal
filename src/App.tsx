@@ -6,6 +6,7 @@ import { PrivateAnalyzerView } from './features/analyzer/PrivateAnalyzerView';
 import { DashboardView } from './features/dashboard/DashboardView';
 import { ScamRadarView } from './features/radar/ScamRadarView';
 import { SafetyAssistantView } from './features/safety/SafetyAssistantView';
+import { AlertsView } from './features/alerts/AlertsView';
 import { CommunityFeedView } from './features/feed/CommunityFeedView';
 import { CampaignExplorerView } from './features/campaigns/CampaignExplorerView';
 import { CampaignDetailsView } from './features/campaigns/CampaignDetailsView';
@@ -25,6 +26,17 @@ export const App: React.FC = () => {
             <Route path="dashboard" element={<DashboardView />} />
             <Route path="radar" element={<ScamRadarView />} />
             <Route path="safety" element={<SafetyAssistantView />} />
+            <Route
+              path="alerts"
+              element={
+                <ProtectedRoute
+                  title="Alerts & Notification Center"
+                  description="Sign in to follow scam categories and manage your ScamSignal notifications."
+                >
+                  <AlertsView />
+                </ProtectedRoute>
+              }
+            />
             <Route path="feed" element={<CommunityFeedView />} />
             <Route path="campaigns" element={<CampaignExplorerView />} />
             <Route path="campaigns/:campaignId" element={<CampaignDetailsView />} />
