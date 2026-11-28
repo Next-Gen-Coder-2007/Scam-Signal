@@ -16,7 +16,7 @@ export const InferenceBadge: React.FC<InferenceBadgeProps> = ({
   latencyMs,
   className,
 }) => {
-  const config = {
+  const configMap = {
     on_device: {
       bg: 'bg-emerald-50 border-emerald-200 text-emerald-700',
       dot: 'bg-emerald-400',
@@ -35,7 +35,9 @@ export const InferenceBadge: React.FC<InferenceBadgeProps> = ({
       icon: HelpCircle,
       defaultLabel: 'Unknown Source',
     },
-  }[source];
+  } as const;
+
+  const config = configMap[source] ?? configMap.unknown;
 
   const Icon = config.icon;
   const label = modelIdentifier || config.defaultLabel;
