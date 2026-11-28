@@ -102,10 +102,10 @@ export const AlertsView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 flex items-center gap-2">
-              <Bell className="w-5 h-5 text-cyan-700" />
+              <Bell className="w-5 h-5 text-orange-700" />
               <span>Alerts &amp; Notification Center</span>
             </h1>
-            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-cyan-800 border border-surface-border">
+            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-amber-900 border border-surface-border">
               {unreadCount} Unread
             </span>
           </div>
@@ -147,7 +147,7 @@ export const AlertsView: React.FC = () => {
                 onClick={() => void toggleCategory(category)}
                 className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
                   active
-                    ? 'bg-violet-50 border-accent-violet text-slate-900'
+                    ? 'bg-amber-50 border-accent-violet text-slate-900'
                     : 'bg-void border-surface-border text-slate-600 hover:text-slate-800'
                 }`}
               >
@@ -176,7 +176,7 @@ export const AlertsView: React.FC = () => {
             <AlertTriangle className="w-4 h-4" />
             <span>Unable to Load Alerts</span>
           </div>
-          <p className="text-xs text-rose-700">{error}</p>
+          <p className="text-xs text-rose-700 break-all">{error}</p>
           <Button variant="secondary" size="sm" onClick={() => void loadAlerts()}>
             Retry
           </Button>
@@ -195,7 +195,7 @@ export const AlertsView: React.FC = () => {
             <Card
               key={alert.id}
               className={`space-y-2.5 transition-colors ${
-                alert.isRead ? 'opacity-80' : 'border-cyan-200 bg-cyan-50'
+                alert.isRead ? 'opacity-80' : 'border-amber-200 bg-amber-50'
               }`}
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -222,7 +222,7 @@ export const AlertsView: React.FC = () => {
               <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
                 <Link
                   to={alert.href}
-                  className="inline-flex items-center gap-1 text-xs font-mono text-cyan-700 hover:text-cyan-800"
+                  className="inline-flex items-center gap-1 text-xs font-mono text-orange-700 hover:text-amber-900"
                 >
                   <span>
                     {alert.type === 'campaign_warning' ? 'Inspect Campaign' : 'View in Feed'}

@@ -20,7 +20,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
         <div className="flex items-center gap-3">
           <button
             onClick={onToggleSidebar}
-            className="p-2 -ml-2 rounded-md text-slate-500 hover:text-slate-900 hover:bg-surface-elevated lg:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600"
+            className="p-2 -ml-2 rounded-md text-slate-500 hover:text-slate-900 hover:bg-surface-elevated lg:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600"
             aria-label="Toggle Navigation Menu"
           >
             <Menu className="w-5 h-5" />

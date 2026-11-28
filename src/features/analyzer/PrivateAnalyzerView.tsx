@@ -165,7 +165,7 @@ export const PrivateAnalyzerView: React.FC = () => {
             <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900">
               Private Scam Analyzer
             </h1>
-            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-cyan-700 border border-surface-border">
+            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-orange-700 border border-surface-border">
               PREFER_ON_DEVICE
             </span>
           </div>
@@ -185,8 +185,8 @@ export const PrivateAnalyzerView: React.FC = () => {
 
       {/* Share Notice */}
       {shareSuccessNotice && (
-        <div className="p-3 rounded-md bg-cyan-50 border border-cyan-200 text-cyan-800 text-xs flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-cyan-700 shrink-0" />
+        <div className="p-3 rounded-md bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-orange-700 shrink-0" />
           <span>{shareSuccessNotice}</span>
         </div>
       )}
@@ -256,7 +256,7 @@ export const PrivateAnalyzerView: React.FC = () => {
                     type="button"
                     onClick={() => setShowRedactionModal(true)}
                     disabled={!content.trim()}
-                    className="text-slate-600 hover:text-cyan-800 disabled:opacity-40 flex items-center gap-1 font-mono transition-colors"
+                    className="text-slate-600 hover:text-amber-900 disabled:opacity-40 flex items-center gap-1 font-mono transition-colors"
                   >
                     <Eye className="w-3.5 h-3.5" />
                     <span>Audit PII Redaction</span>
@@ -336,10 +336,10 @@ export const PrivateAnalyzerView: React.FC = () => {
               <div className="p-3 rounded-md bg-canvas border border-surface-border space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-slate-700 flex items-center gap-1.5">
-                    <Download className="w-3.5 h-3.5 text-cyan-700" />
+                    <Download className="w-3.5 h-3.5 text-orange-700" />
                     <span>Downloading on-device Gemini Nano model...</span>
                   </span>
-                  <span className="font-mono text-cyan-700">
+                  <span className="font-mono text-orange-700">
                     {downloadProgress ?? 0}%
                   </span>
                 </div>
@@ -365,7 +365,7 @@ export const PrivateAnalyzerView: React.FC = () => {
             <div className="space-y-2 text-xs">
               <div className="flex items-center justify-between p-2 rounded bg-canvas border border-surface-border">
                 <span className="text-slate-600">Selected Mode</span>
-                <span className="font-mono text-cyan-800">{inferenceMode}</span>
+                <span className="font-mono text-amber-900">{inferenceMode}</span>
               </div>
               <div className="flex items-center justify-between p-2 rounded bg-canvas border border-surface-border">
                 <span className="text-slate-600">Cloud Fallback</span>

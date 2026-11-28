@@ -83,7 +83,7 @@ export const CampaignExplorerView: React.FC = () => {
             <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900">
               Campaign Intelligence
             </h1>
-            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-cyan-700 border border-surface-border">
+            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-orange-700 border border-surface-border">
               Firestore Evidence
             </span>
           </div>
@@ -108,7 +108,7 @@ export const CampaignExplorerView: React.FC = () => {
       {/* Methodology & Status Legend */}
       <Card className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div className="flex items-start gap-3">
-          <div className="p-2.5 rounded-md bg-surface-elevated text-cyan-700 border border-surface-border shrink-0">
+          <div className="p-2.5 rounded-md bg-surface-elevated text-orange-700 border border-surface-border shrink-0">
             <Fingerprint className="w-5 h-5" />
           </div>
           <div>
@@ -137,7 +137,7 @@ export const CampaignExplorerView: React.FC = () => {
               onClick={() => setStageFilter(key)}
               className={`px-2.5 py-1 rounded text-xs font-mono border transition-colors ${
                 stageFilter === key
-                  ? 'bg-violet-50 border-accent-violet text-slate-900'
+                  ? 'bg-amber-50 border-accent-violet text-slate-900'
                   : 'bg-canvas border-surface-border text-slate-600 hover:text-slate-800'
               }`}
             >
@@ -162,7 +162,7 @@ export const CampaignExplorerView: React.FC = () => {
             <AlertTriangle className="w-4 h-4 shrink-0" />
             <span>Unable to Load Campaigns</span>
           </div>
-          <p className="text-xs text-rose-700">{error}</p>
+          <p className="text-xs text-rose-700 break-all">{error}</p>
           <Button variant="secondary" size="sm" onClick={() => void loadCampaigns()}>
             Retry
           </Button>
@@ -238,7 +238,7 @@ export const CampaignExplorerView: React.FC = () => {
                     {camp.sharedIndicators.map((indicator) => (
                       <span
                         key={indicator}
-                        className="px-2 py-0.5 rounded text-[11px] font-mono bg-surface-elevated border border-surface-border text-cyan-800"
+                        className="px-2 py-0.5 rounded text-[11px] font-mono bg-surface-elevated border border-surface-border text-amber-900"
                       >
                         {indicator}
                       </span>

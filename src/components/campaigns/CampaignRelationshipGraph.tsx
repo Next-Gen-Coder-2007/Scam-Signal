@@ -57,7 +57,7 @@ export const CampaignRelationshipGraph: React.FC<CampaignRelationshipGraphProps>
                   y1={cy}
                   x2={nx}
                   y2={ny}
-                  stroke={isSelected ? '#0891b2' : '#cbd5e1'}
+                  stroke={isSelected ? '#ea580c' : '#cbd5e1'}
                   strokeWidth={isSelected ? 2.5 : 1.5}
                   strokeDasharray={link.verificationStatus === 'verified' ? undefined : '4 3'}
                 />
@@ -68,7 +68,7 @@ export const CampaignRelationshipGraph: React.FC<CampaignRelationshipGraphProps>
                   height={18}
                   rx={4}
                   fill="#ffffff"
-                  stroke={isSelected ? '#0891b2' : '#e2e8f0'}
+                  stroke={isSelected ? '#ea580c' : '#e2e8f0'}
                 />
                 <text
                   x={midX}
@@ -76,7 +76,7 @@ export const CampaignRelationshipGraph: React.FC<CampaignRelationshipGraphProps>
                   textAnchor="middle"
                   fontSize="9"
                   fontFamily="monospace"
-                  fill={isSelected ? '#0e7490' : '#475569'}
+                  fill={isSelected ? '#c2410c' : '#475569'}
                 >
                   {link.correlationScore.toFixed(2)}
                 </text>
@@ -91,7 +91,7 @@ export const CampaignRelationshipGraph: React.FC<CampaignRelationshipGraphProps>
               cy={cy}
               r={42}
               fill="#ffffff"
-              stroke="#6d28d9"
+              stroke="#d97706"
               strokeWidth={2}
             />
             <text
@@ -110,7 +110,7 @@ export const CampaignRelationshipGraph: React.FC<CampaignRelationshipGraphProps>
               textAnchor="middle"
               fontSize="9"
               fontFamily="monospace"
-              fill="#6d28d9"
+              fill="#b45309"
             >
               {links.length} {links.length === 1 ? 'Report' : 'Reports'}
             </text>
@@ -147,8 +147,8 @@ export const CampaignRelationshipGraph: React.FC<CampaignRelationshipGraphProps>
                   width={104}
                   height={36}
                   rx={6}
-                  fill={isSelected ? '#ecfeff' : '#ffffff'}
-                  stroke={isSelected ? '#0891b2' : '#cbd5e1'}
+                  fill={isSelected ? '#fffbeb' : '#ffffff'}
+                  stroke={isSelected ? '#ea580c' : '#cbd5e1'}
                   strokeWidth={isSelected ? 2 : 1.25}
                 />
                 <text

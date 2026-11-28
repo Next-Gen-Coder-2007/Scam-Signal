@@ -28,7 +28,7 @@ export const PrivacyPolicyView: React.FC = () => {
         </Card>
 
         <Card className="space-y-2.5">
-          <div className="p-2 rounded-md bg-surface-elevated text-cyan-700 border border-surface-border w-fit">
+          <div className="p-2 rounded-md bg-surface-elevated text-orange-700 border border-surface-border w-fit">
             <Eye className="w-4 h-4" />
           </div>
           <h3 className="text-sm font-semibold text-slate-800">Automated PII Redaction</h3>

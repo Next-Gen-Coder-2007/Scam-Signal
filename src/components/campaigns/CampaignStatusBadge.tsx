@@ -19,7 +19,7 @@ const STAGE_CONFIG: Record<
   },
   under_review: {
     label: 'Under Review',
-    classes: 'bg-cyan-50 border-cyan-200 text-cyan-800',
+    classes: 'bg-amber-50 border-amber-200 text-amber-900',
     icon: Eye,
   },
   verified: {

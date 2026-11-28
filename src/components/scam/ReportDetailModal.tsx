@@ -103,14 +103,14 @@ export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
         {report.evidence.length > 0 && (
           <div className="space-y-1.5">
             <h4 className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-              <Quote className="w-3.5 h-3.5 text-cyan-700" />
+              <Quote className="w-3.5 h-3.5 text-orange-700" />
               Quoted Evidence
             </h4>
             <div className="space-y-1.5">
               {report.evidence.map((ev, idx) => (
                 <div
                   key={idx}
-                  className="p-2.5 rounded-md bg-canvas border border-surface-border text-xs font-mono text-cyan-800"
+                  className="p-2.5 rounded-md bg-canvas border border-surface-border text-xs font-mono text-amber-900"
                 >
                   {redactPII(ev)}
                 </div>
@@ -146,7 +146,7 @@ export const ReportDetailModal: React.FC<ReportDetailModalProps> = ({
             Observed: {report.observedDate || 'N/A'}
           </span>
           <span className="flex items-center gap-1.5">
-            <Hash className="w-3.5 h-3.5 text-cyan-700" />
+            <Hash className="w-3.5 h-3.5 text-orange-700" />
             Digest: {report.normalizedPatternHash.slice(0, 12)}
           </span>
         </div>

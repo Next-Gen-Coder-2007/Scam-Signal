@@ -77,7 +77,7 @@ export const ScamRadarView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 flex items-center gap-2">
-              <Radar className="w-5 h-5 text-cyan-700" />
+              <Radar className="w-5 h-5 text-orange-700" />
               <span>Scam Radar</span>
             </h1>
             {snapshot?.isSampleData ? (
@@ -85,7 +85,7 @@ export const ScamRadarView: React.FC = () => {
                 Sample Demonstration Data
               </span>
             ) : (
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-cyan-700 border border-surface-border">
+              <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-orange-700 border border-surface-border">
                 {firebaseStatus.isConfigured ? 'Live Firestore Discovery' : 'Setup Required'}
               </span>
             )}
@@ -125,7 +125,7 @@ export const ScamRadarView: React.FC = () => {
       <Card className="p-4">
         <div className="flex flex-col md:flex-row md:items-center gap-3">
           <div className="flex items-center gap-1.5 text-xs font-mono text-slate-600 shrink-0">
-            <Filter className="w-3.5 h-3.5 text-cyan-700" />
+            <Filter className="w-3.5 h-3.5 text-orange-700" />
             <span>Filters:</span>
           </div>
 
@@ -203,7 +203,7 @@ export const ScamRadarView: React.FC = () => {
             <AlertTriangle className="w-4 h-4" />
             <span>Unable to Load Scam Radar</span>
           </div>
-          <p className="text-xs text-rose-700">{error}</p>
+          <p className="text-xs text-rose-700 break-all">{error}</p>
           <Button variant="secondary" size="sm" onClick={() => void loadRadar()}>
             Retry
           </Button>
@@ -267,7 +267,7 @@ export const ScamRadarView: React.FC = () => {
                       </div>
                       <div className="h-1.5 w-full rounded bg-void border border-surface-border overflow-hidden">
                         <div
-                          className="h-full bg-violet-50"
+                          className="h-full bg-amber-50"
                           style={{ width: `${Math.max(5, pat.percentage)}%` }}
                         />
                       </div>
@@ -290,7 +290,7 @@ export const ScamRadarView: React.FC = () => {
                 </div>
                 <Link
                   to="/campaigns"
-                  className="text-xs font-mono text-cyan-700 hover:text-cyan-800 inline-flex items-center gap-1"
+                  className="text-xs font-mono text-orange-700 hover:text-amber-900 inline-flex items-center gap-1"
                 >
                   <span>Explore</span>
                   <ArrowRight className="w-3 h-3" />
@@ -332,7 +332,7 @@ export const ScamRadarView: React.FC = () => {
                 </div>
                 <Link
                   to="/feed"
-                  className="text-xs font-mono text-cyan-700 hover:text-cyan-800 inline-flex items-center gap-1"
+                  className="text-xs font-mono text-orange-700 hover:text-amber-900 inline-flex items-center gap-1"
                 >
                   <span>Full Feed</span>
                   <ArrowRight className="w-3 h-3" />
@@ -371,7 +371,7 @@ export const ScamRadarView: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="space-y-3">
               <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-cyan-700" />
+                <MapPin className="w-4 h-4 text-orange-700" />
                 <h2 className="text-sm font-semibold text-slate-900">Geographical Trends</h2>
               </div>
               {snapshot.geographicalTrends ? (
@@ -382,7 +382,7 @@ export const ScamRadarView: React.FC = () => {
                       className="flex items-center justify-between text-xs p-2.5 rounded bg-void border border-surface-border"
                     >
                       <span className="text-slate-800">{geo.region}</span>
-                      <span className="font-mono text-cyan-800">{geo.count} reports</span>
+                      <span className="font-mono text-amber-900">{geo.count} reports</span>
                     </div>
                   ))}
                 </div>
@@ -404,7 +404,7 @@ export const ScamRadarView: React.FC = () => {
                 Even when live report volume is low, verify suspicious messages independently
                 before acting: never pay upfront fees to receive a job or parcel, inspect sender
                 domains carefully, and use the{' '}
-                <Link to="/" className="text-cyan-700 underline underline-offset-4">
+                <Link to="/" className="text-orange-700 underline underline-offset-4">
                   Private Analyzer
                 </Link>{' '}
                 to check messages locally first.

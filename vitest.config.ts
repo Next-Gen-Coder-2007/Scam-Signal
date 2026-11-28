@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
+  envDir: './tests/empty-env',
   plugins: [react()],
   test: {
     globals: true,

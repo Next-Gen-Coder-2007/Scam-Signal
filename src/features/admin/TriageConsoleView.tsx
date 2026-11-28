@@ -208,8 +208,8 @@ export const TriageConsoleView: React.FC = () => {
             </h2>
             <p className="text-xs text-slate-600 mt-1 leading-relaxed">
               All report approvals, campaign link confirmations, and status transitions execute
-              through Cloud Functions verifying <code className="text-cyan-700 font-mono">request.auth.token.admin === true</code>.
-              Admin privileges cannot be granted via user-editable Firestore fields, and every action writes an immutable record to <code className="text-cyan-700 font-mono">moderation_audit_logs</code>.
+              through Cloud Functions verifying <code className="text-orange-700 font-mono">request.auth.token.admin === true</code>.
+              Admin privileges cannot be granted via user-editable Firestore fields, and every action writes an immutable record to <code className="text-orange-700 font-mono">moderation_audit_logs</code>.
             </p>
           </div>
         </div>
@@ -242,7 +242,7 @@ export const TriageConsoleView: React.FC = () => {
           <Card className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-cyan-700" />
+                <FileText className="w-4 h-4 text-orange-700" />
                 <h2 className="text-sm font-semibold text-slate-900">
                   Pending Reports Queue ({reports.length})
                 </h2>
@@ -279,7 +279,7 @@ export const TriageConsoleView: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setSelectedReport(rep)}
-                          className="text-[11px] font-mono text-cyan-700 hover:underline mt-1"
+                          className="text-[11px] font-mono text-orange-700 hover:underline mt-1"
                         >
                           Inspect sanitized evidence
                         </button>
@@ -349,7 +349,7 @@ export const TriageConsoleView: React.FC = () => {
                   >
                     <div className="space-y-1">
                       <div className="font-mono text-slate-800">
-                        Report <span className="text-cyan-800">{link.reportId}</span> → Campaign{' '}
+                        Report <span className="text-amber-900">{link.reportId}</span> → Campaign{' '}
                         <span className="text-accent-violet">{link.campaignId}</span> (Score:{' '}
                         {link.correlationScore.toFixed(2)})
                       </div>
@@ -418,7 +418,7 @@ export const TriageConsoleView: React.FC = () => {
                     <div>
                       <p className="font-semibold text-slate-900">{camp.name}</p>
                       <p className="text-[11px] font-mono text-slate-600">
-                        Status: <span className="text-cyan-800">{camp.status}</span> ·{' '}
+                        Status: <span className="text-amber-900">{camp.status}</span> ·{' '}
                         {camp.totalSignals} signals
                       </p>
                     </div>
@@ -478,7 +478,7 @@ export const TriageConsoleView: React.FC = () => {
                 <TableBody>
                   {auditLogs.map((log) => (
                     <TableRow key={log.id}>
-                      <TableCell className="font-mono text-xs text-cyan-800">
+                      <TableCell className="font-mono text-xs text-amber-900">
                         {log.action}
                       </TableCell>
                       <TableCell className="font-mono text-xs text-slate-700">

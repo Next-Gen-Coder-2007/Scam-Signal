@@ -4,13 +4,13 @@
 
 :root {
   color-scheme: light;
-  --bg-canvas: #f8fafc;
+  --bg-canvas: #fafafa;
   --bg-surface: #ffffff;
-  --bg-elevated: #f1f5f9;
-  --border-fine: #e2e8f0;
-  --border-strong: #cbd5e1;
-  --accent-violet: #6d28d9;
-  --accent-cyan: #0891b2;
+  --bg-elevated: #f4f4f5;
+  --border-fine: #e4e4e7;
+  --border-strong: #d4d4d8;
+  --accent-violet: #ea580c;
+  --accent-cyan: #f59e0b;
 }
 
 body {
@@ -43,6 +43,6 @@ body {
 
 /* Accessible focus ring default */
 :focus-visible {
-  outline: 2px solid #6d28d9;
+  outline: 2px solid #ea580c;
   outline-offset: 2px;
 }

@@ -39,7 +39,7 @@ export const Input: React.FC<InputProps> = ({
         )}
         {...props}
       />
-      {error && <p className="text-[11px] text-rose-700">{error}</p>}
+      {error && <p className="text-[11px] text-rose-700 break-all">{error}</p>}
       {!error && hint && <p className="text-[11px] text-slate-600">{hint}</p>}
     </div>
   );
@@ -77,7 +77,7 @@ export const Textarea: React.FC<TextareaProps> = ({
         )}
         {...props}
       />
-      {error && <p className="text-[11px] text-rose-700">{error}</p>}
+      {error && <p className="text-[11px] text-rose-700 break-all">{error}</p>}
       {!error && hint && <p className="text-[11px] text-slate-500">{hint}</p>}
     </div>
   );
@@ -118,7 +118,7 @@ export const Select: React.FC<SelectProps> = ({
       >
         {children}
       </select>
-      {error && <p className="text-[11px] text-rose-700">{error}</p>}
+      {error && <p className="text-[11px] text-rose-700 break-all">{error}</p>}
       {!error && hint && <p className="text-[11px] text-slate-500">{hint}</p>}
     </div>
   );

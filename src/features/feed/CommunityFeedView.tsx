@@ -265,7 +265,7 @@ export const CommunityFeedView: React.FC = () => {
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-3 pt-2.5 border-t border-surface-border">
                   <div className="flex items-center gap-3 text-[11px] font-mono text-slate-500">
                     <span className="flex items-center gap-1">
-                      <Hash className="w-3 h-3 text-cyan-700" />
+                      <Hash className="w-3 h-3 text-orange-700" />
                       {report.normalizedPatternHash.slice(0, 10)}
                     </span>
                     <span>•</span>

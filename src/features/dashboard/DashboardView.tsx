@@ -87,8 +87,8 @@ export const DashboardView: React.FC = () => {
                 onClick={() => setTimeWindow(opt.value)}
                 className={`px-2.5 py-1 rounded text-xs font-mono transition-colors ${
                   timeWindow === opt.value
-                    ? 'bg-violet-50 text-slate-900 border border-accent-violet/40'
-                    : 'text-slate-600 hover:text-slate-800 border border-transparent'
+                    ? 'bg-amber-50 text-amber-950 border border-amber-300'
+                    : 'text-slate-600 hover:text-slate-900 border border-transparent'
                 }`}
               >
                 {opt.label}
@@ -131,7 +131,7 @@ export const DashboardView: React.FC = () => {
             <AlertTriangle className="w-4 h-4 shrink-0" />
             <span>Failed to Load Dashboard</span>
           </div>
-          <p className="text-xs text-rose-700">{error}</p>
+          <p className="text-xs text-rose-700 break-all">{error}</p>
           <Button variant="secondary" size="sm" onClick={() => void loadDashboard()}>
             Retry
           </Button>
@@ -175,7 +175,7 @@ export const DashboardView: React.FC = () => {
               <p className="text-[11px] font-mono uppercase text-slate-600">
                 Corroboration Records
               </p>
-              <p className="text-2xl font-semibold font-mono text-cyan-800">
+              <p className="text-2xl font-semibold font-mono text-amber-900">
                 {snapshot.metrics.corroborationActionsCount}
               </p>
               <p className="text-[10px] font-mono text-slate-500">
@@ -192,12 +192,12 @@ export const DashboardView: React.FC = () => {
               <Card className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Radio className="w-4 h-4 text-cyan-700" />
+                    <Radio className="w-4 h-4 text-orange-700" />
                     <h2 className="text-sm font-semibold text-slate-900">Recent Scam Reports</h2>
                   </div>
                   <Link
                     to="/feed"
-                    className="inline-flex items-center gap-1 text-xs font-mono text-cyan-700 hover:text-cyan-800"
+                    className="inline-flex items-center gap-1 text-xs font-mono text-orange-700 hover:text-amber-900"
                   >
                     <span>View Feed</span>
                     <ArrowRight className="w-3 h-3" />
@@ -244,7 +244,7 @@ export const DashboardView: React.FC = () => {
                   </div>
                   <Link
                     to="/campaigns"
-                    className="inline-flex items-center gap-1 text-xs font-mono text-cyan-700 hover:text-cyan-800"
+                    className="inline-flex items-center gap-1 text-xs font-mono text-orange-700 hover:text-amber-900"
                   >
                     <span>All Campaigns</span>
                     <ArrowRight className="w-3 h-3" />
@@ -279,7 +279,7 @@ export const DashboardView: React.FC = () => {
                             {camp.sharedIndicators.slice(0, 4).map((ind) => (
                               <span
                                 key={ind}
-                                className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-surface border border-surface-border text-cyan-800"
+                                className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-surface border border-surface-border text-amber-900"
                               >
                                 {ind}
                               </span>
@@ -299,7 +299,7 @@ export const DashboardView: React.FC = () => {
               <Card className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4 text-cyan-700" />
+                    <BarChart3 className="w-4 h-4 text-orange-700" />
                     <h2 className="text-sm font-semibold text-slate-900">
                       Category Distribution
                     </h2>

@@ -61,11 +61,11 @@ export const SafetyAssistantView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 flex items-center gap-2">
-              <LifeBuoy className="w-5 h-5 text-cyan-700" />
+              <LifeBuoy className="w-5 h-5 text-orange-700" />
               <span>Safety Action Assistant</span>
             </h1>
             {result && (
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-cyan-700 border border-surface-border flex items-center gap-1">
+              <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-surface-elevated text-orange-700 border border-surface-border flex items-center gap-1">
                 <Cpu className="w-3 h-3" />
                 <span>
                   {result.isAiAssisted
@@ -94,7 +94,7 @@ export const SafetyAssistantView: React.FC = () => {
               onClick={() => setRegion(code)}
               className={`px-3 py-1 rounded text-xs font-mono transition-colors ${
                 region === code
-                  ? 'bg-violet-50 text-slate-900 border border-accent-violet/40'
+                  ? 'bg-amber-50 text-slate-900 border border-accent-violet/40'
                   : 'text-slate-600 hover:text-slate-800 border border-transparent'
               }`}
             >
@@ -113,7 +113,7 @@ export const SafetyAssistantView: React.FC = () => {
             onClick={() => setScenario(item)}
             className={`px-3 py-2 rounded-md text-xs font-medium border transition-colors ${
               scenario === item
-                ? 'bg-cyan-50 border-cyan-200 text-slate-900'
+                ? 'bg-amber-50 border-amber-200 text-slate-900'
                 : 'bg-surface border-surface-border text-slate-600 hover:text-slate-800'
             }`}
           >
@@ -155,7 +155,7 @@ export const SafetyAssistantView: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-xs font-semibold text-cyan-800 uppercase tracking-wider">
+                <h3 className="text-xs font-semibold text-amber-900 uppercase tracking-wider">
                   Immediate Steps
                 </h3>
                 <ol className="list-decimal list-inside space-y-1.5 text-xs text-slate-800 leading-relaxed">
@@ -223,7 +223,7 @@ export const SafetyAssistantView: React.FC = () => {
                         href={res.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 font-mono text-cyan-700 hover:text-cyan-800"
+                        className="inline-flex items-center gap-1 font-mono text-orange-700 hover:text-amber-900"
                       >
                         <span>{res.url}</span>
                         <ExternalLink className="w-3 h-3" />

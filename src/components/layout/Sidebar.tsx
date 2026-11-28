@@ -62,7 +62,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       >
         {/* Brand header */}
         <div className="h-14 px-5 border-b border-surface-border flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-md bg-violet-50 border border-violet-200 flex items-center justify-center text-accent-violet">
+          <div className="w-7 h-7 rounded-md bg-gradient-to-br from-amber-50 to-orange-100 border border-amber-300 flex items-center justify-center text-orange-600">
             <ShieldAlert className="w-4 h-4" />
           </div>
           <span className="font-semibold text-sm tracking-tight text-slate-900">
@@ -84,7 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                   cn(
                     'group flex items-center gap-2.5 px-3 py-2 rounded-md text-xs font-medium transition-colors duration-150',
                     isActive
-                      ? 'bg-violet-50 text-violet-900 border border-violet-200'
+                      ? 'bg-amber-50 text-amber-950 border border-amber-200'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-surface-elevated border border-transparent'
                   )
                 }
@@ -95,7 +95,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                       className={cn(
                         'w-4 h-4 shrink-0 transition-colors',
                         isActive
-                          ? 'text-accent-violet'
+                          ? 'text-orange-600'
                           : 'text-slate-400 group-hover:text-slate-600'
                       )}
                     />

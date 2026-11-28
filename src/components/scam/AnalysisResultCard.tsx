@@ -105,8 +105,8 @@ export const AnalysisResultCard: React.FC<AnalysisResultCardProps> = ({
           </h2>
         </div>
 
-        <div className="flex items-center gap-1.5 text-[11px] font-mono text-cyan-800 bg-canvas border border-surface-border px-2.5 py-1 rounded self-start sm:self-center">
-          <Hash className="w-3.5 h-3.5 text-cyan-700" />
+        <div className="flex items-center gap-1.5 text-[11px] font-mono text-amber-900 bg-canvas border border-surface-border px-2.5 py-1 rounded self-start sm:self-center">
+          <Hash className="w-3.5 h-3.5 text-orange-700" />
           <span>Pattern: {result.normalizedPatternHash.slice(0, 12)}</span>
         </div>
       </div>
@@ -135,7 +135,7 @@ export const AnalysisResultCard: React.FC<AnalysisResultCardProps> = ({
         {/* Observed Evidence (Factual quotes from message) */}
         <div className="space-y-2">
           <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-            <Quote className="w-3.5 h-3.5 text-cyan-700" />
+            <Quote className="w-3.5 h-3.5 text-orange-700" />
             Observed Evidence (From Message)
           </h3>
           {result.observedEvidence.length > 0 ? (
@@ -143,7 +143,7 @@ export const AnalysisResultCard: React.FC<AnalysisResultCardProps> = ({
               {result.observedEvidence.map((item, idx) => (
                 <div
                   key={idx}
-                  className="p-2.5 rounded-md bg-canvas border border-surface-border text-xs text-cyan-800 font-mono"
+                  className="p-2.5 rounded-md bg-canvas border border-surface-border text-xs text-amber-900 font-mono"
                 >
                   {item}
                 </div>
@@ -185,7 +185,7 @@ export const AnalysisResultCard: React.FC<AnalysisResultCardProps> = ({
                   <span className="text-xs font-semibold text-amber-800">
                     {MANIPULATION_PATTERN_LABELS[indicator.pattern]}
                   </span>
-                  <span className="text-[11px] font-mono text-cyan-800 bg-surface px-2 py-0.5 rounded border border-surface-border">
+                  <span className="text-[11px] font-mono text-amber-900 bg-surface px-2 py-0.5 rounded border border-surface-border">
                     &ldquo;{indicator.observedEvidence}&rdquo;
                   </span>
                 </div>

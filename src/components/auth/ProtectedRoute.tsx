@@ -64,7 +64,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       <>
         <div className="max-w-lg mx-auto my-10 p-6 rounded-lg bg-surface border border-surface-border space-y-4">
           <div className="flex items-center gap-2.5 text-slate-900">
-            <div className="w-8 h-8 rounded-md bg-violet-50 border border-accent-violet/30 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-md bg-amber-50 border border-accent-violet/30 flex items-center justify-center">
               <Lock className="w-4 h-4 text-accent-violet" />
             </div>
             <div>

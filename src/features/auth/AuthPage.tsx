@@ -107,7 +107,7 @@ export const AuthPage: React.FC = () => {
   return (
     <div className="max-w-md mx-auto my-8 p-6 rounded-lg bg-surface border border-surface-border space-y-5">
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-md bg-violet-50 border border-accent-violet/30 flex items-center justify-center">
+        <div className="w-9 h-9 rounded-md bg-amber-50 border border-accent-violet/30 flex items-center justify-center">
           <Lock className="w-4 h-4 text-accent-violet" />
         </div>
         <div>
@@ -216,7 +216,7 @@ export const AuthPage: React.FC = () => {
               onClick={() => void signInGuest()}
               disabled={loading}
             >
-              <UserCheck className="w-3.5 h-3.5 text-cyan-700" />
+              <UserCheck className="w-3.5 h-3.5 text-orange-700" />
               <span>Anonymous</span>
             </Button>
           </div>

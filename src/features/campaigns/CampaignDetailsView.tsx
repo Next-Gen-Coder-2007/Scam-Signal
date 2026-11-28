@@ -104,7 +104,7 @@ export const CampaignDetailsView: React.FC = () => {
             <AlertTriangle className="w-4 h-4" />
             <span>Error Loading Campaign</span>
           </div>
-          <p className="text-xs text-rose-700">{error}</p>
+          <p className="text-xs text-rose-700 break-all">{error}</p>
           <Button variant="secondary" size="sm" onClick={() => void loadDetails()}>
             Retry
           </Button>
@@ -193,7 +193,7 @@ export const CampaignDetailsView: React.FC = () => {
       <Card className="space-y-4">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2">
-            <Link2 className="w-4 h-4 text-cyan-700" />
+            <Link2 className="w-4 h-4 text-orange-700" />
             <h2 className="text-sm font-semibold text-slate-900">
               Deterministic Report Relationships
             </h2>
@@ -226,13 +226,13 @@ export const CampaignDetailsView: React.FC = () => {
                       onClick={() => setSelectedReportId(link.reportId)}
                       className={`w-full text-left px-3 py-2 rounded border text-xs transition-colors ${
                         active
-                          ? 'bg-cyan-50 border-cyan-200 text-slate-900'
+                          ? 'bg-amber-50 border-amber-200 text-slate-900'
                           : 'bg-void border-surface-border text-slate-700 hover:border-zinc-600'
                       }`}
                     >
                       <div className="flex items-center justify-between font-mono">
                         <span className="truncate">{link.reportId}</span>
-                        <span className="text-cyan-800">{link.correlationScore.toFixed(2)}</span>
+                        <span className="text-amber-900">{link.correlationScore.toFixed(2)}</span>
                       </div>
                       <div className="text-[10px] text-slate-600 mt-0.5">
                         Link: {link.status} · {link.verificationStatus}
@@ -248,7 +248,7 @@ export const CampaignDetailsView: React.FC = () => {
                 <>
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div className="flex items-center gap-2">
-                      <FileSearch className="w-4 h-4 text-cyan-700" />
+                      <FileSearch className="w-4 h-4 text-orange-700" />
                       <h3 className="text-xs font-semibold text-slate-900 font-mono">
                         Evidence for {selectedLink.reportId}
                       </h3>
@@ -270,7 +270,7 @@ export const CampaignDetailsView: React.FC = () => {
                       {selectedLink.supportingIndicators.map((ind) => (
                         <span
                           key={ind}
-                          className="px-2 py-0.5 rounded text-[11px] font-mono bg-surface border border-surface-border text-cyan-800"
+                          className="px-2 py-0.5 rounded text-[11px] font-mono bg-surface border border-surface-border text-amber-900"
                         >
                           {ind}
                         </span>
@@ -302,7 +302,7 @@ export const CampaignDetailsView: React.FC = () => {
                 Collective AI Explanation (Advisory)
               </h2>
             </div>
-            <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-violet-50 border border-accent-violet/30 text-accent-violet">
+            <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-amber-50 border border-accent-violet/30 text-accent-violet">
               {analysis.modelIdentifier} · {analysis.inferenceSource}
             </span>
           </div>
@@ -331,7 +331,7 @@ export const CampaignDetailsView: React.FC = () => {
             {analysis.evidenceToReview.length > 0 && (
               <div>
                 <h3 className="font-semibold text-slate-700 mb-1">Recommended Evidence to Review</h3>
-                <ul className="list-disc list-inside text-cyan-800 space-y-1">
+                <ul className="list-disc list-inside text-amber-900 space-y-1">
                   {analysis.evidenceToReview.map((item, idx) => (
                     <li key={idx}>{item}</li>
                   ))}

@@ -19,7 +19,7 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   const variantStyles = {
     primary:
-      'bg-accent-violet hover:bg-accent-violet-hover text-white border border-violet-700/20 shadow-sm',
+      'bg-orange-600 hover:bg-orange-700 text-white border border-orange-700/20 shadow-sm',
     secondary:
       'bg-surface hover:bg-surface-elevated text-slate-700 border border-surface-border hover:border-surface-subtle shadow-sm',
     ghost:
@@ -27,7 +27,7 @@ export const Button: React.FC<ButtonProps> = ({
     danger:
       'bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200',
     cyan:
-      'bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border border-cyan-200',
+      'bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300',
   }[variant];
 
   const sizeStyles = {
@@ -40,7 +40,7 @@ export const Button: React.FC<ButtonProps> = ({
     <button
       disabled={disabled || isLoading}
       className={cn(
-        'inline-flex items-center justify-center font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 disabled:opacity-50 disabled:pointer-events-none select-none',
+        'inline-flex items-center justify-center font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 disabled:opacity-50 disabled:pointer-events-none select-none',
         variantStyles,
         sizeStyles,
         className

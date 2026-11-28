@@ -24,14 +24,14 @@ export const InferenceBadge: React.FC<InferenceBadgeProps> = ({
       defaultLabel: 'On-Device (SDK)',
     },
     in_cloud: {
-      bg: 'bg-violet-950/40 border-violet-500/35 text-violet-300',
-      dot: 'bg-violet-400',
+      bg: 'bg-amber-50 border-amber-300 text-amber-900',
+      dot: 'bg-amber-500',
       icon: Cloud,
       defaultLabel: 'In-Cloud (SDK)',
     },
     unknown: {
-      bg: 'bg-surface-elevated border-surface-border text-slate-600',
-      dot: 'bg-zinc-500',
+      bg: 'bg-surface-elevated border-surface-border text-slate-700',
+      dot: 'bg-slate-400',
       icon: HelpCircle,
       defaultLabel: 'Unknown Source',
     },

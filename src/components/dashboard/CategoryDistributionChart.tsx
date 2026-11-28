@@ -36,7 +36,7 @@ export const CategoryDistributionChart: React.FC<CategoryDistributionChartProps>
             </div>
             <div className="h-2 w-full rounded bg-void border border-surface-border overflow-hidden">
               <div
-                className="h-full bg-cyan-500/75 rounded-sm transition-all duration-300"
+                className="h-full bg-orange-500 rounded-sm transition-all duration-300"
                 style={{ width: `${barWidthPercent}%` }}
               />
             </div>

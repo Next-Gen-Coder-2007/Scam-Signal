@@ -191,7 +191,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               onClick={handleGuest}
               disabled={loading}
             >
-              <UserCheck className="w-3.5 h-3.5 text-cyan-700" />
+              <UserCheck className="w-3.5 h-3.5 text-orange-700" />
               <span>Anonymous</span>
             </Button>
           </div>

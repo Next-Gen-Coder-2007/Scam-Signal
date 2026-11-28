@@ -150,7 +150,7 @@ export const ProfileSettingsView: React.FC = () => {
 
           <div className="space-y-3 pt-2 border-t border-surface-border">
             <div className="flex items-center gap-2 text-slate-800">
-              <Sliders className="w-3.5 h-3.5 text-cyan-700" />
+              <Sliders className="w-3.5 h-3.5 text-orange-700" />
               <span className="text-xs font-medium">Analysis &amp; Reporting Preferences</span>
             </div>
 

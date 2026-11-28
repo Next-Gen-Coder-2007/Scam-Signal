@@ -274,7 +274,7 @@ export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-slate-700 flex items-center gap-1.5">
-                <Eye className="w-3.5 h-3.5 text-cyan-700" />
+                <Eye className="w-3.5 h-3.5 text-orange-700" />
                 Editable Redacted Observation
               </span>
               <Button
@@ -304,7 +304,7 @@ export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
           {/* Transparent Data-Sharing Explanation */}
           <div className="p-3 rounded-md bg-canvas border border-surface-border text-[11px] text-slate-600 space-y-1.5 leading-relaxed">
             <p className="font-semibold text-slate-800">
-              What will be stored in Firestore (<code className="font-mono text-cyan-800">pending_reports</code>):
+              What will be stored in Firestore (<code className="font-mono text-amber-900">pending_reports</code>):
             </p>
             <ul className="list-disc list-inside space-y-0.5">
               <li>
@@ -342,7 +342,7 @@ export const CommunityReportModal: React.FC<CommunityReportModalProps> = ({
               type="checkbox"
               checked={hasConsented}
               onChange={(e) => setHasConsented(e.target.checked)}
-              className="mt-0.5 rounded border-surface-subtle bg-canvas text-accent-violet focus:ring-violet-500"
+              className="mt-0.5 rounded border-surface-subtle bg-canvas text-accent-violet focus:ring-orange-600"
             />
             <span>
               I have reviewed and edited the redacted text above, understand what data will be stored under <code className="font-mono text-slate-700">{visibility}</code> visibility, and explicitly consent to submit this pending report.

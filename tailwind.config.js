@@ -8,22 +8,22 @@ export default {
   theme: {
     extend: {
       colors: {
-        canvas: '#f8fafc',
-        void: '#f1f5f9',
+        canvas: '#fafafa',
+        void: '#f4f4f5',
         surface: {
           DEFAULT: '#ffffff',
           card: '#ffffff',
-          elevated: '#f1f5f9',
-          hover: '#e2e8f0',
-          border: '#e2e8f0',
-          subtle: '#cbd5e1',
+          elevated: '#f4f4f5',
+          hover: '#e4e4e7',
+          border: '#e4e4e7',
+          subtle: '#d4d4d8',
         },
         accent: {
-          violet: '#6d28d9',
-          'violet-hover': '#5b21b6',
-          'violet-muted': '#7c3aed',
-          cyan: '#0891b2',
-          'cyan-muted': '#0e7490',
+          violet: '#ea580c',
+          'violet-hover': '#c2410c',
+          'violet-muted': '#f59e0b',
+          cyan: '#d97706',
+          'cyan-muted': '#b45309',
         },
         threat: {
           critical: '#be123c',
